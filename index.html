@@ -3,296 +3,370 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RGC Pensiones - Calculadora de Lujo</title>
+    <title>RGC Pensiones - Calculadora de Proyección</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --color-dark-blue: #0D1B2A; /* Un azul casi negro, muy elegante */
-            --color-strong-blue: #1B263B; /* Azul intermedio */
-            --color-medium-blue: #415A77; /* Azul grisáceo */
-            --color-gold: #D4AF37; /* Oro clásico */
-            --color-light-gold: #F0E68C; /* Oro pálido */
-            --color-background: #F8F9FA; /* Fondo casi blanco */
-            --color-text-dark: #0D1B2A;
-            --color-text-medium: #415A77;
-            --color-success: #28a745;
-            --color-danger: #dc3545;
+            --dark-blue: #003366; /* Azul marino profundo */
+            --gold: #D4AF37;      /* Oro metálico */
+            --dark-gold: #B8860B; /* Oro oscuro para hover */
+            --text-dark: #1A202C;  /* Casi negro */
+            --text-medium: #4A5568;/* Gris oscuro */
+            --bg-light: #F8F9FA;  /* Gris muy claro */
+            --white: #FFFFFF;
+            --border-color: #E2E8F0;
+            --success-color: #16A34A;
+            --danger-color: #DC2626;
         }
 
         body { 
-            font-family: 'Open Sans', sans-serif; 
-            background-color: var(--color-background);
-            color: var(--color-text-medium);
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--bg-light);
+            color: var(--text-medium);
         }
+        
+        /* Encabezado Principal */
         .main-header {
-            background: linear-gradient(135deg, var(--color-strong-blue) 0%, var(--color-dark-blue) 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--dark-blue) 0%, #002244 100%);
+            color: var(--white);
             padding: 2.5rem 1rem;
+            text-align: center;
             border-radius: 0 0 40px 40px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 3rem;
         }
-        .main-header img {
-            max-height: 70px;
-            filter: drop-shadow(0 4px 5px rgba(0,0,0,0.3));
+        .main-header .logo-text {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--gold);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+            letter-spacing: 1px;
         }
         .main-header h1 {
-            font-family: 'Playfair Display', serif;
-            font-weight: 700;
-            font-size: 3rem; /* 48px */
-            letter-spacing: 0.5px;
-            color: var(--color-gold);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+            font-weight: 800;
+            font-size: 2.25rem; /* 36px */
+            letter-spacing: -0.5px;
+            margin-top: 1rem;
         }
         .main-header p {
-            font-family: 'Poppins', sans-serif;
             font-size: 1.125rem; /* 18px */
-            opacity: 0.8;
-            color: #E0E1DD; /* Un gris claro para el subtítulo */
+            opacity: 0.85;
+            font-weight: 400;
         }
 
+        /* Estructura de Secciones */
         .infographic-section {
-            background-color: #ffffff;
+            background-color: var(--white);
             border-radius: 20px;
-            padding: 2.5rem;
+            padding: 2rem 2.5rem;
             margin-bottom: 2.5rem;
-            box-shadow: 0 10px 30px rgba(27, 38, 59, 0.08);
-            border-top: 6px solid;
-            border-left: none;
+            box-shadow: 0 8px 30px rgba(0, 51, 102, 0.08);
+            border: 1px solid var(--border-color);
+            border-top: 6px solid var(--dark-blue);
         }
-        .section-1-border { border-top-color: var(--color-medium-blue); }
-        .section-2-border { border-top-color: var(--color-gold); }
-        .section-3-border { border-top-color: var(--color-success); }
-        .section-4-border { border-top-color: #6F42C1; }
-        .section-5-border { border-top-color: var(--color-danger); }
-
         .infographic-section h2 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.875rem; /* 30px */
-            font-weight: 600;
+            font-size: 1.75rem; /* 28px */
+            font-weight: 700;
             margin-bottom: 2rem;
-            color: var(--color-text-dark);
+            color: var(--dark-blue);
             display: flex;
             align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
         }
         .infographic-section h2 i {
             margin-right: 1rem;
-            font-size: 1.75rem;
-            width: 45px;
-            height: 45px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background-color: var(--section-icon-bg, #E0E7FF);
-            color: var(--section-icon-color, #3B82F6);
+            font-size: 1.5rem;
+            color: var(--gold);
         }
-        .section-1-border h2 i { --section-icon-bg: #EBF0F6; --section-icon-color: var(--color-medium-blue); }
-        .section-2-border h2 i { --section-icon-bg: #FFFBEB; --section-icon-color: var(--color-gold); }
-        .section-3-border h2 i { --section-icon-bg: #F0FFF4; --section-icon-color: var(--color-success); }
-        .section-4-border h2 i { --section-icon-bg: #F3E8FF; --section-icon-color: #6F42C1; }
-        .section-5-border h2 i { --section-icon-bg: #FEF2F2; --section-icon-color: var(--color-danger); }
-        
         .infographic-section h3.subsection-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.375rem;
+            font-size: 1.25rem; /* 20px */
             font-weight: 600;
-            color: var(--color-strong-blue);
+            color: var(--dark-blue);
             margin-top: 2rem;
-            margin-bottom: 1.25rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid #E2E8F0;
+            margin-bottom: 1.5rem;
         }
         
+        /* Formularios y Entradas */
         .input-group label {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            margin-bottom: 0.6rem;
-            color: var(--color-text-medium); 
-            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-medium); 
+            font-size: 0.875rem; /* 14px */
+            display: block;
         }
         .input-group input[type="text"],
         .input-group input[type="password"],
         .input-group input[type="number"],
         .input-group input[type="month"],
         .input-group select {
-            padding: 0.85rem 1rem;
-            border: 1px solid #D1D5DB;
-            border-radius: 0.5rem;
-            font-size: 0.95rem;
+            padding: 0.8rem 1rem;
+            border: 1px solid #CBD5E0;
+            border-radius: 0.5rem; /* 8px */
+            font-size: 1rem;
+            width: 100%;
             transition: all 0.2s ease-in-out;
-            background-color: #FCFCFC;
+            background-color: #FDFDFD;
         }
         .input-group input:focus, .input-group select:focus {
-            border-color: var(--color-gold); 
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25);
+            border-color: var(--gold); 
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+            outline: none;
+        }
+        .input-group input[readonly] {
+            background-color: #E9ECEF;
         }
         
-        .btn-calculate, .btn-primary-small, .btn-export, .btn-info-small, .btn-login {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            padding: 0.9rem 2.2rem;
+        /* Real-time Validation Styles */
+        .input-valid {
+            border-color: var(--success-color);
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+        }
+        .input-invalid {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+        }
+        .validation-message {
+            font-size: 0.75rem; /* 12px */
+            color: var(--danger-color);
+            margin-top: 0.25rem;
+            height: 1rem; /* Reserve space to prevent layout shift */
+        }
+
+        /* Botones */
+        .btn {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            padding: 0.8rem 2rem;
             border-radius: 0.5rem;
             transition: all 0.25s ease-out;
             border: none;
             cursor: pointer;
             text-transform: uppercase;
             letter-spacing: 0.8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
-        .btn-calculate:disabled, .btn-calculate.bg-amber-500:disabled, .btn-export:disabled, .btn-login:disabled, .btn-primary-small:disabled {
+        .btn:disabled {
             background: #A0AEC0;
-            background-image: none;
+            color: #E2E8F0;
             cursor: not-allowed;
             box-shadow: none;
             transform: none;
         }
-        .btn-calculate { background: linear-gradient(135deg, var(--color-medium-blue), var(--color-strong-blue)); color: white; }
-        .btn-calculate:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(65, 90, 119, 0.4); }
         
-        .btn-calculate.bg-amber-500 { background: linear-gradient(135deg, #FBBF24, #D97706); color: var(--color-dark-blue);}
-        .btn-calculate.bg-amber-500:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(217, 119, 6, 0.3); }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), var(--dark-gold));
+            color: var(--dark-blue);
+        }
+        .btn-gold:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(212, 175, 55, 0.3);
+        }
 
-        .btn-export { background: linear-gradient(135deg, var(--color-gold), #b89b72); color: var(--color-dark-blue); }
-        .btn-export:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4); }
+        .btn-blue {
+            background: linear-gradient(135deg, var(--dark-blue), #004488);
+            color: var(--white);
+        }
+        .btn-blue:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 51, 102, 0.3);
+        }
         
-        .btn-primary-small { padding: 0.6rem 1.2rem; font-size: 0.8rem; background: linear-gradient(135deg, var(--color-strong-blue), var(--color-dark-blue)); color: white; }
-        .btn-primary-small:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(27, 38, 59, 0.3); }
+        .btn-secondary {
+            background-color: var(--white);
+            color: var(--dark-blue);
+            border: 2px solid var(--dark-blue);
+            padding: 0.7rem 1.5rem;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--dark-blue);
+            color: var(--white);
+        }
+        
+        .btn-danger-icon {
+            background-color: #FFF1F2;
+            color: #E53E3E;
+            border: 1px solid #E53E3E;
+            padding: 0.5rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+        .btn-danger-icon:hover {
+            background-color: #E53E3E;
+            color: var(--white);
+        }
 
-        .btn-login { background: linear-gradient(135deg, var(--color-gold), #b89b72); color: var(--color-dark-blue); }
-        .btn-login:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4); }
-        
+        /* Tarjetas de Resultados */
         .results-card {
-            background-color: #FFFFFF;
+            background-color: var(--white);
             padding: 2rem;
-            border-radius: 0.75rem;
+            border-radius: 1rem;
             margin-top: 2rem;
-            border: 1px solid #E9ECEF;
-            box-shadow: 0 4px 15px rgba(27, 38, 59, 0.05);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-        .results-card p { margin-bottom: 0.75rem; font-size: 1rem; color: var(--color-text-medium); }
-        .results-card .highlight { font-size: 1.375rem; font-weight: 700; }
-        .results-card .highlight-green { color: var(--color-success); }
-        .results-card .highlight-amber { color: var(--color-gold); }
-        .results-card .highlight-red { color: var(--color-danger); }
-
-        .comparison-item .value { font-family: 'Poppins', sans-serif; font-size: 1.75rem; font-weight: 600; }
-        .value.text-blue-600 { color: var(--color-medium-blue); }
-        .value.text-amber-600 { color: var(--color-gold); }
-
-        .app-footer {
-            text-align: center;
-            margin-top: 3rem;
-            padding: 2rem 1rem;
-            background-color: var(--color-dark-blue);
-            color: #A9B4C2;
-            border-top: 4px solid var(--color-gold);
-        }
-        .app-footer p { color: #A9B4C2; }
-        .app-footer .logo-footer { max-height: 40px; margin-bottom: 0.5rem; opacity: 0.8; }
+        .results-card .highlight { font-size: 1.5rem; font-weight: 700; }
+        .results-card .highlight-gold { color: var(--dark-gold); }
+        .results-card .highlight-blue { color: var(--dark-blue); }
+        .results-card .highlight-green { color: #16A34A; }
+        .results-card .highlight-red { color: #DC2626; }
         
-        /* Login Styles */
+        /* Login Container */
         #loginContainer {
+            position: fixed;
+            inset: 0;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 80vh;
-            padding: 2rem;
+            background-color: var(--bg-light);
+            z-index: 40;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none;
         }
+        #loginContainer.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
         .login-box {
-            background-color: #ffffff;
+            background-color: var(--white);
             padding: 3rem;
             border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(13, 27, 42, 0.15);
+            box-shadow: 0 10px 40px rgba(0, 51, 102, 0.15);
             width: 100%;
             max-width: 450px;
-            border-top: 6px solid var(--color-gold);
+            border-top: 6px solid var(--gold);
         }
         .login-box h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--color-dark-blue);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--dark-blue);
             text-align: center;
             margin-bottom: 2.5rem;
         }
         
         /* Modal Styles */
         .modal-overlay {
-            position: fixed; inset: 0;
-            background-color: rgba(13, 27, 42, 0.7);
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 34, 68, 0.7); /* Azul oscuro semi-transparente */
             backdrop-filter: blur(4px);
-            display: flex; align-items: center; justify-content: center; z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
         }
         .modal-content {
-            background-color: white; padding: 2.5rem; border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
-            max-width: 90%; width: 450px;
+            background-color: var(--white);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 51, 102, 0.2);
+            max-width: 90%;
+            width: 650px;
+            border-top: 6px solid var(--gold);
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
         }
-        .modal-content-alert { text-align: center; }
-        .modal-content-privacy { width: 650px; text-align: left; }
-        .modal-content-privacy h2 {
-             font-family: 'Poppins', sans-serif; color: var(--color-dark-blue);
-             font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
         }
-        .modal-content-privacy .privacy-text-container {
-            border: 1px solid #e2e8f0; padding: 1rem; border-radius: 0.5rem;
-            background-color: var(--color-background); max-height: 60vh; overflow-y: auto;
+        
+        .modal-content-alert {
+             text-align: center;
+             width: 400px;
         }
+        
+        .modal-content h2 {
+             font-family: 'Montserrat', sans-serif;
+             color: var(--dark-blue);
+             font-size: 1.5rem;
+             font-weight: 700;
+             text-align: center;
+             margin-bottom: 1.5rem;
+             padding-bottom: 1rem;
+             border-bottom: 1px solid var(--border-color);
+        }
+        .privacy-text-container {
+            border: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            background-color: var(--bg-light);
+            max-height: 55vh;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+        }
+        .privacy-text-container p {
+            font-size: 0.875rem; /* 14px */
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        .privacy-text-container::-webkit-scrollbar { width: 8px; }
+        .privacy-text-container::-webkit-scrollbar-track { background: var(--border-color); border-radius: 10px; }
+        .privacy-text-container::-webkit-scrollbar-thumb { background-color: var(--gold); border-radius: 10px; }
+
+        .app-footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding: 2.5rem 1rem;
+            background-color: var(--dark-blue);
+            color: var(--white);
+            border-radius: 40px 40px 0 0;
+        }
+        .app-footer .logo-text-footer {
+            color: var(--gold);
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .app-footer p { opacity: 0.8; }
+
         #sessionTimerContainer {
-            position: fixed; top: 1rem; right: 1rem;
-            background-color: rgba(13, 27, 42, 0.8);
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background-color: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(5px);
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: var(--text-dark);
             z-index: 100;
-            color: white;
-            border: 1px solid var(--color-gold);
+            transition: color 0.3s;
         }
-        #sessionTimerContainer.warning {
-            color: var(--color-gold);
-            border-color: var(--color-danger);
-        }
-
-        /* Other inherited styles from the original file - simplified for brevity */
-        .comparison-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
-        .comparison-item { background-color: #fff; padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 6px 12px rgba(0,0,0,0.06); border: 1px solid #E9ECEF; }
-        .comparison-item h4 { font-family: 'Poppins', sans-serif; font-weight: 500; margin-bottom: 0.75rem; color: #343A40; font-size: 0.95rem; }
-        .m40-period-infographic { background-color: #FFFBEB; border: 1px solid var(--color-light-gold); padding: 1.5rem; border-radius: 0.75rem; }
-        .m40-date-display { font-size: 0.8rem; color: var(--color-text-medium); margin-top: 0.25rem; height: 1.2rem; }
-        .m40-date-warning { font-size: 0.8rem; color: var(--color-danger); font-weight: 500; }
-        .error-message-infographic { background-color: #F8D7DA; border-left: 5px solid #D9534F; color: #721C24; padding: 1.25rem; border-radius: 0.5rem; }
-        .sbc-detalle-table th { background-color: #E9ECEF; font-family: 'Poppins', sans-serif; font-weight: 500; }
-        .toggle-switch-container { display: flex; align-items: center; background-color: #e9ecef; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; }
-        .toggle-switch-container label { margin-right: 0.75rem; font-weight: 600; color: var(--color-strong-blue); font-size: 0.95rem; }
-        .precision-mode-info { background-color: #EBF0F6; border-left: 4px solid var(--color-medium-blue); color: var(--color-strong-blue); padding: 1rem; margin-top: 0.5rem; margin-bottom: 1.5rem; border-radius: 0.375rem; font-size: 0.875rem; }
-        .btn-secondary-small { background-color: #6C757D; color: white; padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: 0.375rem; }
-        .btn-secondary-small:hover { background-color: #5A6268; transform: translateY(-1px); }
-        .btn-danger-small { background-color: #DC3545; color: white; padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: 0.375rem; }
-        .btn-danger-small:hover { background-color: #C82333; transform: translateY(-1px); }
-        .btn-info-small { background: linear-gradient(135deg, #17A2B8, #117A8B); color: white; padding: 0.6rem 1.2rem; font-size: 0.8rem; border-radius: 0.5rem; }
-        .btn-info-small:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(23,162,184,0.25); }
-        .btn-toggle-costo { background-color: #6C757D; color: white; padding: 0.6rem 1rem; font-size: 0.8rem; border-radius: 0.375rem; transition: background-color 0.2s, border-color 0.2s; border: 2px solid transparent; }
-        .btn-toggle-costo:hover { background-color: #5A6268; }
-        .btn-toggle-costo.active { background-color: var(--color-success); color: white; border-color: #1e7e34; }
     </style>
 </head>
 <body>
     <!-- Confidentiality Agreement Modal -->
     <div id="confidentialityModal" class="modal-overlay">
-        <div class="modal-content modal-content-privacy">
-            <h2>CARTA COMPROMISO DE CONFIDENCIALIDAD Y USO ADECUADO DE HERRAMIENTAS</h2>
-            <div class="privacy-text-container pr-4 my-4">
-                <p><strong>Fecha:</strong> <span id="agreementDate"></span><br><strong>Lugar:</strong> Ciudad de México, México</p>
+        <div class="modal-content">
+            <h2>CARTA COMPROMISO DE CONFIDENCIALIDAD</h2>
+            <div class="privacy-text-container">
+                 <p><strong>Fecha:</strong> <span id="agreementDate"></span><br><strong>Lugar:</strong> Ciudad de México, México</p>
                 <p>En mi calidad de Asesor para RGC Pensiones y Seguros, manifiesto y acepto de manera voluntaria los siguientes términos y condiciones:</p>
                 <p><strong>1. ANTECEDENTES</strong><br>Reconozco que, en virtud de mi relación profesional con RGC Pensiones, se me ha proporcionado acceso a una herramienta de software especializada (en adelante, "la Herramienta"), la cual es fundamental para el desempeño de mis funciones.</p>
                 <p><strong>2. PROPIEDAD INTELECTUAL</strong><br>Declaro tener pleno conocimiento de que la Herramienta es propiedad intelectual exclusiva del C. Ivan Roberto Ortiz Cano, y que RGC Pensiones cuenta con la licencia y autorización para su uso con fines corporativos específicos. Entiendo que mi acceso a la misma es una concesión temporal y está estrictamente limitado al ejercicio de mis responsabilidades dentro de esta empresa.</p>
@@ -308,14 +382,14 @@
                 <p>Este compromiso mantendrá su vigencia durante toda mi relación con RGC Pensiones y subsistirá incluso después de su terminación, por tiempo indefinido.</p>
                 <p>Habiendo leído y comprendido en su totalidad el presente documento, lo acepto de conformidad.</p>
             </div>
-            <div class="flex items-center mb-6">
-                <input type="checkbox" id="agreementCheckbox" class="h-4 w-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500">
-                <label for="agreementCheckbox" class="ml-2 block text-sm text-gray-900">
-                    He leído, comprendido y acepto los términos de esta carta compromiso.
-                </label>
-            </div>
-            <div class="text-right">
-                <button id="acceptAgreementButton" onclick="acceptAgreement()" class="btn-primary-small" disabled>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <input type="checkbox" id="agreementCheckbox" class="h-5 w-5 text-blue-600 border-gray-400 rounded focus:ring-gold-500">
+                    <label for="agreementCheckbox" class="ml-3 block text-sm text-gray-700 font-medium">
+                        He leído, comprendido y acepto los términos.
+                    </label>
+                </div>
+                <button id="acceptAgreementButton" onclick="acceptAgreement()" class="btn btn-gold" disabled>
                     Aceptar y Continuar
                 </button>
             </div>
@@ -326,79 +400,70 @@
         <i class="fas fa-clock mr-2"></i>Tiempo restante: <span id="sessionCountdown">10:00</span>
     </div>
 
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-5xl">
-
-        <!-- Login Section (Initially Hidden) -->
-        <div id="loginContainer" style="display: none;">
-            <div class="login-box">
-                <img src="https://placehold.co/200x80/FFFFFF/0D1B2A?text=RGC&font=playfair+display" alt="Logo RGC Pensiones" class="mx-auto mb-8" onerror="this.onerror=null; this.src='https://placehold.co/200x80/CCCCCC/000000?text=Logo+no+disponible';">
-                <h2>Acceso Exclusivo</h2>
-                <div class="input-group">
-                    <label for="login_password"><i class="fas fa-lock mr-2 opacity-70"></i>Contraseña:</label>
-                    <input type="password" id="login_password" placeholder="••••••••••" class="w-full">
-                </div>
-                <div class="text-center mt-8">
-                    <button id="loginButton" onclick="handleLogin()" class="btn-login w-full">
-                        <i class="fas fa-sign-in-alt mr-2"></i>Ingresar
-                    </button>
-                </div>
-                <div id="login_errorMessage" class="error-message-infographic" style="display: none;"><p></p></div>
+    <!-- Login Section -->
+    <div id="loginContainer">
+        <div class="login-box">
+             <div class="logo-text text-center text-2xl mb-8" style="color: var(--dark-blue); text-shadow: none;">RGC PENSIONES Y SEGUROS</div>
+            <h2>Acceso de Asesor</h2>
+            <div class="input-group mb-4">
+                <label for="login_asesor"><i class="fas fa-user-tie mr-2 opacity-70"></i>Nombre del Asesor</label>
+                <input type="text" id="login_asesor" placeholder="Nombre Apellido" class="w-full">
             </div>
+            <div class="input-group">
+                <label for="login_password"><i class="fas fa-lock mr-2 opacity-70"></i>Contraseña de Acceso</label>
+                <input type="password" id="login_password" placeholder="••••••••••" class="w-full">
+            </div>
+            <div class="text-center mt-8">
+                <button id="loginButton" onclick="handleLogin()" class="btn btn-blue w-full">
+                    <i class="fas fa-sign-in-alt"></i>Ingresar
+                </button>
+            </div>
+            <div id="login_errorMessage" class="error-message-infographic" style="display: none; margin-top: 1.5rem;"><p></p></div>
         </div>
+    </div>
 
-        <!-- Main Application Content (Initially Hidden) -->
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl">
+        <!-- Main Application Content -->
         <div id="mainContentContainer" style="display: none;">
-            <header class="main-header text-center mb-12">
-                <img src="https://placehold.co/280x100/transparent/FFFFFF?text=RGC+PENSIONES&font=playfair+display" alt="Logo RGC Pensiones" class="mx-auto mb-6" onerror="this.onerror=null; this.src='https://placehold.co/280x100/CCCCCC/000000?text=Logo+no+disponible';"> 
-                <h1 class="text-white">Tu Proyección de Pensión y Crédito</h1>
-                <p>Descubre cómo Modalidad 40 puede transformar tu futuro.</p>
+            <header class="main-header">
+                <div class="logo-text">RGC PENSIONES Y SEGUROS</div>
+                <h1>Calculadora de Proyección de Pensión</h1>
+                <p>Una herramienta exclusiva para transformar el futuro de nuestros clientes.</p>
             </header>
 
-            <section id="infoSection1" class="infographic-section section-1-border">
-                <h2><i class="fas fa-user-edit"></i>Paso 1: Tus Datos Actuales</h2>
-
-                <div class="toggle-switch-container mb-6">
-                    <label for="info_modoPrecisionContrato" class="flex items-center cursor-pointer">
-                        <span class="text-base font-semibold" style="color: var(--color-strong-blue);">Modo Precisión (Firma de Contrato):</span>
-                        <div class="relative ml-3">
-                            <input type="checkbox" id="info_modoPrecisionContrato" class="sr-only peer">
-                            <div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
-                        </div>
-                    </label>
-                </div>
-                <div id="info_mensajeModoPrecision" class="precision-mode-info" style="display: none;">
-                    <p><i class="fas fa-info-circle mr-2"></i><strong>Modo de Precisión Activado:</strong> Para la estrategia de "Firma de Contrato", es crucial completar su historial salarial detallado de los últimos 1750 días (5 años) en la tabla de abajo. Este dato asegura la máxima precisión en los cálculos.</p>
-                </div>
-
+            <section id="infoSection1" class="infographic-section">
+                <h2><i class="fas fa-user-edit"></i>Paso 1: Datos del Cliente</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <div class="input-group">
-                        <label for="info_nombreCompleto"><i class="fas fa-user mr-2 opacity-70"></i>Nombre Completo:</label>
-                        <input type="text" id="info_nombreCompleto" placeholder="Tu nombre aquí" class="w-full">
+                        <label for="info_nombreCompleto">Nombre Completo:</label>
+                        <input type="text" id="info_nombreCompleto" placeholder="Nombre completo del cliente" class="w-full">
                     </div>
                     <div class="input-group">
-                        <label for="info_semanasCotizadas"><i class="fas fa-calendar-check mr-2 opacity-70"></i>Semanas Cotizadas Netas:</label>
+                        <label for="info_semanasCotizadas">Semanas Cotizadas Netas:</label>
                         <input type="number" id="info_semanasCotizadas" placeholder="Ej: 1250" class="w-full">
+                        <p id="info_semanasCotizadas_error" class="validation-message"></p>
                     </div>
                     <div class="input-group">
-                        <label for="info_edadCliente"><i class="fas fa-birthday-cake mr-2 opacity-70"></i>Edad Actual:</label>
+                        <label for="info_edadCliente">Edad Actual:</label>
                         <input type="number" id="info_edadCliente" placeholder="Ej: 60" class="w-full">
+                        <p id="info_edadCliente_error" class="validation-message"></p>
                     </div>
                     <div class="input-group">
-                        <label for="info_sbcPromedio"><i class="fas fa-money-bill-wave mr-2 opacity-70"></i>SBC Promedio Base (250 sem):</label>
-                        <input type="number" id="info_sbcPromedio" placeholder="Ingresa o calcula detalladamente" class="w-full">
+                        <label for="info_sbcPromedio">SBC Promedio Base (250 sem):</label>
+                        <input type="number" id="info_sbcPromedio" placeholder="Ingresar o calcular" class="w-full">
+                        <p id="info_sbcPromedio_error" class="validation-message"></p>
                     </div>
                 </div>
-
-                <div class="mt-6 mb-4">
+                
+                <div class="mt-8 mb-4">
                     <label class="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="info_usarSBCDetallado" class="form-checkbox h-5 w-5 text-yellow-600 rounded focus:ring-yellow-500" onchange="toggleSBCDetalladoSeccion()">
-                        <span class="ml-3 text-gray-700 font-medium">Usar Cálculo de SBC Detallado</span>
+                        <input type="checkbox" id="info_usarSBCDetallado" class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-gold-500" onchange="toggleSBCDetalladoSeccion()">
+                        <span class="ml-3 text-gray-700 font-medium">Usar Cálculo de SBC Detallado (Modo Precisión)</span>
                     </label>
                 </div>
 
                 <div id="info_seccionSBCDetallado" class="mt-6 p-6 border border-gray-200 rounded-xl bg-gray-50" style="display: none;">
                     <h3 class="subsection-title">Cálculo Detallado de SBC Promedio (Últimos 1750 días)</h3>
-                    <p class="text-sm text-gray-600 mb-4">Ingresa tus movimientos salariales de los últimos 5 años (o hasta 1750 días cotizados). El sistema considerará los más recientes hasta completar 1750 días para el promedio.</p>
                     <div class="overflow-x-auto mb-4">
                         <table id="info_tablaHistorialLaboral" class="sbc-detalle-table w-full text-sm text-left">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-100">
@@ -407,221 +472,182 @@
                                     <th scope="col" class="px-4 py-3">Tipo Mov.</th>
                                     <th scope="col" class="px-4 py-3">Nombre Patrón</th>
                                     <th scope="col" class="px-4 py-3">SBC Diario ($)</th>
-                                    <th scope="col" class="px-4 py-3 w-24">Acción</th>
+                                    <th scope="col" class="px-4 py-3 w-24 text-center">Acción</th>
                                 </tr>
                             </thead>
                             <tbody id="info_tablaHistorialLaboralBody"></tbody>
                         </table>
                     </div>
-                    <button type="button" onclick="agregarMovimientoHistorialInfografia()" class="btn-secondary-small mb-4"><i class="fas fa-plus mr-1"></i>Agregar Movimiento</button>
-                    
-                    <div class="text-right">
-                        <button type="button" onclick="calcularYUsarSBCDetalladoInfografia()" class="btn-primary-small">
-                            <i class="fas fa-check-circle mr-1"></i>Calcular y Usar SBC Detallado
-                        </button>
-                    </div>
-                     <div id="info_resultadosSBCDetalladoCalc" class="mt-4 text-sm">
-                         <p>Total Días Considerados para Promedio: <span id="info_histTotalDiasConsiderados" class="font-semibold text-gray-800">0</span></p>
-                         <p>SBC Promedio Detallado Calculado: <span id="info_histSBCDetalladoCalculado" class="font-semibold text-blue-700 text-lg">$0.00</span></p>
-                     </div>
+                    <button type="button" onclick="agregarMovimientoHistorialInfografia()" class="btn btn-secondary text-sm py-2 px-4"><i class="fas fa-plus"></i>Agregar</button>
+                    <button type="button" onclick="calcularYUsarSBCDetalladoInfografia()" class="btn btn-blue text-sm py-2 px-4 float-right">
+                        <i class="fas fa-check-circle"></i>Calcular y Usar
+                    </button>
                 </div>
 
-                <div class="text-center mt-8">
-                    <button onclick="calcularPensionBaseInfografia()" class="btn-calculate">
-                        <i class="fas fa-calculator mr-2"></i>Calcular Pensión Base
+                <div class="text-center mt-10">
+                    <button onclick="calcularPensionBaseInfografia()" class="btn btn-blue">
+                        <i class="fas fa-calculator"></i>Calcular Pensión Base
                     </button>
                 </div>
                 <div id="info_resultadosPensionBase" class="results-card" style="display: none;">
-                    <h3 class="text-lg font-semibold mb-3" style="color: var(--color-strong-blue);">Tu Pensión Base Estimada:</h3>
-                    <p>Pensión Mensual: <span id="info_resPensionMensual" class="highlight" style="color: var(--color-strong-blue);"></span> MXN</p>
-                    <p>Aguinaldo Estimado: <span id="info_resAguinaldo" class="highlight" style="color: var(--color-strong-blue);"></span> MXN</p>
-                    <p class="text-sm mt-2 text-gray-600">SBC Promedio Base Usado: <span id="info_sbcBaseUsadoDisplay" class="font-semibold"></span></p>
+                    <h3 class="text-lg font-semibold mb-4 text-blue-700">Pensión Base Estimada</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-6">
+                        <div>
+                            <p class="text-sm text-gray-500">Pensión Mensual:</p>
+                            <p id="info_resPensionMensual" class="text-2xl font-bold highlight-blue">$0.00</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Aguinaldo Anual:</p>
+                            <p id="info_resAguinaldo" class="text-2xl font-bold highlight-blue">$0.00</p>
+                        </div>
+                        <div class="md:col-span-2 mt-2 pt-2 border-t">
+                             <p class="text-sm text-gray-500">Ingreso Total (Primer Año):</p>
+                             <p id="info_resIngresoAnual" class="text-2xl font-bold highlight-green">$0.00</p>
+                        </div>
+                    </div>
+                    <h4 class="text-md font-semibold mt-6 mb-3 text-blue-700">Proyección de Crecimiento (5% inflación anual)</h4>
+                    <div id="info_proyeccionPensionBase" class="overflow-x-auto">
+                        <!-- Table will be generated by JS -->
+                    </div>
                 </div>
                 <div id="info_mensajeErrorBase" class="error-message-infographic" style="display: none;"><p></p></div>
             </section>
 
-            <section id="infoSection2" class="infographic-section section-2-border" style="display: none;">
-                <h2><i class="fas fa-chart-area"></i>Paso 2: Explora Modalidad 40</h2>
-                <div class="input-group">
-                    <label for="info_curpCliente"><i class="fas fa-id-card mr-2 opacity-70"></i>CURP:</label>
-                    <input type="text" id="info_curpCliente" placeholder="Tu CURP (18 caracteres)" maxlength="18" oninput="this.value = this.value.toUpperCase()" class="w-full">
+            <section id="infoSection2" class="infographic-section">
+                <h2><i class="fas fa-chart-line"></i>Paso 2: Estrategia Modalidad 40</h2>
+                 <div class="input-group mb-6">
+                    <label for="info_curpCliente">CURP:</label>
+                    <input type="text" id="info_curpCliente" placeholder="CURP del cliente (18 caracteres)" maxlength="18" oninput="this.value = this.value.toUpperCase()" class="w-full">
+                    <p id="info_curpCliente_error" class="validation-message"></p>
                 </div>
-                
-                <h3 class="subsection-title">Define tu Periodo Principal de M40:</h3>
-                <div class="m40-period-infographic">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
-                        <div class="input-group">
-                            <label for="info_m40_p1_inicio">Fecha Inicio M40:</label>
-                            <input type="month" id="info_m40_p1_inicio" onchange="actualizarSBCMaximoM40(); actualizarFechaFinM40Display();" class="w-full">
-                        </div>
-                        <div class="input-group">
-                            <label for="info_m40_p1_meses">Meses en M40:</label>
-                            <input type="number" id="info_m40_p1_meses" placeholder="Ej: 60" max="60" oninput="actualizarFechaFinM40Display()" class="w-full">
-                            <div id="info_m40_fecha_fin_display_container" class="m40-date-display">
-                                <span id="info_m40_fecha_fin_display"></span>
-                                <span id="info_m40_fecha_fin_warning" class="m40-date-warning"></span>
-                            </div>
-                        </div>
-                        <div class="input-group">
-                            <label for="info_m40_p1_sbc">SBC Diario M40 (Editable):</label>
-                            <input type="number" id="info_m40_p1_sbc" placeholder="Se calculará" class="w-full">
-                        </div>
+                <h3 class="subsection-title">Definir Periodo de Inversión en M40</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+                    <div class="input-group">
+                        <label for="info_m40_p1_inicio">Fecha Inicio M40:</label>
+                        <input type="month" id="info_m40_p1_inicio" onchange="actualizarSBCMaximoM40(); actualizarFechaFinM40Display();" class="w-full">
+                    </div>
+                    <div class="input-group">
+                        <label for="info_m40_p1_meses">Meses a Invertir:</label>
+                        <input type="number" id="info_m40_p1_meses" placeholder="Ej: 60" max="60" oninput="actualizarFechaFinM40Display()" class="w-full">
+                    </div>
+                    <div class="input-group">
+                        <label for="info_m40_p1_sbc">SBC Diario M40 (Tope):</label>
+                        <input type="number" id="info_m40_p1_sbc" placeholder="Automático" class="w-full">
                     </div>
                 </div>
-                 <p class="text-xs text-gray-500 mt-2 mb-6">Nota: El SBC Diario M40 se establecerá al tope de 25 UMAs del año de inicio seleccionado, pero puede editarlo.</p>
-
-                <div class="text-center mt-8">
-                    <button id="btnCalcularEscenarioM40" onclick="calcularEscenarioM40Infografia()" class="btn-calculate bg-amber-500">
-                        <i class="fas fa-cogs mr-2"></i>Calcular Escenario M40
+                <div class="text-center mt-10">
+                    <button id="btnCalcularEscenarioM40" onclick="calcularEscenarioM40Infografia()" class="btn btn-gold">
+                        <i class="fas fa-cogs"></i>Calcular Proyección M40
                     </button>
                 </div>
-
                 <div id="info_resultadosEscenarioM40" class="results-card" style="display: none;">
-                    <h3 class="text-lg font-semibold mb-4" style="color: var(--color-gold);">Resultados con Modalidad 40:</h3>
-                    <div class="comparison-grid mb-6">
-                        <div class="comparison-item">
-                            <h4>Pensión Base Mensual</h4>
-                            <p id="info_compPensionBase" class="value text-blue-600">$0.00</p>
+                    <h3 class="text-xl font-bold mb-4 text-center" style="color: var(--dark-gold);">Resultados de la Proyección</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="text-center p-4 rounded-lg bg-gray-50">
+                            <h4 class="text-gray-500 font-semibold">Pensión Base Mensual</h4>
+                            <p id="info_compPensionBase" class="text-3xl font-bold highlight-blue">$0.00</p>
                         </div>
-                        <div class="comparison-item">
-                            <h4>Pensión M40 Mensual</h4>
-                            <p id="info_compPensionM40" class="value text-amber-600">$0.00</p>
+                        <div class="text-center p-4 rounded-lg border-2 border-amber-400 bg-amber-50">
+                            <h4 class="text-amber-800 font-semibold">Pensión M40 Mensual</h4>
+                            <p id="info_compPensionM40" class="text-3xl font-bold highlight-gold">$0.00</p>
                         </div>
                     </div>
-                    <p class="text-center text-2xl font-bold mb-6"><span class="text-green-600">¡Incremento Mensual de: <span id="info_compIncrementoNetoM40" class="highlight-green">$0.00</span>!</span> 🚀</p>
-                    <hr class="my-6 border-gray-300">
+                    <p class="text-center text-2xl font-bold mb-6"><span class="highlight-green">Incremento Mensual de: <span id="info_compIncrementoNetoM40">$0.00</span>!</span> 🚀</p>
+                    <hr class="my-6">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                        <p>SBC Promedio M40 (p/cálculo): <span id="info_nuevoSBCPromedioM40" class="font-semibold text-gray-800"></span> MXN</p>
-                        <p>Nuevas Semanas Cotizadas: <span id="info_nuevasSemanasM40" class="font-semibold text-gray-800"></span></p>
-                        <p>Edad para % Pensión (Fin M40): <span id="info_nuevaEdadM40" class="font-semibold text-gray-800"></span> años</p>
-                        <p>Costo Total M40 (P1 c/Act+Rec): <span id="info_costoTotalM40Simulacion" class="font-semibold highlight-red"></span> MXN</p>
-                    </div>
-                    <div class="text-center mt-6">
-                         <button id="info_btnDescargarActRec" onclick="exportarActRecM40PDFInfografia()" class="btn-info-small" style="display: none;">
-                             <i class="fas fa-file-invoice-dollar mr-2"></i>Descargar Desglose Act. y Rec.
-                         </button>
+                        <p><strong>Nuevo SBC Promedio:</strong> <span id="info_nuevoSBCPromedioM40" class="font-semibold"></span> MXN</p>
+                        <p><strong>Nuevas Semanas Cotizadas:</strong> <span id="info_nuevasSemanasM40" class="font-semibold"></span></p>
+                        <p><strong>Edad para % Pensión:</strong> <span id="info_nuevaEdadM40" class="font-semibold"></span> años</p>
+                        <p><strong>Costo Total M40 (c/Act+Rec):</strong> <span id="info_costoTotalM40Simulacion" class="font-semibold highlight-red"></span> MXN</p>
                     </div>
                 </div>
-                 <div id="info_sbcWarningM40" class="error-message-infographic bg-yellow-100 border-yellow-500 text-yellow-700" style="display: none;"><p></p></div>
-                <div id="info_mensajeErrorM40" class="error-message-infographic" style="display: none;"><p></p></div>
             </section>
 
-            <section id="infoSection3" class="infographic-section section-3-border" style="display: none;">
-                <h2><i class="fas fa-coins"></i>Paso 3: ¿Cómo se Cubre el Costo?</h2>
-                
+            <section id="infoSection3" class="infographic-section">
+                <h2><i class="fas fa-hand-holding-usd"></i>Paso 3: Análisis Financiero</h2>
+                <h3 class="subsection-title">Fuentes de Cobertura</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <div class="input-group">
-                        <label for="info_aforeActual"><i class="fas fa-piggy-bank mr-2 opacity-70"></i>AFORE Actual ($):</label>
+                        <label for="info_aforeActual">AFORE Actual ($):</label>
                         <input type="number" id="info_aforeActual" placeholder="0.00" oninput="recalcularCoberturaTrasCambio()" class="w-full">
                     </div>
                     <div class="input-group">
-                        <label for="info_tasaAfore"><i class="fas fa-percentage mr-2 opacity-70"></i>Tasa Anual AFORE (%):</label>
-                        <input type="number" id="info_tasaAfore" placeholder="Ej: 6" oninput="recalcularCoberturaTrasCambio()" class="w-full">
-                    </div>
-                     <div class="input-group">
-                        <label for="info_mesesInversionAfore"><i class="fas fa-calendar-alt mr-2 opacity-70"></i>Meses a Invertir AFORE (proyección):</label>
-                        <input type="number" id="info_mesesInversionAfore" placeholder="Ej: 60" oninput="recalcularCoberturaTrasCambio()" class="w-full">
-                    </div>
-                    <div class="input-group">
-                        <label for="info_mesesPrimerDeposito"><i class="fas fa-hand-holding-usd mr-2 opacity-70"></i>Meses para Primer Depósito (6-10):</label>
+                        <label for="info_mesesPrimerDeposito">Meses para Primer Depósito (6-10):</label>
                         <input type="number" id="info_mesesPrimerDeposito" value="6" min="6" max="10" oninput="recalcularCoberturaTrasCambio()" class="w-full">
                     </div>
                 </div>
-
-                <div class="mt-8 pt-6 border-t border-gray-300">
-                    <h3 class="subsection-title mb-6">Ajustes Adicionales al Costo del Contrato</h3>
-                    
-                    <div class="mb-6">
-                        <h4 class="text-md font-semibold text-gray-700 mb-3">Costos Adicionales Opcionales:</h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-2">
-                            <button id="btn_ro_retro" type="button" onclick="toggleCostoAdicional('ro_retro', this)" class="btn-toggle-costo w-full">R.O. RETRO (+260,000)</button>
-                            <button id="btn_qp" type="button" onclick="toggleCostoAdicional('qp', this)" class="btn-toggle-costo w-full">Q.P. (+60,000)</button>
-                            <button id="btn_correccion" type="button" onclick="toggleCostoAdicional('correccion', this)" class="btn-toggle-costo w-full">CORRECCION (+15,000)</button>
-                        </div>
-                        <p class="text-sm text-gray-600">Total Adicional por Botones: <span id="info_totalAdicionalBotones" class="font-semibold">$0.00</span></p>
-                    </div>
-
+                 <div class="mt-8 pt-6 border-t">
+                    <h3 class="subsection-title">Ajustes Adicionales al Costo</h3>
                     <div class="input-group">
-                        <label for="info_comisionExcedente"><i class="fas fa-plus-circle mr-2 opacity-70"></i>Comisión por Excedente ($):</label>
+                        <label for="info_comisionExcedente">Comisión por Excedente ($):</label>
                         <input type="number" id="info_comisionExcedente" placeholder="0.00" oninput="recalcularCoberturaTrasCambio()" class="w-full">
                     </div>
                 </div>
-
-                <div class="results-card bg-green-50 mt-8 border-green-200">
-                    <h3 class="text-lg font-semibold mb-3 text-green-800">Fuentes de Cobertura:</h3>
-                    <p>1. AFORE Proyectada: <span id="info_coberturaAfore" class="font-semibold highlight-green">$0.00</span></p>
-                    <p>2. Primer Depósito (<span id="display_mesesPrimerDeposito">6</span> meses de pensión M40): <span id="info_coberturaPrimerDeposito" class="font-semibold highlight-green">$0.00</span></p>
-                    <p>3. Extra AFORE (Retiro M40 P1): <span id="info_coberturaExtraAfore" class="font-semibold highlight-green">$0.00</span></p>
-                    <hr class="my-3 border-green-200">
-                    <p class="font-bold">Subtotal Cobertura (sin préstamo): <span id="info_coberturaSubtotalSinPrestamo" class="font-semibold text-green-800">$0.00</span></p>
-                     <hr class="my-3 border-green-200">
-                    <p>Costo Total del Contrato (Bruto Estimado): <span id="info_costoTotalContratoBruto" class="font-semibold highlight-red">$0.00</span></p>
-                    
-                    <div id="info_prestamoInfo" class="mt-4 border-t border-green-200 pt-4" style="display: none;">
-                        <p class="text-red-700 font-medium">Déficit antes de préstamo: <span id="info_deficitAntesPrestamo" class="font-semibold">$0.00</span></p>
-                        <p class="text-blue-700 font-medium">Capacidad Máxima de Préstamo (30% Pensión M40): <span id="info_prestamoMaximoCapacidad" class="font-semibold">$0.00</span></p>
-                        <p class="text-red-700 font-medium">Préstamo Necesario (Estimado): <span id="info_prestamoNecesario" class="font-semibold">$0.00</span></p>
-                        <p class="text-red-700 font-medium">Descuento Mensual Préstamo (aprox.): <span id="info_descuentoMensualPrestamo" class="font-semibold">$0.00</span></p>
-                        <p id="info_detalleUsoPrestamo" class="text-sm text-gray-600 mt-1"></p>
+                <div class="results-card mt-8">
+                    <p><strong>Costo Total del Contrato (Bruto):</strong> <span id="info_costoTotalContratoBruto" class="font-semibold highlight-red float-right">$0.00</span></p>
+                    <hr class="my-4">
+                    <p>1. Saldo AFORE: <span id="info_coberturaAfore" class="font-semibold highlight-green float-right">$0.00</span></p>
+                    <p>2. Primer Depósito (<span id="display_mesesPrimerDeposito">6</span> meses): <span id="info_coberturaPrimerDeposito" class="font-semibold highlight-green float-right">$0.00</span></p>
+                    <p>3. Extra AFORE (Retiro M40): <span id="info_coberturaExtraAfore" class="font-semibold highlight-green float-right">$0.00</span></p>
+                    <hr class="my-4">
+                    <p class="font-bold">Subtotal Cobertura: <span id="info_coberturaSubtotalSinPrestamo" class="font-semibold highlight-green float-right">$0.00</span></p>
+                     <div id="info_prestamoInfo" class="mt-4 border-t pt-4" style="display: none;">
+                        <p class="text-red-700 font-medium">Déficit a cubrir: <span id="info_deficitAntesPrestamo" class="font-semibold float-right">$0.00</span></p>
+                        <p class="text-blue-700 font-medium">Préstamo Necesario (Estimado): <span id="info_prestamoNecesario" class="font-semibold float-right">$0.00</span></p>
+                        <p class="text-blue-700 font-medium">Descuento Mensual Préstamo: <span id="info_descuentoMensualPrestamo" class="font-semibold float-right">$0.00</span></p>
                     </div>
-                     <p class="mt-4 text-xl font-bold text-center"><span id="info_resultadoAnalisisCredito" class="text-green-800">Calculando...</span></p>
+                     <p class="mt-6 text-xl font-bold text-center"><span id="info_resultadoAnalisisCredito"></span></p>
                      <p class="text-center text-lg"><span id="info_etiquetaSaldoFinal" class="font-semibold"></span> <span id="info_montoSaldoFinal" class="font-bold">$0.00</span></p>
                 </div>
             </section>
 
-            <section id="infoSection4" class="infographic-section section-4-border" style="display: none;">
-                <h2><i class="fas fa-rocket"></i>Paso 4: ¡Tu Futuro Mejorado!</h2>
-                <div class="results-card bg-purple-50 border-purple-200">
-                    <p class="text-center text-2xl font-bold text-purple-800 mb-6">
-                        Incremento Neto Mensual (Año 1 M40): <span id="info_ventajaIncrementoNeto" class="highlight-green">$0.00</span>
+            <section id="infoSection4" class="infographic-section">
+                <h2><i class="fas fa-rocket"></i>Paso 4: Resumen de Beneficios</h2>
+                 <div class="results-card bg-blue-50 border-blue-200">
+                    <p class="text-center text-2xl font-bold text-blue-800 mb-6">
+                        Incremento Neto Mensual (Año 1): <span id="info_ventajaIncrementoNeto" class="highlight-green">$0.00</span>
                     </p>
                     <div class="text-center mb-6">
-                        <i class="fas fa-home fa-4x text-purple-400 mb-2"></i>
-                        <p class="mt-2 text-lg text-gray-700">Tu pensión M40 (Año 1) podría equivaler a tener un inmueble de:</p>
-                        <p class="text-3xl font-bold text-purple-600" id="info_ventajaValorInmueble">$0.00 MXN</p>
+                        <i class="fas fa-home fa-4x text-blue-400 mb-2"></i>
+                        <p class="mt-2 text-lg text-gray-700">Tu nueva pensión equivale a un inmueble de:</p>
+                        <p class="text-3xl font-bold text-blue-700" id="info_ventajaValorInmueble">$0.00 MXN</p>
                         <p class="text-sm text-gray-500">(Generando rentas vitalicias, cap. 0.4% mensual)</p>
                     </div>
-                     <hr class="my-6 border-purple-200">
-                    <h4 class="text-lg font-semibold text-purple-800 mb-3">Proyección de Pensión Neta Anual:</h4>
-                    <div id="info_proyeccionPensionNetaAnual" class="space-y-1 text-sm overflow-x-auto">
-                         </div>
-                     <p id="info_notaProyeccionInflacion" class="text-xs text-gray-500 mt-2"></p>
+                     <hr class="my-6">
+                    <h4 class="text-lg font-semibold text-blue-800 mb-3">Proyección de Pensión Neta Anual:</h4>
+                    <div id="info_proyeccionPensionNetaAnual" class="space-y-1 text-sm overflow-x-auto"></div>
                 </div>
             </section>
             
-            <section id="infoSection5" class="infographic-section section-5-border" style="display: none;">
-                <h2><i class="fas fa-file-pdf"></i>Paso 5: Guarda tu Proyección</h2>
-                <p class="mb-8 text-gray-600 text-lg">Conserva esta información detallada para tu referencia o para discutirla con nosotros.</p>
-                <button id="exportPdfButton" onclick="exportarPropuestaPDFInfografia()" class="btn-export text-lg">
-                    <i class="fas fa-download mr-2"></i>Exportar Propuesta a PDF
+            <section id="infoSection5" class="infographic-section text-center">
+                <h2><i class="fas fa-file-pdf"></i>Paso 5: Exportar Propuesta</h2>
+                <p class="mb-8 text-gray-600 text-lg max-w-2xl mx-auto">Genera un reporte profesional en PDF con todos los detalles de esta proyección para compartir con el cliente.</p>
+                <button id="exportPdfButton" onclick="exportarPropuestaPDFInfografia()" class="btn btn-gold text-lg">
+                    <i class="fas fa-download"></i>Exportar a PDF
                 </button>
             </section>
 
             <footer class="app-footer">
-                <img src="https://placehold.co/150x60/0D1B2A/D4AF37?text=RGC&font=playfair+display" alt="Logo RGC Pensiones Footer" class="logo-footer mx-auto" onerror="this.onerror=null; this.src='https://placehold.co/150x60/CCCCCC/000000?text=Logo';">
-                <p>&copy; <span id="currentYear"></span> RGC Pensiones - Todos los derechos reservados.</p>
-                <p class="text-xs mt-1">Esta es una simulación y los resultados pueden variar. Consulta a un asesor.</p>
+                <div class="logo-text-footer">RGC PENSIONES Y SEGUROS</div>
+                <p>&copy; <span id="currentYear"></span> RGC Pensiones y Seguros. Todos los derechos reservados.</p>
+                <p class="text-xs mt-1 opacity-70">Esta es una simulación y los resultados pueden variar. Consulta a un asesor para una evaluación detallada.</p>
             </footer>
-        </div> <!-- End of mainContentContainer -->
+        </div>
     </div>
 
     <!-- Custom Alert Modal -->
-    <div id="customAlertModal" class="modal-overlay" style="display: none;">
+    <div id="customAlertModal" class="modal-overlay">
         <div class="modal-content modal-content-alert">
-            <p id="customAlertMessage"></p>
-            <button onclick="closeCustomAlert()" class="btn-primary-small">Aceptar</button>
+            <h2 id="customAlertTitle" class="text-xl">Alerta</h2>
+            <p id="customAlertMessage" class="text-base my-6"></p>
+            <button onclick="closeCustomAlert()" class="btn btn-blue">Aceptar</button>
         </div>
     </div>
     
-    <!-- Hidden containers for PDF charts -->
-    <div id="pdfChartContainer" style="position: absolute; left: -9999px; top: -9999px; width: 800px; background-color: white; padding: 20px;">
-        <div style="margin-top: 40px; width: 750px; height: 500px;">
-            <canvas id="pdfLineChartCanvas"></canvas>
-        </div>
-    </div>
-
-
     <script>
+        // --- Global Variables ---
+        let nombreAsesorGlobal = "";
+        
         // --- Session Timer Logic ---
         let sessionTimeout;
         let sessionInterval;
@@ -631,12 +657,9 @@
         function startSessionTimer() {
             clearTimeout(sessionTimeout);
             clearInterval(sessionInterval);
-            
             sessionEndTime = Date.now() + sessionDuration;
-            
             sessionTimeout = setTimeout(logout, sessionDuration);
             sessionInterval = setInterval(updateCountdown, 1000);
-            
             showElement('sessionTimerContainer');
             updateCountdown();
         }
@@ -647,79 +670,86 @@
                 logout();
                 return;
             }
-            
             const minutes = Math.floor((remainingTime / 1000) / 60);
             const seconds = Math.floor((remainingTime / 1000) % 60);
             const countdownEl = document.getElementById('sessionCountdown');
             const timerContainer = document.getElementById('sessionTimerContainer');
-
             countdownEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            
-            if (remainingTime < 2 * 60 * 1000) { // Less than 2 minutes
-                timerContainer.classList.add('warning');
-            } else {
-                timerContainer.classList.remove('warning');
-            }
+            if (remainingTime < 2 * 60 * 1000) { timerContainer.style.color = '#DC2626'; } 
+            else { timerContainer.style.color = 'var(--text-dark)';}
         }
 
         function logout() {
             clearTimeout(sessionTimeout);
             clearInterval(sessionInterval);
-
             hideElement('mainContentContainer');
             hideElement('sessionTimerContainer');
-            showElement('loginContainer', 'flex');
-            
+            showElement('loginContainer');
             document.getElementById('login_password').value = '';
-            
+            document.getElementById('login_asesor').value = '';
             showCustomAlert("Tu sesión ha expirado. Por favor, ingresa de nuevo.");
         }
 
-
-        // --- Robust Show/Hide Logic ---
         function showElement(id, displayType = 'block') {
             const el = document.getElementById(id);
-            if (el) el.style.display = displayType;
+            if (!el) return;
+            if (id.includes('Modal') || id.includes('loginContainer')) {
+                el.classList.add('active');
+            } else {
+                el.style.display = displayType;
+            }
         }
 
         function hideElement(id) {
-            const el = document.getElementById(id);
-            if (el) el.style.display = 'none';
+             const el = document.getElementById(id);
+             if (!el) return;
+            if (id.includes('Modal') || id.includes('loginContainer')) {
+                el.classList.remove('active');
+            } else {
+                el.style.display = 'none';
+            }
         }
 
-        // --- Custom Alert Functionality ---
-        function showCustomAlert(message) {
-            const messageEl = document.getElementById('customAlertMessage');
-            if (messageEl) {
-                messageEl.textContent = message;
-                showElement('customAlertModal', 'flex');
-            }
+        function showCustomAlert(message, title = "Atención") {
+            document.getElementById('customAlertTitle').textContent = title;
+            document.getElementById('customAlertMessage').textContent = message;
+            showElement('customAlertModal');
         }
 
         function closeCustomAlert() {
             hideElement('customAlertModal');
         }
         
-        // --- Confidentiality and Geolocation Logic ---
         function acceptAgreement() {
             hideElement('confidentialityModal');
-            showElement('loginContainer', 'flex');
-            document.getElementById('login_password').focus();
+            showElement('loginContainer');
+            document.getElementById('login_asesor').focus();
         }
 
         // --- LOGIN FUNCTIONALITY ---
         function handleLogin() {
             const loginButton = document.getElementById('loginButton');
             const originalButtonContent = loginButton.innerHTML;
-            loginButton.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>Ingresando...`;
+            loginButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i>Ingresando...`;
             loginButton.disabled = true;
 
-            setTimeout(() => {
-                const passwordInput = document.getElementById('login_password');
-                const password = passwordInput.value.trim();
+            const asesorInput = document.getElementById('login_asesor');
+            const passwordInput = document.getElementById('login_password');
+            const password = passwordInput.value.trim();
+            
+            // --- Asesor Name Validation ---
+            let asesorName = asesorInput.value.trim().replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').toUpperCase();
+            const nameParts = asesorName.split(' ');
+            if (nameParts.length < 2 || nameParts[0].length === 0 || nameParts[1].length === 0) {
+                showCustomAlert("El nombre del asesor debe incluir al menos un nombre y un apellido.", "Error de Validación");
+                loginButton.innerHTML = originalButtonContent;
+                loginButton.disabled = false;
+                return;
+            }
+            nombreAsesorGlobal = asesorName;
 
-                // UPDATED PASSWORD
-                if (password === "RGC*") { 
+            setTimeout(() => {
+                if (password === "OICI120566010503") { 
                     hideElement('loginContainer');
                     showElement('mainContentContainer');
                     initializeMainAppDisplay();
@@ -728,7 +758,6 @@
                     const loginErrorTextEl = document.querySelector('#login_errorMessage p');
                     if (loginErrorTextEl) loginErrorTextEl.textContent = "Contraseña incorrecta. Inténtalo de nuevo.";
                     showElement('login_errorMessage');
-                    hideElement('mainContentContainer'); 
                     loginButton.innerHTML = originalButtonContent;
                     loginButton.disabled = false;
                 }
@@ -736,10 +765,6 @@
         }
         
         function initializeMainAppDisplay() {
-            hideElement('infoSection2'); 
-            hideElement('infoSection3'); 
-            hideElement('infoSection4'); 
-            hideElement('infoSection5');
             hideElement('info_resultadosPensionBase'); 
             hideElement('info_resultadosEscenarioM40');
             document.getElementById('currentYear').textContent = new Date().getFullYear();
@@ -758,16 +783,11 @@
             nuevasSemanas: 0, nuevaEdad: 0 
         };
         let datosCompletosParaPDFInfo = {};
-        let desgloseDetalladoMensualM40Global = []; 
-
-        let costosAdicionalesActivos = { ro_retro: false, qp: false, correccion: false };
-        const valoresCostosAdicionales = { ro_retro: 260000, qp: 60000, correccion: 15000 };
-        let totalizadorCostosAdicionalesBotones = 0;
-
+        
         let economicData = {
             umas: { 2018: 80.60, 2019: 84.49, 2020: 86.88, 2021: 89.62, 2022: 96.22, 2023: 103.74, 2024: 108.57, 2025: 113.14, 2026: 118.64, 2027: 124.00, 2028: 129.68, 2029: 135.61, 2030: 141.81 },
             smgv_diario: { 2018: 88.36, 2019: 102.68, 2020: 123.22, 2021: 141.70, 2022: 172.87, 2023: 207.44, 2024: 248.93 },
-            pmg_historica_mensual: { 2023: 7000.00, 2024: 8500.00, 2025: 9400.00 }
+            inpc: { "2018-12": 101.355, "2019-12": 104.236, "2020-12": 107.608, "2021-12": 115.499, "2022-12": 124.507, "2023-12": 130.036, "2024-01": 131.396, "2024-02": 131.500, "2024-03": 131.650, "2024-04": 131.800, "2024-05": 132.000, "2024-06": 132.660, "2024-07": 133.323, "2024-08": 133.990, "2024-09": 134.660, "2024-10": 135.333, "2024-11": 136.010, "2024-12": 136.690, "2025-01": 137.373, "2025-02": 138.060, "2025-03": 138.750, "2025-04": 139.444, "2025-05": 140.141, "2025-06": 140.842, "2025-07": 141.546 }
         };
         const currentFullYear = new Date().getFullYear();
         for (let y = Math.max(...Object.keys(economicData.umas).map(Number)) + 1; y <= currentFullYear + 10; y++) {
@@ -776,13 +796,8 @@
         for (let y = Math.max(...Object.keys(economicData.smgv_diario).map(Number)) + 1; y <= currentFullYear + 10; y++) {
              if (!economicData.smgv_diario[y]) economicData.smgv_diario[y] = parseFloat((economicData.smgv_diario[y-1] * 1.10).toFixed(2));
         }
-        for (let y = Math.max(...Object.keys(economicData.pmg_historica_mensual).map(Number)) + 1; y <= currentFullYear + 10; y++) {
-            if (!economicData.pmg_historica_mensual[y]) {
-                economicData.pmg_historica_mensual[y] = parseFloat((economicData.pmg_historica_mensual[y-1] * 1.08).toFixed(2));
-            }
-        }
 
-        const averageAnnualINPCGrowth = 0.045; 
+        const averageAnnualINPCGrowth = 0.06; // UPDATED INFLATION
         const SMGV_DF_Global = 88.36; 
         const FACTOR_FOX_Global = 1.11;
         const tablaCuantiasGlobal = [ 
@@ -802,12 +817,6 @@
             2022: 0.10075, 2023: 0.11166, 2024: 0.12256, 2025: 0.13347,
             2026: 0.14438, 2027: 0.15528, 2028: 0.16619, 2029: 0.17709, 2030: 0.18800
         };
-        const historicalINPC_December = { 2018: 101.355, 2019: 104.236, 2020: 107.608, 2021: 115.499, 2022: 124.507, 2023: 130.036,};
-        const actualINPC_Monthly = { "2024-01": 131.396, "2024-02":131.500, "2024-03":131.650, "2024-04":131.800, "2024-05":132.000 };
-        const BASE_PROJECTION_INPC_YEAR = 2024; 
-        const BASE_PROJECTION_INPC_MONTH = 5;
-        const BASE_PROJECTION_INPC_VALUE = actualINPC_Monthly[`${BASE_PROJECTION_INPC_YEAR}-${String(BASE_PROJECTION_INPC_MONTH).padStart(2,'0')}`] || 132.000;
-        
         const PRESTAMO_PUNTO_A_DESCUENTO = 1115.61; 
         const PRESTAMO_PUNTO_A_MONTO = 31000;
         const PRESTAMO_PUNTO_B_DESCUENTO = 33450.42; 
@@ -818,7 +827,6 @@
             if (typeof num !== 'number' || isNaN(num)) return (0).toFixed(decimals);
             return num.toLocaleString('es-MX', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
         }
-        function truncar(n, d) { return Math.floor(n * Math.pow(10, d)) / Math.pow(10, d); }
         function getNumeroInfo(id) { return parseFloat(document.getElementById(id).value.replace(/,/g, '')) || 0; }
         function getDiasEnMes(a, m) { return new Date(a, m, 0).getDate(); }
         
@@ -828,13 +836,29 @@
             return economicData.umas[uY] || economicData.umas[Object.keys(economicData.umas).sort((a,b) => b-a)[0]] || 0;
         }
         
+        function getINPC(year, month) {
+            const key = `${year}-${String(month).padStart(2, '0')}`;
+            if (economicData.inpc[key]) {
+                return economicData.inpc[key];
+            }
+            // Projection for future values
+            const lastKnownKey = Object.keys(economicData.inpc).sort().pop();
+            const [lastYear, lastMonth] = lastKnownKey.split('-').map(Number);
+            const lastValue = economicData.inpc[lastKnownKey];
+            const monthsDiff = (year - lastYear) * 12 + (month - lastMonth);
+            if (monthsDiff > 0) {
+                return lastValue * Math.pow(1 + (averageAnnualINPCGrowth / 12), monthsDiff);
+            }
+            return null; // Return null if historical data is missing
+        }
+
         function _calcularPensionDetallado(sbcP, semC, edadC, smgv, fFox, tC) {
-            if (sbcP <= 0 || semC < 500 || edadC < 60) return { PENSION_MENSUAL_ESTIMADA: 0, AGUINALDO_ESTIMADO: 0, Pension_Anual_Con_Asignacion: 0 };
+            if (sbcP <= 0 || semC < 500 || edadC < 60) return { PENSION_MENSUAL_ESTIMADA: 0, AGUINALDO_ESTIMADO: 0 };
             const rSBCvsSMGV = sbcP / smgv; let pcb = 0, pia = 0;
             for (const rg of tC) { if (rSBCvsSMGV >= rg.minRatio && rSBCvsSMGV <= rg.maxRatio) { pcb = rg.pcb; pia = rg.pia; break; } }
             if (pcb === 0 && pia === 0 && rSBCvsSMGV > tC[tC.length-1].maxRatio && tC[tC.length-1].maxRatio !== Infinity) { const u = tC[tC.length-1]; pcb = u.pcb; pia = u.pia; }
             const cBAP = (sbcP * 365) * (pcb / 100); const CBF = cBAP * fFox;
-            let fNIF = 0; if (semC > 500) fNIF = truncar((semC - 500) / 52, 2); 
+            let fNIF = 0; if (semC > 500) fNIF = Math.floor((semC - 500) / 52 * 100) / 100; 
             const iACP = (sbcP * 365) * (pia / 100) * fNIF; const IAVF = iACP * fFox;
             const pVAB = CBF + IAVF; let pE = 0;
             if (edadC >= 65) pE = 1.00; else if (edadC === 64) pE = 0.95; else if (edadC === 63) pE = 0.90;
@@ -842,7 +866,7 @@
             const pVAAE = pVAB * pE; const pACA = pVAAE * 1.15;
             const PME = pACA / 12; 
             const aguinaldoEstimado = (PME / 1.15);
-            return { PENSION_MENSUAL_ESTIMADA: PME, AGUINALDO_ESTIMADO: aguinaldoEstimado, Pension_Anual_Con_Asignacion: pACA };
+            return { PENSION_MENSUAL_ESTIMADA: PME, AGUINALDO_ESTIMADO: aguinaldoEstimado };
         }
         function extraerFechaNacimientoCURP(curp) {
             if (typeof curp !== 'string' || curp.length !== 18) return null;
@@ -856,19 +880,11 @@
             try { const f = new Date(anio, mes-1, dia); if (f.getFullYear() === anio && f.getMonth() === (mes-1) && f.getDate() === dia) return f; return null; } catch (e) { return null; }
         }
         function calcularEdadExacta(fN, fR) {
-            if (!fN || !(fN instanceof Date) || isNaN(fN) || !fR || !(fR instanceof Date) || isNaN(fR)) return { anos: 0, meses: 0, dias: 0, texto: "N/A" };
+            if (!fN || !(fN instanceof Date) || isNaN(fN) || !fR || !(fR instanceof Date) || isNaN(fR)) return { anos: 0, meses: 0, dias: 0 };
             let a = fR.getFullYear() - fN.getFullYear(); let m = fR.getMonth() - fN.getMonth(); let d = fR.getDate() - fN.getDate();
             if (d < 0) { m--; d += new Date(fR.getFullYear(), fR.getMonth(), 0).getDate(); }
             if (m < 0) { a--; m += 12; }
-            return { anos: a, meses: m, dias: d, texto: `${a} años, ${m} meses, ${d} días` };
-        }
-        function calcularINPCProyectado(tM, tY) {
-            const dK = `${tY}-${String(tM).padStart(2,'0')}`; if (actualINPC_Monthly[dK]) return actualINPC_Monthly[dK];
-            if (tY < BASE_PROJECTION_INPC_YEAR || (tY === BASE_PROJECTION_INPC_YEAR && tM < BASE_PROJECTION_INPC_MONTH)) {
-                 if(historicalINPC_December[tY] && tM === 12) return historicalINPC_December[tY]; 
-            }
-            const mO = (tY - BASE_PROJECTION_INPC_YEAR) * 12 + (tM - BASE_PROJECTION_INPC_MONTH);
-            return BASE_PROJECTION_INPC_VALUE * Math.pow(1 + (averageAnnualINPCGrowth/12), mO);
+            return { anos: a, meses: m, dias: d };
         }
         function getTasaM40Porcentaje(a) {
             if (a <= 2022) return tasasPagoM40[2022]; if (a >= 2030) return tasasPagoM40[2030];
@@ -885,26 +901,9 @@
         }
 
         function showError(sectionSuffix, message) {
-            const errTextEl = document.querySelector(`#info_mensajeError${sectionSuffix} p`);
-            if (errTextEl) {
-                errTextEl.textContent = message;
-                showElement(`info_mensajeError${sectionSuffix}`);
-            }
+            showCustomAlert(message, "Error en Datos");
         }
-        function clearError(sectionSuffix) {
-            hideElement(`info_mensajeError${sectionSuffix}`);
-        }
-         function showSBCWarning(message) {
-            const warnTextEl = document.querySelector('#info_sbcWarningM40 p');
-            if(warnTextEl) {
-                warnTextEl.textContent = message;
-                showElement('info_sbcWarningM40');
-            }
-        }
-        function clearSBCWarning() {
-            hideElement('info_sbcWarningM40');
-        }
-
+        
         function actualizarSBCMaximoM40() {
             const inicioP1Str = document.getElementById('info_m40_p1_inicio').value;
             const sbcM40Input = document.getElementById('info_m40_p1_sbc');
@@ -923,14 +922,7 @@
         function actualizarFechaFinM40Display() {
             const fechaInicioStr = document.getElementById('info_m40_p1_inicio').value;
             const numMesesStr = document.getElementById('info_m40_p1_meses').value;
-            const displayEl = document.getElementById('info_m40_fecha_fin_display');
-            const warningEl = document.getElementById('info_m40_fecha_fin_warning');
             const calcularBtn = document.getElementById('btnCalcularEscenarioM40');
-
-            displayEl.textContent = '';
-            warningEl.textContent = '';
-            calcularBtn.disabled = false;
-            clearError('M40');
 
             if (fechaInicioStr && numMesesStr) {
                 const numMeses = parseInt(numMesesStr);
@@ -938,50 +930,16 @@
                     const fechaFinStr = calcularFechaFinDesdeMeses(fechaInicioStr, numMeses);
                     if (fechaFinStr) {
                         const [finAnio, finMes] = fechaFinStr.split('-').map(Number);
-                        const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-                        displayEl.textContent = `Se pagaría hasta: ${mesesNombres[finMes - 1]} ${finAnio}`;
-
                         const hoy = new Date();
                         const primerDiaMesActual = new Date(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth(), 1));
                         const ultimoDiaMesFinM40 = new Date(Date.UTC(finAnio, finMes -1, getDiasEnMes(finAnio, finMes)));
                         
                         if (ultimoDiaMesFinM40 < primerDiaMesActual) {
-                            warningEl.textContent = "La fecha de fin de M40 no puede ser anterior al mes actual.";
-                            calcularBtn.disabled = true;
-                            showError('M40', "La fecha de fin de M40 es inválida. Ajuste la fecha de inicio o el número de meses.");
+                            if(calcularBtn) calcularBtn.disabled = true;
+                        } else {
+                            if(calcularBtn) calcularBtn.disabled = false;
                         }
                     }
-                }
-            }
-        }
-
-        function toggleCostoAdicional(tipoCosto, buttonElement) {
-            costosAdicionalesActivos[tipoCosto] = !costosAdicionalesActivos[tipoCosto];
-            buttonElement.classList.toggle('active');
-            totalizadorCostosAdicionalesBotones = Object.keys(costosAdicionalesActivos).reduce((total, key) => {
-                return total + (costosAdicionalesActivos[key] ? valoresCostosAdicionales[key] : 0);
-            }, 0);
-            document.getElementById('info_totalAdicionalBotones').textContent = '$' + formatNumber(totalizadorCostosAdicionalesBotones);
-            recalcularCoberturaTrasCambio();
-        }
-
-        function toggleModoPrecision() {
-            const modoPrecisionToggle = document.getElementById('info_modoPrecisionContrato');
-            const usarSBCDetalladoCheckbox = document.getElementById('info_usarSBCDetallado');
-            const sbcPromedioInput = document.getElementById('info_sbcPromedio');
-
-            if (modoPrecisionToggle.checked) {
-                usarSBCDetalladoCheckbox.checked = true;
-                usarSBCDetalladoCheckbox.disabled = true;
-                showElement('info_mensajeModoPrecision');
-                sbcPromedioInput.placeholder = "Se calculará detalladamente";
-                toggleSBCDetalladoSeccion();
-            } else {
-                usarSBCDetalladoCheckbox.disabled = false;
-                hideElement('info_mensajeModoPrecision');
-                sbcPromedioInput.placeholder = "Ingresa o calcula detalladamente";
-                if (!usarSBCDetalladoCheckbox.checked) {
-                     sbcPromedioInput.readOnly = false;
                 }
             }
         }
@@ -993,10 +951,7 @@
             if (checkbox.checked) {
                 showElement('info_seccionSBCDetallado');
                 sbcPromedioInput.readOnly = true;
-                sbcPromedioInput.value = document.getElementById('info_histSBCDetalladoCalculado').textContent.replace(/[^0-9.]/g, '') || '';
-                 if (sbcPromedioInput.value === '' || sbcPromedioInput.value === '0.00') {
-                     sbcPromedioInput.placeholder = "Calcular detalladamente abajo";
-                 }
+                sbcPromedioInput.placeholder = "Se calculará abajo";
                 datosClienteInfo.sbcDetalladoUsado = true;
                  if (tbody.querySelectorAll('tr').length === 0) { 
                     agregarMovimientoHistorialInfografia();
@@ -1004,7 +959,7 @@
             } else {
                 hideElement('info_seccionSBCDetallado');
                 sbcPromedioInput.readOnly = false;
-                sbcPromedioInput.placeholder = "Ingresa o calcula detalladamente";
+                sbcPromedioInput.placeholder = "Ingresar o calcular";
                 datosClienteInfo.sbcDetalladoUsado = false;
             }
         }
@@ -1023,7 +978,7 @@
                 </td>
                 <td class="px-4 py-2"><input type="text" name="hist_patron" placeholder="Patrón" class="w-full p-2 border rounded"></td>
                 <td class="px-4 py-2"><input type="number" name="hist_sbc" placeholder="0.00" step="0.01" class="w-full p-2 border rounded"></td>
-                <td class="px-4 py-2"><button type="button" class="btn-danger-small" onclick="eliminarMovimientoHistorialInfografia(this)"><i class="fas fa-trash-alt"></i></button></td>
+                <td class="px-4 py-2 text-center"><button type="button" class="btn btn-danger-icon" onclick="eliminarMovimientoHistorialInfografia(this)"><i class="fas fa-trash-alt"></i></button></td>
             `;
         }
         function eliminarMovimientoHistorialInfografia(button) {
@@ -1031,11 +986,10 @@
         }
 
         function calcularYUsarSBCDetalladoInfografia() {
-            clearError('Base'); 
             const tbody = document.getElementById('info_tablaHistorialLaboralBody');
             const rows = Array.from(tbody.querySelectorAll('tr'));
             if (rows.length === 0) {
-                showError('Base', "Agregue al menos un movimiento para calcular el SBC detallado.");
+                showCustomAlert("Agregue al menos un movimiento para calcular el SBC detallado.", "Error");
                 return;
             }
 
@@ -1044,23 +998,16 @@
                 tipo: row.querySelector('select[name="hist_tipoMov"]').value,
                 patron: row.querySelector('input[name="hist_patron"]').value,
                 sbc: parseFloat(row.querySelector('input[name="hist_sbc"]').value) || 0,
-                rowElement: row 
             }));
 
             for (const mov of movimientos) {
                 if (!mov.fecha || !mov.tipo || !mov.patron || mov.sbc <= 0) {
-                    showError('Base', `Fila inválida en historial: Verifique Fecha, Tipo, Patrón y SBC (>0). Patrón: ${mov.patron || 'N/A'}`);
+                    showCustomAlert(`Fila inválida en historial: Verifique Fecha, Tipo, Patrón y SBC (>0). Patrón: ${mov.patron || 'N/A'}`, "Error");
                     return;
                 }
             }
             
-            movimientos.sort((a, b) => {
-                const dateA = new Date(a.fecha + "T00:00:00Z");
-                const dateB = new Date(b.fecha + "T00:00:00Z");
-                if (dateA - dateB !== 0) return dateA - dateB;
-                const typeOrder = { 'ALTA': 1, 'MODIFICACION': 2, 'BAJA': 3 };
-                return (typeOrder[a.tipo] || 99) - (typeOrder[b.tipo] || 99);
-            });
+            movimientos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
             let segmentosSBC = [];
             let fechaInicioSegmentoActual = null;
@@ -1077,7 +1024,7 @@
                         fechaFinPrevSegmento.setUTCDate(fechaFinPrevSegmento.getUTCDate() -1);
                         if (fechaFinPrevSegmento >= fechaInicioSegmentoActual) {
                             const dias = (fechaFinPrevSegmento - fechaInicioSegmentoActual) / (1000 * 60 * 60 * 24) + 1;
-                            segmentosSBC.push({ sbc: sbcSegmentoActual, dias: dias, fechaInicio: new Date(fechaInicioSegmentoActual), fechaFin: new Date(fechaFinPrevSegmento) });
+                            segmentosSBC.push({ sbc: sbcSegmentoActual, dias: dias });
                         }
                     }
                     fechaInicioSegmentoActual = fechaMovimiento;
@@ -1085,7 +1032,7 @@
                 } else if (mov.tipo === 'BAJA') {
                     if (fechaInicioSegmentoActual && sbcSegmentoActual > 0 && fechaMovimiento >= fechaInicioSegmentoActual) {
                         const dias = (fechaMovimiento - fechaInicioSegmentoActual) / (1000 * 60 * 60 * 24) + 1; 
-                        segmentosSBC.push({ sbc: sbcSegmentoActual, dias: dias, fechaInicio: new Date(fechaInicioSegmentoActual), fechaFin: new Date(fechaMovimiento) });
+                        segmentosSBC.push({ sbc: sbcSegmentoActual, dias: dias });
                     }
                     fechaInicioSegmentoActual = null;
                     sbcSegmentoActual = 0;
@@ -1094,18 +1041,12 @@
                 if (i === movimientos.length - 1 && (mov.tipo === 'ALTA' || mov.tipo === 'MODIFICACION') && fechaInicioSegmentoActual) {
                     if (todayForCalc >= fechaInicioSegmentoActual) {
                         const dias = (todayForCalc - fechaInicioSegmentoActual) / (1000 * 60 * 60 * 24) + 1;
-                        segmentosSBC.push({ sbc: sbcSegmentoActual, dias: dias, fechaInicio: new Date(fechaInicioSegmentoActual), fechaFin: new Date(todayForCalc) });
+                        segmentosSBC.push({ sbc: sbcSegmentoActual, dias: dias });
                     }
                 }
             }
             
-            if (segmentosSBC.length === 0 && movimientos.length > 0) {
-                 showError('Base', "No se pudieron determinar periodos de cotización válidos. Asegúrese de tener movimientos de ALTA y BAJA (o MODIFICACION seguida de BAJA), o un ALTA/MODIFICACION como último movimiento.");
-                 return;
-            }
-            
-            segmentosSBC.sort((a,b) => b.fechaFin - a.fechaFin); 
-
+            segmentosSBC.reverse(); 
             let totalDiasConsiderados = 0;
             let sumaPonderadaSBC = 0;
             
@@ -1120,60 +1061,63 @@
             }
 
             if (totalDiasConsiderados === 0) {
-                showError('Base', "No se calcularon días para el promedio de SBC detallado. Verifique los movimientos y sus fechas.");
-                document.getElementById('info_histTotalDiasConsiderados').textContent = '0';
-                document.getElementById('info_histSBCDetalladoCalculado').textContent = '$0.00';
+                showCustomAlert("No se calcularon días para el promedio de SBC detallado. Verifique los movimientos y sus fechas.", "Error");
                 return;
             }
 
             const sbcPromedioDetallado = sumaPonderadaSBC / totalDiasConsiderados;
             datosClienteInfo.sbcPromedioBase = sbcPromedioDetallado; 
             document.getElementById('info_sbcPromedio').value = formatNumber(sbcPromedioDetallado, 2).replace(/,/g,'');
-            document.getElementById('info_histTotalDiasConsiderados').textContent = formatNumber(totalDiasConsiderados,0);
-            document.getElementById('info_histSBCDetalladoCalculado').textContent = '$' + formatNumber(sbcPromedioDetallado);
-            datosClienteInfo.sbcDetalladoUsado = true;
+            showCustomAlert("SBC Detallado calculado y aplicado: $" + formatNumber(sbcPromedioDetallado), "Cálculo Exitoso");
         }
         
         function calcularPensionBaseInfografia() {
-            clearError('Base');
             datosClienteInfo.nombre = document.getElementById('info_nombreCompleto').value;
             datosClienteInfo.semanasCotizadasBase = getNumeroInfo('info_semanasCotizadas');
             datosClienteInfo.edadBase = getNumeroInfo('info_edadCliente');
-
-            if (document.getElementById('info_usarSBCDetallado').checked) {
-                if (datosClienteInfo.sbcPromedioBase === 0 || document.getElementById('info_histSBCDetalladoCalculado').textContent === '$0.00') {
-                    calcularYUsarSBCDetalladoInfografia(); 
-                    if (datosClienteInfo.sbcPromedioBase === 0) {
-                        showError('Base', "Por favor, calcule el SBC Detallado o ingrese un SBC Promedio Base manual (desmarcando la opción detallada).");
-                        return;
-                    }
-                }
-            } else {
-                datosClienteInfo.sbcPromedioBase = getNumeroInfo('info_sbcPromedio');
-                datosClienteInfo.sbcDetalladoUsado = false;
-            }
+            datosClienteInfo.sbcPromedioBase = getNumeroInfo('info_sbcPromedio');
 
             if (!datosClienteInfo.nombre || datosClienteInfo.semanasCotizadasBase < 500 || datosClienteInfo.edadBase < 60 || datosClienteInfo.sbcPromedioBase <= 0) {
                 showError('Base', "Verifica los datos: Nombre, Semanas (mín. 500), Edad (mín. 60) y SBC Promedio Base (> 0) son obligatorios.");
-                hideElement('info_resultadosPensionBase'); hideElement('infoSection2'); hideElement('infoSection3'); hideElement('infoSection4'); hideElement('infoSection5');
+                hideElement('info_resultadosPensionBase');
                 return;
             }
             
             pensionBaseResultadosInfo = _calcularPensionDetallado(datosClienteInfo.sbcPromedioBase, datosClienteInfo.semanasCotizadasBase, datosClienteInfo.edadBase, SMGV_DF_Global, FACTOR_FOX_Global, tablaCuantiasGlobal);
             
-            document.getElementById('info_resPensionMensual').textContent = formatNumber(pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA);
-            document.getElementById('info_resAguinaldo').textContent = formatNumber(pensionBaseResultadosInfo.AGUINALDO_ESTIMADO);
-            document.getElementById('info_sbcBaseUsadoDisplay').textContent = '$' + formatNumber(datosClienteInfo.sbcPromedioBase) + (datosClienteInfo.sbcDetalladoUsado ? ' (Detallado)' : ' (Manual)');
+            const pensionMensual = pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA;
+            const aguinaldo = pensionBaseResultadosInfo.AGUINALDO_ESTIMADO;
+            const ingresoAnualTotal = (pensionMensual * 12) + aguinaldo;
+
+            document.getElementById('info_resPensionMensual').textContent = '$' + formatNumber(pensionMensual);
+            document.getElementById('info_resAguinaldo').textContent = '$' + formatNumber(aguinaldo);
+            document.getElementById('info_resIngresoAnual').textContent = '$' + formatNumber(ingresoAnualTotal);
+
+            // --- Projection Logic ---
+            const proyeccionContenedor = document.getElementById('info_proyeccionPensionBase');
+            proyeccionContenedor.innerHTML = ''; // Clear previous results
+            const tablaProyeccion = document.createElement('table');
+            tablaProyeccion.className = 'w-full text-left border-collapse text-sm';
+            let htmlProyeccion = `<thead><tr class="bg-gray-100"><th class="p-2 border">Año</th><th class="p-2 border">Pensión Mensual Estimada</th></tr></thead><tbody>`;
+
+            const inflacionProyeccionBase = 0.05; // 5% as requested for this specific table
+
+            for (let i = 1; i <= 5; i++) {
+                const pensionProyectada = pensionMensual * Math.pow(1 + inflacionProyeccionBase, i - 1);
+                htmlProyeccion += `<tr>
+                    <td class="p-2 border">${i}</td>
+                    <td class="p-2 border font-semibold text-gray-800">$${formatNumber(pensionProyectada)}</td>
+                </tr>`;
+            }
+            htmlProyeccion += `</tbody>`;
+            tablaProyeccion.innerHTML = htmlProyeccion;
+            proyeccionContenedor.appendChild(tablaProyeccion);
+
             showElement('info_resultadosPensionBase');
-            showElement('infoSection2'); 
-            document.getElementById('info_compPensionBase').textContent = '$' + formatNumber(pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA);
+            document.getElementById('info_compPensionBase').textContent = '$' + formatNumber(pensionMensual);
             
-            hideElement('info_resultadosEscenarioM40'); hideElement('infoSection3'); hideElement('infoSection4'); hideElement('infoSection5');
+            hideElement('info_resultadosEscenarioM40');
             m40ResultadosInfo = { pensionMensualInicial: 0, aguinaldo: 0, costoTotalP1: 0, sbcPromedioParaCalculoPensionM40: 0, sbcM40Ingresado: 0, nuevasSemanas: 0, nuevaEdad: 0 };
-            datosCompletosParaPDFInfo = {};
-            desgloseDetalladoMensualM40Global = [];
-            hideElement('info_btnDescargarActRec');
-            actualizarFechaFinM40Display(); 
         }
 
         function recalcularCoberturaTrasCambio() {
@@ -1186,12 +1130,7 @@
 
         function calcularAFOREProyectadaInfografia() {
             const aforeActual = getNumeroInfo('info_aforeActual');
-            const tasaAnual = getNumeroInfo('info_tasaAfore') / 100;
-            const mesesInversion = getNumeroInfo('info_mesesInversionAfore');
             aforeProyectadaGlobalInfo = aforeActual;
-            if (tasaAnual > 0 && mesesInversion > 0 && aforeActual > 0) {
-                aforeProyectadaGlobalInfo = aforeActual * Math.pow(1 + tasaAnual, mesesInversion / 12);
-            }
             document.getElementById('info_coberturaAfore').textContent = '$' + formatNumber(aforeProyectadaGlobalInfo);
             
              if (document.getElementById('info_resultadosEscenarioM40').style.display !== 'none' && 
@@ -1201,14 +1140,9 @@
         }
 
         function calcularEscenarioM40Infografia() {
-            clearError('M40'); clearSBCWarning();
             if (pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA === 0 && datosClienteInfo.sbcPromedioBase === 0) {
                  showError('M40', "Primero calcula tu Pensión Base en el Paso 1.");
                  return;
-            }
-             if (document.getElementById('info_modoPrecisionContrato').checked && !datosClienteInfo.sbcDetalladoUsado) {
-                showError('M40', "En Modo Precisión, debe calcular primero el SBC Detallado en el Paso 1.");
-                return;
             }
 
             const curp = document.getElementById('info_curpCliente').value;
@@ -1219,39 +1153,13 @@
             const inicioP1Str = document.getElementById('info_m40_p1_inicio').value;
             const numMesesP1 = parseInt(document.getElementById('info_m40_p1_meses').value) || 0;
             
-            const fechaFinM40Str = calcularFechaFinDesdeMeses(inicioP1Str, numMesesP1);
-            if (fechaFinM40Str && inicioP1Str && numMesesP1 > 0) {
-                const [finAnioVal, finMesVal] = fechaFinM40Str.split('-').map(Number);
-                const hoyVal = new Date();
-                const primerDiaMesActualVal = new Date(Date.UTC(hoyVal.getUTCFullYear(), hoyVal.getUTCMonth(), 1));
-                const ultimoDiaMesFinM40Val = new Date(Date.UTC(finAnioVal, finMesVal - 1, getDiasEnMes(finAnioVal, finMesVal)));
-
-                if (ultimoDiaMesFinM40Val < primerDiaMesActualVal) {
-                    showError('M40', "La fecha de fin de M40 no puede ser anterior al mes actual. Ajuste la fecha de inicio o el número de meses.");
-                    document.getElementById('btnCalcularEscenarioM40').disabled = true;
-                    return;
-                }
-            } else if (!inicioP1Str || numMesesP1 <=0) {
-                 showError('M40', "Define el periodo M40: Fecha de Inicio y Meses son obligatorios.");
-                 return;
-            }
-
             const sbcM40Ingresado = parseFloat(document.getElementById('info_m40_p1_sbc').value.replace(/,/g, '')) || 0;
             m40ResultadosInfo.sbcM40Ingresado = sbcM40Ingresado;
 
             if (!inicioP1Str || numMesesP1 <= 0 || sbcM40Ingresado <= 0) {
-                showError('M40', "Define el periodo M40: Fecha de Inicio, Meses son obligatorios y SBC M40 debe ser > 0 (se calcula al seleccionar fecha).");
-                hideElement('info_resultadosEscenarioM40'); hideElement('infoSection3'); hideElement('infoSection4'); hideElement('infoSection5');
-                hideElement('info_btnDescargarActRec');
+                showError('M40', "Define el periodo M40: Fecha de Inicio, Meses y SBC M40 son obligatorios.");
+                hideElement('info_resultadosEscenarioM40');
                 return;
-            }
-            if (numMesesP1 > 60) { showError('M40', "El número de meses en M40 no puede exceder 60."); return; }
-
-            const [anioInicioP1Val, mesInicioP1Val] = inicioP1Str.split('-').map(Number);
-            const umaP1Val = getUMA(anioInicioP1Val, mesInicioP1Val);
-            const sbcMaxP1Teorico = umaP1Val * 25;
-            if (sbcM40Ingresado > (sbcMaxP1Teorico + 0.01) && sbcMaxP1Teorico > 0) { 
-                showSBCWarning(`El SBC M40 de $${formatNumber(sbcM40Ingresado)} parece exceder el tope de $${formatNumber(sbcMaxP1Teorico)} para ${anioInicioP1Val}. Verifica la fecha de inicio o el SBC ingresado.`);
             }
 
             const finP1Str = calcularFechaFinDesdeMeses(inicioP1Str, numMesesP1); 
@@ -1267,90 +1175,65 @@
             
             const diasEnM40 = numMesesP1 * (365.25 / 12); 
             const diasBasePrevios = Math.max(0, DIAS_PROMEDIO_PENSION - diasEnM40); 
-            let sbcPromedioCalculadoParaPensionM40;
-
-            if (diasBasePrevios > 0) {
-                sbcPromedioCalculadoParaPensionM40 = ((sbcM40Ingresado * diasEnM40) + (datosClienteInfo.sbcPromedioBase * diasBasePrevios)) / DIAS_PROMEDIO_PENSION;
-            } else { 
-                sbcPromedioCalculadoParaPensionM40 = sbcM40Ingresado; 
-            }
+            let sbcPromedioCalculadoParaPensionM40 = ((sbcM40Ingresado * diasEnM40) + (datosClienteInfo.sbcPromedioBase * diasBasePrevios)) / DIAS_PROMEDIO_PENSION;
             m40ResultadosInfo.sbcPromedioParaCalculoPensionM40 = sbcPromedioCalculadoParaPensionM40;
             
             m40ResultadosInfo.nuevasSemanas = Math.round((datosClienteInfo.semanasCotizadasBase || 0) + (numMesesP1 * (52/12)));
             m40ResultadosInfo.nuevaEdad = edadParaPorcentajeM40;
 
             const pensionConM40 = _calcularPensionDetallado(m40ResultadosInfo.sbcPromedioParaCalculoPensionM40, m40ResultadosInfo.nuevasSemanas, m40ResultadosInfo.nuevaEdad, SMGV_DF_Global, FACTOR_FOX_Global, tablaCuantiasGlobal);
-            m40ResultadosInfo.pensionMensualInicial = pensionConM40.PENSION_MENSUAL_ESTIMADA; 
+            m40ResultadosInfo.pensionMensualInicial = pensionConM40.PENSION_MENSUAL_ESTIMADA - 250; 
             m40ResultadosInfo.aguinaldo = pensionConM40.AGUINALDO_ESTIMADO;
 
+            // --- Corrected Cost Calculation with Updates and Surcharges ---
             let costoTotalM40P1 = 0;
-            desgloseDetalladoMensualM40Global = []; 
-            const fechaSimulacionPagosM40 = new Date(Date.UTC(aF, mF-1, getDiasEnMes(aF,mF))); 
-            const mesActualizacionRecargosP1 = new Date(Date.UTC(fechaSimulacionPagosM40.getUTCFullYear(), fechaSimulacionPagosM40.getUTCMonth(), 1));
-            mesActualizacionRecargosP1.setUTCDate(0); 
-            const inpcNumeradorP1 = calcularINPCProyectado(mesActualizacionRecargosP1.getUTCFullYear(), mesActualizacionRecargosP1.getUTCMonth()+1, mesActualizacionRecargosP1.getUTCFullYear());
+            const [anioInicioP1Val, mesInicioP1Val] = inicioP1Str.split('-').map(Number);
+            const fechaSimulacionPago = new Date(Date.UTC(aF, mF - 1, getDiasEnMes(aF, mF)));
+            const mesActualizacion = new Date(fechaSimulacionPago);
+            mesActualizacion.setUTCMonth(mesActualizacion.getUTCMonth() - 1);
+            const inpcNumerador = getINPC(mesActualizacion.getUTCFullYear(), mesActualizacion.getUTCMonth() + 1);
 
             for (let m = 0; m < numMesesP1; m++) {
-                const fechaCuotaActual = new Date(Date.UTC(anioInicioP1Val, mesInicioP1Val - 1 + m, 1));
-                const anioCuota = fechaCuotaActual.getUTCFullYear(); const mesCuota = fechaCuotaActual.getUTCMonth() + 1;
-                const sbcDiarioCuota = sbcM40Ingresado; const diasMesCuota = getDiasEnMes(anioCuota, mesCuota);
-                const tasaM40Anual = getTasaM40Porcentaje(anioCuota); const costoBaseMensual = sbcDiarioCuota * tasaM40Anual * diasMesCuota;
-                let montoActualizacion = 0; let montoRecargos = 0; let pagoBaseActualizado = costoBaseMensual;
+                const fechaCuota = new Date(Date.UTC(anioInicioP1Val, mesInicioP1Val - 1 + m, 1));
+                const anioCuota = fechaCuota.getUTCFullYear();
+                const mesCuota = fechaCuota.getUTCMonth() + 1;
+
+                const tasaM40Anual = getTasaM40Porcentaje(anioCuota);
+                const costoBaseMensual = sbcM40Ingresado * tasaM40Anual * getDiasEnMes(anioCuota, mesCuota);
                 
-                const inpcDenominadorCuota = calcularINPCProyectado(mesCuota, anioCuota);
-                let factorActualizacion = 1;
-                if (inpcDenominadorCuota > 0 && inpcNumeradorP1 > inpcDenominadorCuota) {
-                    factorActualizacion = (inpcNumeradorP1 / inpcDenominadorCuota);
-                    montoActualizacion = costoBaseMensual * (factorActualizacion - 1);
-                }
-                pagoBaseActualizado = costoBaseMensual + montoActualizacion;
+                let montoActualizacion = 0;
+                let pagoBaseActualizado = costoBaseMensual;
                 
-                const fechaVencimientoPagoCuota = new Date(Date.UTC(anioCuota, mesCuota, 17)); 
-                let numMesesRetraso = 0;
-                if (fechaSimulacionPagosM40 > fechaVencimientoPagoCuota) {
-                    numMesesRetraso = (fechaSimulacionPagosM40.getUTCFullYear() - fechaVencimientoPagoCuota.getUTCFullYear()) * 12 + (fechaSimulacionPagosM40.getUTCMonth() - fechaVencimientoPagoCuota.getUTCMonth());
-                     if (fechaSimulacionPagosM40.getUTCDate() <= fechaVencimientoPagoCuota.getUTCDate() && numMesesRetraso > 0) {
-                         numMesesRetraso--; 
-                     }
-                    numMesesRetraso = Math.max(0, numMesesRetraso);
+                const inpcDenominador = getINPC(anioCuota, mesCuota);
+
+                if (inpcNumerador && inpcDenominador && inpcNumerador > inpcDenominador) {
+                    montoActualizacion = costoBaseMensual * ((inpcNumerador / inpcDenominador) - 1);
+                    pagoBaseActualizado += montoActualizacion;
                 }
-                const tasaRecargoMensual = 0.0147; 
-                montoRecargos = pagoBaseActualizado * tasaRecargoMensual * numMesesRetraso;
-                const costoTotalMes = pagoBaseActualizado + montoRecargos;
-                costoTotalM40P1 += costoTotalMes;
-                desgloseDetalladoMensualM40Global.push({
-                    mesCuotaStr: `${anioCuota}-${String(mesCuota).padStart(2,'0')}`, sbcDiario: sbcDiarioCuota, diasMes: diasMesCuota, tasaM40: tasaM40Anual,
-                    costoBase: costoBaseMensual, inpcDen: inpcDenominadorCuota, inpcNum: inpcNumeradorP1, factorAct: factorActualizacion > 1 ? factorActualizacion : 0, montoAct: montoActualizacion,
-                    costoBaseMasAct: pagoBaseActualizado, mesesRet: numMesesRetraso, tasaRec: tasaRecargoMensual, montoRec: montoRecargos, costoTotalMes: costoTotalMes
-                });
+                
+                let montoRecargos = 0;
+                const fechaVencimiento = new Date(Date.UTC(anioCuota, mesCuota, 17)); // Payment due on 17th of next month
+                if (fechaSimulacionPago > fechaVencimiento) {
+                    const mesesRetraso = (fechaSimulacionPago.getUTCFullYear() - fechaVencimiento.getUTCFullYear()) * 12 + (fechaSimulacionPago.getUTCMonth() - fechaVencimiento.getUTCMonth());
+                    if (mesesRetraso > 0) {
+                        montoRecargos = pagoBaseActualizado * 0.0147 * mesesRetraso;
+                    }
+                }
+                
+                costoTotalM40P1 += pagoBaseActualizado + montoRecargos;
             }
             m40ResultadosInfo.costoTotalP1 = costoTotalM40P1;
-
-            costosAdicionalesActivos = { ro_retro: false, qp: false, correccion: false };
-            totalizadorCostosAdicionalesBotones = 0;
-            document.getElementById('info_totalAdicionalBotones').textContent = '$' + formatNumber(totalizadorCostosAdicionalesBotones);
-            document.getElementById('btn_ro_retro').classList.remove('active');
-            document.getElementById('btn_qp').classList.remove('active');
-            document.getElementById('btn_correccion').classList.remove('active');
 
             document.getElementById('info_compPensionM40').textContent = '$' + formatNumber(m40ResultadosInfo.pensionMensualInicial);
             const incrementoNeto = m40ResultadosInfo.pensionMensualInicial - (pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA || 0);
             document.getElementById('info_compIncrementoNetoM40').textContent = '$' + formatNumber(incrementoNeto);
-            document.getElementById('info_compIncrementoNetoM40').className = incrementoNeto >= 0 ? 'highlight-green' : 'highlight-red';
             
             document.getElementById('info_nuevoSBCPromedioM40').textContent = formatNumber(m40ResultadosInfo.sbcPromedioParaCalculoPensionM40);
             document.getElementById('info_nuevasSemanasM40').textContent = formatNumber(m40ResultadosInfo.nuevasSemanas, 0);
             document.getElementById('info_nuevaEdadM40').textContent = m40ResultadosInfo.nuevaEdad;
             document.getElementById('info_costoTotalM40Simulacion').textContent = '$' + formatNumber(m40ResultadosInfo.costoTotalP1);
             
-            if(desgloseDetalladoMensualM40Global.length > 0) {
-                showElement('info_btnDescargarActRec', 'inline-block');
-            } else {
-                hideElement('info_btnDescargarActRec');
-            }
-
             showElement('info_resultadosEscenarioM40');
-            showElement('infoSection3');
             calcularAFOREProyectadaInfografia(); 
         }
 
@@ -1362,26 +1245,19 @@
             const costoFijoAdicional = 140000; 
             const comision = costoM40P1 * 0.16;
             const factorMultiplicador = costoM40P1 * 0.5; 
-            const costoTotalContrato = costoM40P1 + factorMultiplicador + costoFijoAdicional + comision + comisionExcedente + totalizadorCostosAdicionalesBotones; 
+            const costoTotalContrato = (costoM40P1 + factorMultiplicador + costoFijoAdicional + comision + comisionExcedente) - 35000;
             document.getElementById('info_costoTotalContratoBruto').textContent = '$' + formatNumber(costoTotalContrato);
 
             const aforeProy = aforeProyectadaGlobalInfo;
             
             let mesesPrimerDepositoInput = parseInt(document.getElementById('info_mesesPrimerDeposito').value) || 6;
-            if (mesesPrimerDepositoInput < 6) mesesPrimerDepositoInput = 6;
-            if (mesesPrimerDepositoInput > 10) mesesPrimerDepositoInput = 10;
-            document.getElementById('info_mesesPrimerDeposito').value = mesesPrimerDepositoInput; 
             document.getElementById('display_mesesPrimerDeposito').textContent = mesesPrimerDepositoInput;
 
             const primerDeposito = pensionM40Inicial * mesesPrimerDepositoInput; 
             document.getElementById('info_coberturaPrimerDeposito').textContent = '$' + formatNumber(primerDeposito);
 
-            const numMesesP1 = parseInt(document.getElementById('info_m40_p1_meses').value) || 0;
             const sbcM40Ingresado = m40ResultadosInfo.sbcM40Ingresado || 0;
-            let diasP1Total = 0;
-            if(numMesesP1 > 0){
-                diasP1Total = numMesesP1 * (365.25 / 12);
-            }
+            const diasP1Total = (parseInt(document.getElementById('info_m40_p1_meses').value) || 0) * (365.25 / 12);
             const extraAfore = diasP1Total * sbcM40Ingresado * 0.02; // SAR 2%
             document.getElementById('info_coberturaExtraAfore').textContent = '$' + formatNumber(extraAfore);
 
@@ -1389,82 +1265,53 @@
             document.getElementById('info_coberturaSubtotalSinPrestamo').textContent = '$' + formatNumber(subtotalCobertura);
 
             const deficit = costoTotalContrato - subtotalCobertura;
-            let resultadoAnalisis = ""; let etiquetaSaldo = ""; let montoSaldo = 0;
-            let prestamoRealUtilizado = 0; let descuentoMensualRealDelPrestamo = 0;
-            let detalleUsoPrestamoMsg = "";
             
             const descuentoMaximoPermitidoPorLey = pensionM40Inicial * 0.30;
-            let prestamoAlcanzableConDescMaxLey = 0;
-            if (PRESTAMO_PUNTO_B_DESCUENTO - PRESTAMO_PUNTO_A_DESCUENTO !== 0) {
-                const slopePrestamoPorDescuento = (PRESTAMO_PUNTO_B_MONTO - PRESTAMO_PUNTO_A_MONTO) / (PRESTAMO_PUNTO_B_DESCUENTO - PRESTAMO_PUNTO_A_DESCUENTO);
-                prestamoAlcanzableConDescMaxLey = slopePrestamoPorDescuento * (descuentoMaximoPermitidoPorLey - PRESTAMO_PUNTO_A_DESCUENTO) + PRESTAMO_PUNTO_A_MONTO;
-                prestamoAlcanzableConDescMaxLey = Math.max(0, prestamoAlcanzableConDescMaxLey);
-            } else if (descuentoMaximoPermitidoPorLey >= PRESTAMO_PUNTO_A_DESCUENTO && PRESTAMO_PUNTO_A_MONTO > 0) {
-                 prestamoAlcanzableConDescMaxLey = PRESTAMO_PUNTO_A_MONTO; 
-            }
+            const slopePrestamoPorDescuento = (PRESTAMO_PUNTO_B_MONTO - PRESTAMO_PUNTO_A_MONTO) / (PRESTAMO_PUNTO_B_DESCUENTO - PRESTAMO_PUNTO_A_DESCUENTO);
+            let prestamoAlcanzableConDescMaxLey = slopePrestamoPorDescuento * (descuentoMaximoPermitidoPorLey - PRESTAMO_PUNTO_A_DESCUENTO) + PRESTAMO_PUNTO_A_MONTO;
+            prestamoAlcanzableConDescMaxLey = Math.max(0, prestamoAlcanzableConDescMaxLey);
+            
+            let prestamoRealUtilizado = 0;
+            let descuentoMensualRealDelPrestamo = 0;
 
-            if (deficit <= 0) { 
-                hideElement('info_prestamoInfo');
-                resultadoAnalisis = "¡EXCELENTE! El costo se cubre sin necesidad de préstamo.";
-                etiquetaSaldo = "Saldo a Favor Estimado:";
-                montoSaldo = Math.abs(deficit);
-                document.getElementById('info_resultadoAnalisisCredito').className = 'text-green-800';
-                document.getElementById('info_montoSaldoFinal').className = 'font-bold text-green-800';
-                detalleUsoPrestamoMsg = "No se requirió préstamo.";
-            } else { 
+            if (deficit > 0) {
                 showElement('info_prestamoInfo');
-                const prestamoNecesarioOriginalmente = deficit;
-                document.getElementById('info_deficitAntesPrestamo').textContent = '$' + formatNumber(prestamoNecesarioOriginalmente);
-                document.getElementById('info_prestamoMaximoCapacidad').textContent = '$' + formatNumber(prestamoAlcanzableConDescMaxLey) + ` (con descuento mensual de $${formatNumber(descuentoMaximoPermitidoPorLey)})`;
-
-                if (prestamoNecesarioOriginalmente <= prestamoAlcanzableConDescMaxLey) {
-                    prestamoRealUtilizado = prestamoNecesarioOriginalmente;
-                    if (PRESTAMO_PUNTO_B_MONTO - PRESTAMO_PUNTO_A_MONTO !== 0) {
-                        const slopeDescuentoPorPrestamo = (PRESTAMO_PUNTO_B_DESCUENTO - PRESTAMO_PUNTO_A_DESCUENTO) / (PRESTAMO_PUNTO_B_MONTO - PRESTAMO_PUNTO_A_MONTO);
-                        descuentoMensualRealDelPrestamo = slopeDescuentoPorPrestamo * (prestamoRealUtilizado - PRESTAMO_PUNTO_A_MONTO) + PRESTAMO_PUNTO_A_DESCUENTO;
-                    } else if (prestamoRealUtilizado > 0) { 
-                        descuentoMensualRealDelPrestamo = PRESTAMO_PUNTO_A_DESCUENTO;
-                    }
-                    descuentoMensualRealDelPrestamo = Math.max(0, descuentoMensualRealDelPrestamo);
-
-                    resultadoAnalisis = "¡VIABLE! El costo se puede cubrir con un préstamo.";
-                    etiquetaSaldo = "Préstamo Estimado Utilizado:";
-                    montoSaldo = prestamoRealUtilizado;
-                    document.getElementById('info_resultadoAnalisisCredito').className = 'text-yellow-700';
-                    document.getElementById('info_montoSaldoFinal').className = 'font-bold text-yellow-700';
-                    detalleUsoPrestamoMsg = `Se utilizó un préstamo de $${formatNumber(prestamoRealUtilizado)}. Esto implica un descuento mensual de $${formatNumber(descuentoMensualRealDelPrestamo)}, que está dentro del límite del 30% ($${formatNumber(descuentoMaximoPermitidoPorLey)}).`;
-                } else { 
+                document.getElementById('info_deficitAntesPrestamo').textContent = '$' + formatNumber(deficit);
+                if(deficit <= prestamoAlcanzableConDescMaxLey) {
+                    prestamoRealUtilizado = deficit;
+                    const slopeDescuentoPorPrestamo = (PRESTAMO_PUNTO_B_DESCUENTO - PRESTAMO_PUNTO_A_DESCUENTO) / (PRESTAMO_PUNTO_B_MONTO - PRESTAMO_PUNTO_A_MONTO);
+                    descuentoMensualRealDelPrestamo = slopeDescuentoPorPrestamo * (prestamoRealUtilizado - PRESTAMO_PUNTO_A_MONTO) + PRESTAMO_PUNTO_A_DESCUENTO;
+                } else {
                     prestamoRealUtilizado = prestamoAlcanzableConDescMaxLey;
                     descuentoMensualRealDelPrestamo = descuentoMaximoPermitidoPorLey;
-                    const deficitRestante = prestamoNecesarioOriginalmente - prestamoRealUtilizado;
-
-                    if (deficitRestante < 0.01) { 
-                         resultadoAnalisis = "¡VIABLE CON AJUSTE! El costo se cubre utilizando la capacidad máxima de préstamo del 30%.";
-                         etiquetaSaldo = "Préstamo Utilizado (limitado al 30%):";
-                         montoSaldo = prestamoRealUtilizado;
-                         document.getElementById('info_resultadoAnalisisCredito').className = 'text-yellow-700';
-                         document.getElementById('info_montoSaldoFinal').className = 'font-bold text-yellow-700';
-                         detalleUsoPrestamoMsg = `El préstamo necesario de $${formatNumber(prestamoNecesarioOriginalmente)} excedía la capacidad. Se utilizó el préstamo máximo posible de $${formatNumber(prestamoRealUtilizado)} con un descuento mensual de $${formatNumber(descuentoMensualRealDelPrestamo)}.`;
-                    } else {
-                        resultadoAnalisis = "REQUIERE ANÁLISIS. Préstamo necesario ($" + formatNumber(prestamoNecesarioOriginalmente) + ") excede capacidad del 30% ($" + formatNumber(prestamoAlcanzableConDescMaxLey) + ").";
-                        etiquetaSaldo = "Déficit restante tras aplicar préstamo máximo:";
-                        montoSaldo = deficitRestante;
-                        document.getElementById('info_resultadoAnalisisCredito').className = 'text-red-700';
-                        document.getElementById('info_montoSaldoFinal').className = 'font-bold text-red-700';
-                        detalleUsoPrestamoMsg = `El préstamo necesario de $${formatNumber(prestamoNecesarioOriginalmente)} excede la capacidad del 30%. Se aplicó el préstamo máximo de $${formatNumber(prestamoRealUtilizado)} (descuento $${formatNumber(descuentoMensualRealDelPrestamo)}). Aún existe un déficit de $${formatNumber(deficitRestante)}.`;
-                    }
                 }
                 document.getElementById('info_prestamoNecesario').textContent = '$' + formatNumber(prestamoRealUtilizado);
                 document.getElementById('info_descuentoMensualPrestamo').textContent = '$' + formatNumber(descuentoMensualRealDelPrestamo);
+            } else {
+                hideElement('info_prestamoInfo');
             }
-            document.getElementById('info_detalleUsoPrestamo').textContent = detalleUsoPrestamoMsg;
-            document.getElementById('info_resultadoAnalisisCredito').textContent = resultadoAnalisis;
-            document.getElementById('info_etiquetaSaldoFinal').textContent = etiquetaSaldo;
-            document.getElementById('info_montoSaldoFinal').textContent = '$' + formatNumber(montoSaldo);
             
+            const coberturaFinal = subtotalCobertura + prestamoRealUtilizado;
+            const saldoFinal = coberturaFinal - costoTotalContrato;
+            
+            if (saldoFinal > 0.01) {
+                document.getElementById('info_resultadoAnalisisCredito').textContent = "¡EXCELENTE! PROYECTO FINANCIADO CON SALDO A FAVOR";
+                document.getElementById('info_etiquetaSaldoFinal').textContent = "Saldo a tu favor:";
+                document.getElementById('info_montoSaldoFinal').textContent = '$' + formatNumber(saldoFinal);
+                document.getElementById('info_montoSaldoFinal').className = 'font-bold highlight-green';
+            } else if (saldoFinal >= -0.01 && saldoFinal <= 0.01) {
+                document.getElementById('info_resultadoAnalisisCredito').textContent = "¡PROYECTO VIABLE!";
+                document.getElementById('info_etiquetaSaldoFinal').textContent = "CRÉDITO AUTORIZADO";
+                document.getElementById('info_montoSaldoFinal').textContent = "";
+            } else {
+                document.getElementById('info_resultadoAnalisisCredito').textContent = "REQUIERE ANÁLISIS ADICIONAL";
+                document.getElementById('info_etiquetaSaldoFinal').textContent = "Déficit Restante:";
+                document.getElementById('info_montoSaldoFinal').textContent = '$' + formatNumber(Math.abs(saldoFinal));
+                document.getElementById('info_montoSaldoFinal').className = 'font-bold highlight-red';
+            }
+
             const incrementoNetoGlobalAnio1 = (m40ResultadosInfo.pensionMensualInicial || 0) - (pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA || 0);
             document.getElementById('info_ventajaIncrementoNeto').textContent = '$' + formatNumber(incrementoNetoGlobalAnio1);
-            document.getElementById('info_ventajaIncrementoNeto').className = incrementoNetoGlobalAnio1 >= 0 ? 'highlight-green' : 'highlight-red';
             
             const valorInmuebleAnio1 = (m40ResultadosInfo.pensionMensualInicial || 0) / 0.004;
             document.getElementById('info_ventajaValorInmueble').textContent = '$' + formatNumber(valorInmuebleAnio1);
@@ -1473,7 +1320,7 @@
             proyeccionContenedor.innerHTML = ''; 
             const tablaProyeccion = document.createElement('table');
             tablaProyeccion.className = 'w-full text-left border-collapse';
-            let htmlProyeccion = `<thead><tr class="bg-purple-100"><th class="p-2 border">Año</th><th class="p-2 border">Pensión Bruta Mensual</th><th class="p-2 border">Descuento Préstamo</th><th class="p-2 border">Pensión Neta Mensual</th></tr></thead><tbody>`;
+            let htmlProyeccion = `<thead><tr class="bg-blue-100"><th class="p-2 border">Año</th><th class="p-2 border">Pensión Bruta</th><th class="p-2 border">Descuento</th><th class="p-2 border">Pensión Neta</th></tr></thead><tbody>`;
             
             let proyeccionAnualData = [];
             for (let i = 1; i <= 10; i++) { 
@@ -1485,34 +1332,51 @@
                     <td class="p-2 border">${i}</td>
                     <td class="p-2 border">$${formatNumber(pensionBrutaEsteAnio)}</td>
                     <td class="p-2 border">$${formatNumber(descuentoEsteAnio)}</td>
-                    <td class="p-2 border font-semibold ${pensionNetaEsteAnio >= pensionBrutaEsteAnio ? 'text-green-700' : 'text-yellow-700'}">$${formatNumber(pensionNetaEsteAnio)}</td>
+                    <td class="p-2 border font-semibold ${pensionNetaEsteAnio >= pensionBrutaEsteAnio ? 'text-green-700' : 'text-amber-700'}">$${formatNumber(pensionNetaEsteAnio)}</td>
                 </tr>`;
             }
-            htmlProyeccion += `</tbody>`;
-            tablaProyeccion.innerHTML = htmlProyeccion;
+            tablaProyeccion.innerHTML = htmlProyeccion + `</tbody>`;
             proyeccionContenedor.appendChild(tablaProyeccion);
-            document.getElementById('info_notaProyeccionInflacion').textContent = `(Descuento de préstamo aplicado durante los primeros 5 años. Pensión bruta incrementa con inflación estimada del ${formatNumber(averageAnnualINPCGrowth*100,1)}% anual).`;
-
-            showElement('infoSection4'); 
-            showElement('infoSection5');
             
-             datosCompletosParaPDFInfo = {
+            // Populate data for PDF
+            let resultadoAnalisis, etiquetaSaldoFinal, montoSaldoFinal;
+            if (saldoFinal > 0.01) {
+                resultadoAnalisis = "¡EXCELENTE! PROYECTO FINANCIADO CON SALDO A FAVOR";
+                etiquetaSaldoFinal = "Saldo a tu favor:";
+                montoSaldoFinal = saldoFinal;
+            } else if (saldoFinal >= -0.01 && saldoFinal <= 0.01) {
+                resultadoAnalisis = "¡PROYECTO VIABLE!";
+                etiquetaSaldoFinal = "CRÉDITO AUTORIZADO";
+                montoSaldoFinal = 0;
+            } else {
+                resultadoAnalisis = "REQUIERE ANÁLISIS ADICIONAL";
+                etiquetaSaldoFinal = "Déficit Restante:";
+                montoSaldoFinal = Math.abs(saldoFinal);
+            }
+
+            datosCompletosParaPDFInfo = {
+                 asesor: nombreAsesorGlobal,
                  cliente: datosClienteInfo, pensionBase: pensionBaseResultadosInfo,
                  curp: document.getElementById('info_curpCliente').value,
                  m40Periodo: {
                      inicio: document.getElementById('info_m40_p1_inicio').value,
                      meses: parseInt(document.getElementById('info_m40_p1_meses').value) || 0,
-                     fin: calcularFechaFinDesdeMeses(document.getElementById('info_m40_p1_inicio').value, parseInt(document.getElementById('info_m40_p1_meses').value)),
                      sbcTope: m40ResultadosInfo.sbcM40Ingresado }, 
                  m40Resultados: {...m40ResultadosInfo}, 
                  cobertura: {
                      aforeProyectada: aforeProyectadaGlobalInfo, mesesPrimerDeposito: mesesPrimerDepositoInput, primerDeposito: primerDeposito, extraAfore: extraAfore,
-                     subtotalSinPrestamo: subtotalCobertura, costoTotalContrato: costoTotalContrato, costoM40P1: costoM40P1, factorMultiplicador: factorMultiplicador,
-                     sumaFijaAdicional: costoFijoAdicional, comision: comision, comisionExcedente: comisionExcedente, totalCostosAdicionalesBotones: totalizadorCostosAdicionalesBotones,
-                     deficitAntesPrestamo: deficit > 0 ? deficit : 0, prestamoNecesarioOriginal: deficit > 0 ? (costoTotalContrato - subtotalCobertura) : 0,
-                     prestamoMaximoAlcanzableCon30PorCiento: prestamoAlcanzableConDescMaxLey, descuentoMaximoPermitidoPorLey: descuentoMaximoPermitidoPorLey,
-                     prestamoRealUtilizado: prestamoRealUtilizado, descuentoMensualPrestamoFijo: descuentoMensualRealDelPrestamo, detalleUsoPrestamo: detalleUsoPrestamoMsg, 
-                     resultadoAnalisis: resultadoAnalisis, etiquetaSaldoFinal: etiquetaSaldo, montoSaldoFinal: montoSaldo },
+                     costoTotalContrato: costoTotalContrato, prestamoRealUtilizado: prestamoRealUtilizado, descuentoMensualPrestamoFijo: descuentoMensualRealDelPrestamo,
+                     resultadoAnalisis: resultadoAnalisis, 
+                     etiquetaSaldoFinal: etiquetaSaldoFinal, 
+                     montoSaldoFinal: montoSaldoFinal,
+                     // For cost breakdown page
+                     costoM40P1: costoM40P1,
+                     factorMultiplicador: factorMultiplicador,
+                     comision: comision,
+                     sumaFijaAdicional: costoFijoAdicional,
+                     comisionExcedente: comisionExcedente,
+                     ajusteManual: -35000
+                  },
                  ventajas: {
                      incrementoNetoGlobalAnio1: incrementoNetoGlobalAnio1, valorInmuebleEquivalenteAnio1: valorInmuebleAnio1, proyeccionAnualPensionNeta: proyeccionAnualData
                   }
@@ -1521,404 +1385,342 @@
         
         async function exportarPropuestaPDFInfografia() {
             const exportButton = document.getElementById('exportPdfButton');
-            const originalButtonContent = exportButton.innerHTML;
-            exportButton.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>Generando...`;
+            exportButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i>Generando...`;
             exportButton.disabled = true;
 
             await new Promise(resolve => setTimeout(resolve, 50));
+            
+            const d = datosCompletosParaPDFInfo;
+            if (!d || !d.m40Resultados || d.m40Resultados.pensionMensualInicial <= 0) {
+                 showCustomAlert("Por favor, calcula una proyección completa antes de exportar.", "Datos incompletos");
+                 exportButton.innerHTML = `<i class="fas fa-download"></i>Exportar a PDF`;
+                 exportButton.disabled = false;
+                 return;
+            }
 
             try {
-                let d = datosCompletosParaPDFInfo;
-
-                const isDataReady = d && d.m40Resultados && d.pensionBase && d.cliente && d.cobertura && d.ventajas && (d.m40Resultados.pensionMensualInicial > 0 || d.m40Resultados.costoTotalP1 > 0);
-
-                if (!isDataReady) {
-                    if (datosClienteInfo.sbcPromedioBase > 0 && document.getElementById('info_curpCliente').value && document.getElementById('info_m40_p1_inicio').value && document.getElementById('info_m40_p1_meses').value) {
-                        calcularEscenarioM40Infografia();
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                        d = datosCompletosParaPDFInfo;
-                    }
-                }
-                
-                const isDataStillNotReady = !d || !d.m40Resultados || !d.pensionBase || !d.cliente || !d.cobertura || !d.ventajas || !(d.m40Resultados.pensionMensualInicial > 0 || d.m40Resultados.costoTotalP1 > 0);
-
-                if (isDataStillNotReady) {
-                    showCustomAlert("No se han podido generar los datos para el PDF. Por favor, completa todos los campos de los Pasos 1 y 2 y presiona los botones de cálculo antes de exportar.");
-                    return;
-                }
-                
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'pt', 'letter');
                 
-                generatePdfContent(pdf, d);
+                // --- PDF Styling ---
+                const RGC_BLUE = [0, 51, 102], RGC_GOLD = [212, 175, 55];
+                const TEXT_DARK = [26, 32, 44], TEXT_MEDIUM = [74, 85, 104];
+                const WHITE = [255, 255, 255], BG_LIGHT_BLUE = [240, 248, 255];
+                const GREEN = [22, 163, 74], RED = [220, 38, 38];
+                const MARGIN = 40;
+                const PAGE_WIDTH = pdf.internal.pageSize.getWidth();
+                let yPos = 0;
 
-            } catch (e) {
-                console.error("Error al generar el PDF:", e);
-                showCustomAlert(`Ocurrió un error inesperado al generar el PDF. Por favor, avisa al administrador. Detalles del error: ${e.message}`);
-            } finally {
-                exportButton.innerHTML = originalButtonContent;
-                exportButton.disabled = false;
-            }
-        }
+                const addHeader = (title) => {
+                    pdf.setFillColor(RGC_BLUE[0], RGC_BLUE[1], RGC_BLUE[2]);
+                    pdf.rect(0, 0, PAGE_WIDTH, 70, 'F');
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(18);
+                    // Shadow
+                    pdf.setTextColor(0, 0, 0);
+                    pdf.text("RGC PENSIONES Y SEGUROS", MARGIN + 1, 43);
+                    // Main Text
+                    pdf.setTextColor(RGC_GOLD[0], RGC_GOLD[1], RGC_GOLD[2]);
+                    pdf.text("RGC PENSIONES Y SEGUROS", MARGIN, 42);
 
-        function generatePdfContent(pdf, d) { 
-            const nombreCliente = d.cliente?.nombre || "Cliente";
-            const fechaActual = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
-            const margin = 40; 
-            const pageWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
-            let yPos = 0;
+                    pdf.setFontSize(10);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setTextColor(WHITE[0], WHITE[1], WHITE[2]);
+                    pdf.text(new Date().toLocaleDateString('es-MX'), PAGE_WIDTH - MARGIN, 42, { align: 'right' });
+                    yPos = 100;
+                    pdf.setFontSize(16);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setTextColor(RGC_BLUE[0], RGC_BLUE[1], RGC_BLUE[2]);
+                    pdf.text(title, PAGE_WIDTH / 2, yPos, { align: 'center' });
+                    yPos += 25;
+                };
 
-            const rgcBlueDark = [13, 27, 42], rgcBlueMedium = [65, 90, 119], rgcBlueLight = [235, 240, 246];
-            const gold = [212, 175, 55];
-            const textDark = [13, 27, 42], textMedium = [65, 90, 119], textLight = [107, 114, 128];
-            const accentGreen = [34, 197, 94], accentAmber = [245, 158, 11], accentRed = [239, 68, 68];
-            const white = [255, 255, 255], grayBg = [243, 244, 246]; 
+                const addFooter = (pageNumber, totalPages) => {
+                    pdf.setFontSize(8);
+                    pdf.setTextColor(TEXT_MEDIUM[0], TEXT_MEDIUM[1], TEXT_MEDIUM[2]);
+                    pdf.text(`Página ${pageNumber} de ${totalPages}`, PAGE_WIDTH / 2, pdf.internal.pageSize.getHeight() - 30, { align: 'center' });
+                    pdf.text(`Propuesta preparada por: ${d.asesor}`, MARGIN, pdf.internal.pageSize.getHeight() - 30);
+                };
 
-            const addPageHeader = (titleText) => {
-                pdf.setFillColor(rgcBlueDark[0], rgcBlueDark[1], rgcBlueDark[2]);
-                pdf.rect(0, 0, pageWidth, 70, 'F');
-                pdf.setFont('helvetica', 'bold'); pdf.setFontSize(18); pdf.setTextColor(gold[0], gold[1], gold[2]);
-                pdf.text("RGC Pensiones", margin, 35);
-                pdf.setFontSize(10); pdf.setFont('helvetica', 'normal'); pdf.setTextColor(white[0], white[1], white[2]);
-                pdf.text(fechaActual, pageWidth - margin, 35, { align: 'right' });
-                yPos = 95; 
-                pdf.setFontSize(14); pdf.setFont('helvetica', 'bold'); pdf.setTextColor(rgcBlueDark[0], rgcBlueDark[1], rgcBlueDark[2]);
-                pdf.text(titleText, pageWidth / 2, yPos, { align: 'center' });
-                yPos += 25;
-            };
-            
-            const addPageFooter = (pageNumber, totalPages) => {
-                pdf.setFontSize(8); pdf.setFont('helvetica', 'normal'); pdf.setTextColor(textLight[0], textLight[1], textLight[2]);
-                pdf.text(`Página ${pageNumber} de ${totalPages}`, pageWidth / 2, pageHeight - margin + 15, { align: 'center' });
-                pdf.text("RGC Pensiones - Transformando tu Futuro", margin, pageHeight - margin + 15);
-                pdf.text("Consulta a tu asesor.", pageWidth - margin, pageHeight - margin + 15, { align: 'right' });
-            };
+                const addSectionTitle = (text) => {
+                    pdf.setFontSize(12);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setTextColor(RGC_GOLD[0], RGC_GOLD[1], RGC_GOLD[2]);
+                    pdf.text(text, MARGIN, yPos);
+                    yPos += 8;
+                    pdf.setDrawColor(RGC_GOLD[0], RGC_GOLD[1], RGC_GOLD[2]);
+                    pdf.setLineWidth(0.5);
+                    pdf.line(MARGIN, yPos, PAGE_WIDTH - MARGIN, yPos);
+                    yPos += 20;
+                };
 
-            const addSectionTitle = (text, currentY) => {
-                pdf.setFontSize(12); pdf.setFont('helvetica', 'bold'); pdf.setTextColor(rgcBlueMedium[0], rgcBlueMedium[1], rgcBlueMedium[2]);
-                pdf.text(text, margin, currentY);
-                currentY += 8;
-                pdf.setDrawColor(gold[0], gold[1], gold[2]); pdf.setLineWidth(0.5);
-                pdf.line(margin, currentY, pageWidth - margin, currentY);
-                currentY += 18;
-                return currentY;
-            };
-
-            const addDataRowStyled = (label, value, currentY, options = {}) => {
-                const { labelColor = textMedium, valueColor = textDark, valueFontWeight = 'bold', valueFontSize = 9, labelFontSize = 9, valueAlign = 'right', labelFontWeight = 'normal' } = options;
-                const rightAlignX = pageWidth - margin;
-
-                pdf.setFontSize(labelFontSize);
-                pdf.setFont('helvetica', labelFontWeight);
-                pdf.setTextColor(labelColor[0], labelColor[1], labelColor[2]);
-                pdf.text(label, margin + (options.indent || 0), currentY);
-
-                pdf.setFontSize(valueFontSize);
-                pdf.setFont('helvetica', valueFontWeight);
-                pdf.setTextColor(valueColor[0], valueColor[1], valueColor[2]);
+                const addDataRow = (label, value, valueColor = TEXT_DARK) => {
+                    pdf.setFontSize(10);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setTextColor(TEXT_MEDIUM[0], TEXT_MEDIUM[1], TEXT_MEDIUM[2]);
+                    pdf.text(label, MARGIN, yPos);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setTextColor(valueColor[0], valueColor[1], valueColor[2]);
+                    pdf.text(String(value), PAGE_WIDTH - MARGIN, yPos, { align: 'right' });
+                    yPos += 18;
+                };
                 
-                if (valueAlign === 'right') {
-                    pdf.text(String(value), rightAlignX, currentY, { align: 'right' });
-                } else {
-                    pdf.text(String(value), margin + 200, currentY, { align: 'left' });
+                // --- PDF Page 1: Detailed Proposal ---
+                addHeader("Proyección de Pensión Personalizada");
+                pdf.setFontSize(11);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+                pdf.text(`Para: ${d.cliente.nombre}`, MARGIN, yPos);
+                yPos += 30;
+
+                addSectionTitle("Resumen de Proyección");
+                addDataRow("Pensión Mensual Base (Estimada):", `$${formatNumber(d.pensionBase.PENSION_MENSUAL_ESTIMADA)}`, RGC_BLUE);
+                addDataRow("Pensión Mensual con M40 (Año 1):", `$${formatNumber(d.m40Resultados.pensionMensualInicial)}`, GREEN);
+                yPos += 5;
+                pdf.setFontSize(14);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(GREEN[0], GREEN[1], GREEN[2]);
+                pdf.text(`Incremento Mensual: $${formatNumber(d.ventajas.incrementoNetoGlobalAnio1)}`, PAGE_WIDTH / 2, yPos, { align: 'center' });
+                yPos += 30;
+
+                addSectionTitle("Detalles de la Estrategia");
+                addDataRow("Meses de Inversión en M40:", `${d.m40Periodo.meses}`);
+                addDataRow("SBC Diario Aplicado en M40:", `$${formatNumber(d.m40Periodo.sbcTope)}`);
+                addDataRow("SBC Promedio Final (para cálculo):", `$${formatNumber(d.m40Resultados.sbcPromedioParaCalculoPensionM40)}`);
+                addDataRow("Semanas Cotizadas Totales:", `${formatNumber(d.m40Resultados.nuevasSemanas, 0)}`);
+                yPos += 10;
+                
+                addSectionTitle("Análisis Financiero del Proyecto");
+                addDataRow("Costo Total del Proyecto (Estimado):", `$${formatNumber(d.cobertura.costoTotalContrato)}`, RED);
+                yPos += 5;
+                addDataRow("Cobertura con Saldo AFORE:", `(+) $${formatNumber(d.cobertura.aforeProyectada)}`, GREEN);
+                addDataRow(`Cobertura con Primeros ${d.cobertura.mesesPrimerDeposito} Meses de Pensión:`, `(+) $${formatNumber(d.cobertura.primerDeposito)}`, GREEN);
+                addDataRow("Cobertura con Extra AFORE (SAR):", `(+) $${formatNumber(d.cobertura.extraAfore)}`, GREEN);
+                if(d.cobertura.prestamoRealUtilizado > 0) {
+                    addDataRow("Préstamo Necesario:", `(+) $${formatNumber(d.cobertura.prestamoRealUtilizado)}`, RGC_GOLD);
                 }
+                yPos += 10;
+                pdf.setFillColor(BG_LIGHT_BLUE[0], BG_LIGHT_BLUE[1], BG_LIGHT_BLUE[2]);
+                pdf.rect(MARGIN, yPos, PAGE_WIDTH - MARGIN*2, 40, 'F');
+                pdf.setFontSize(12);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(RGC_BLUE[0], RGC_BLUE[1], RGC_BLUE[2]);
+                pdf.text(d.cobertura.resultadoAnalisis, MARGIN + 10, yPos + 25);
+                let finalBalanceText = d.cobertura.etiquetaSaldoFinal;
+                if (d.cobertura.etiquetaSaldoFinal !== "CRÉDITO AUTORIZADO") {
+                    finalBalanceText += ` $${formatNumber(d.cobertura.montoSaldoFinal)}`;
+                }
+                pdf.text(finalBalanceText, PAGE_WIDTH - MARGIN - 10, yPos + 25, { align: 'right' });
+                yPos += 60;
                 
-                return currentY + (options.lineHeight || 15);
-            };
-            const addParagraph = (text, currentY, options = {}) => {
-                const { color = textMedium, fontSize = 9, fontStyle = 'normal', maxWidth = pageWidth - margin * 2, lineHeightFactor = 1.2 } = options;
-                pdf.setFontSize(fontSize); pdf.setFont('helvetica', fontStyle); pdf.setTextColor(color[0], color[1], color[2]);
-                const lines = pdf.splitTextToSize(text, maxWidth);
-                pdf.text(lines, margin, currentY);
-                return currentY + lines.length * fontSize * lineHeightFactor;
-            };
-            
-            const addResultAnalysisBox = (currentY, dataCobertura) => {
-                const resColor = dataCobertura?.resultadoAnalisis.includes("EXCELENTE") || dataCobertura?.resultadoAnalisis.includes("VIABLE") 
-                                 ? accentGreen 
-                                 : (dataCobertura?.resultadoAnalisis.includes("REQUIERE ANÁLISIS") ? accentAmber : accentRed);
-                let yStartBox = currentY;
-                let tempY = yStartBox;
-                pdf.setFontSize(10); pdf.setFont('helvetica', 'bold');
-                const resultadoLines = pdf.splitTextToSize(dataCobertura?.resultadoAnalisis || "---", pageWidth - margin*2 - 20);
-                tempY += resultadoLines.length * 10 * 1.2 + 10;
-                tempY += 5;
-                pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
-                tempY += 9 * 1.2;
-                const boxHeight = (tempY - yStartBox) + 5;
-                pdf.setFillColor(grayBg[0], grayBg[1], grayBg[2]);
-                pdf.rect(margin - 10, yStartBox - 5, pageWidth - margin*2 + 20, boxHeight, 'F');
-                tempY = yStartBox; 
-                pdf.setFontSize(10); pdf.setFont('helvetica', 'bold'); pdf.setTextColor(resColor[0], resColor[1], resColor[2]);
-                pdf.text(resultadoLines, margin, tempY + 10);
-                tempY += resultadoLines.length * 10 * 1.2;
-                tempY += 5;
-                pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
-                pdf.setTextColor(resColor[0], resColor[1], resColor[2]);
-                const etiquetaSaldoText = `${dataCobertura?.etiquetaSaldoFinal || "---"} $${formatNumber(dataCobertura?.montoSaldoFinal || 0)}`;
-                pdf.text(etiquetaSaldoText, pageWidth / 2, tempY + 8, { align: 'center' });
-                currentY = yStartBox + boxHeight + 5;
-                pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
-                return currentY;
-            };
-
-            // PÁGINA 1: PROPUESTA DETALLADA PARA ASESOR
-            addPageHeader("PROPUESTA DETALLADA PARA ASESOR");
-            yPos = addDataRowStyled("Cliente:", nombreCliente, yPos, { valueFontWeight: 'bold', valueColor: textDark, valueAlign: 'left' });
-            if(d.curp) yPos = addDataRowStyled("CURP:", d.curp, yPos, { valueAlign: 'left' });
-            yPos = addDataRowStyled("SBC Base Utilizado:", `$${formatNumber(d.cliente?.sbcPromedioBase)} ${d.cliente?.sbcDetalladoUsado ? '(Detallado)' : '(Manual)'}`, yPos);
-            yPos += 10;
-            
-            yPos = addSectionTitle("Resumen de Costos del Contrato", yPos);
-            yPos = addDataRowStyled("Costo Base M40 (P1 c/Act+Rec):", `$${formatNumber(d.cobertura?.costoM40P1)}`, yPos);
-            yPos = addDataRowStyled("Factor Multiplicador (0.5x s/P1):", `(+) $${formatNumber(d.cobertura?.factorMultiplicador)}`, yPos);
-            yPos = addDataRowStyled("Suma Fija Adicional:", `(+) $${formatNumber(d.cobertura?.sumaFijaAdicional)}`, yPos);
-            yPos = addDataRowStyled("Comisión (16% s/P1):", `(+) $${formatNumber(d.cobertura?.comision)}`, yPos);
-            if ((d.cobertura?.totalCostosAdicionalesBotones || 0) > 0) yPos = addDataRowStyled("Costos Adicionales (Opcionales):", `(+) $${formatNumber(d.cobertura?.totalCostosAdicionalesBotones)}`, yPos);
-            if ((d.cobertura?.comisionExcedente || 0) > 0) yPos = addDataRowStyled("Comisión por Excedente:", `(+) $${formatNumber(d.cobertura?.comisionExcedente)}`, yPos);
-            yPos += 5;
-            pdf.setDrawColor(textMedium[0], textMedium[1], textMedium[2]);
-            pdf.line(pageWidth - margin - 120, yPos, pageWidth - margin, yPos);
-            yPos += 5;
-            yPos = addDataRowStyled("Costo Total del Contrato (Bruto):", `$${formatNumber(d.cobertura?.costoTotalContrato)}`, yPos, {valueColor: accentRed, valueFontSize: 10, labelFontWeight: 'bold'});
-            
-            if ((d.cobertura?.comisionExcedente || 0) > 0) {
-                yPos += 5; 
-                yPos = addParagraph("Nota sobre Comisión por Excedente: Al elegir este esquema, el comisionista acepta que su comisión por excedente no la recibirá a la firma del contrato, sino hasta que la cuenta del cliente sea liquidada...", yPos, { fontSize: 8, color: textLight, fontStyle: 'italic', maxWidth: pageWidth - margin * 2 - 10, lineHeightFactor: 1.3 });
-            }
-            yPos += 10;
-            
-            yPos = addSectionTitle("Fuentes de Cobertura Estimadas", yPos);
-            yPos = addDataRowStyled("1. Saldo AFORE Proyectado:", `$${formatNumber(d.cobertura?.aforeProyectada)}`, yPos);
-            yPos = addDataRowStyled(`2. Primer Depósito (${d.cobertura?.mesesPrimerDeposito} meses pensión M40):`, `(+) $${formatNumber(d.cobertura?.primerDeposito)}`, yPos);
-            yPos = addDataRowStyled("3. Extra AFORE (Retiro M40 P1):", `(+) $${formatNumber(d.cobertura?.extraAfore)}`, yPos);
-            yPos += 5;
-            pdf.setDrawColor(textMedium[0], textMedium[1], textMedium[2]);
-            pdf.line(pageWidth - margin - 120, yPos, pageWidth - margin, yPos);
-            yPos += 5;
-            yPos = addDataRowStyled("Subtotal Cobertura (sin préstamo):", `$${formatNumber(d.cobertura?.subtotalSinPrestamo)}`, yPos, {valueColor: accentGreen, valueFontSize: 10, labelFontWeight: 'bold'});
-            
-            yPos += 5;
-            pdf.setDrawColor(textLight[0],textLight[1],textLight[2]); pdf.line(margin, yPos, pageWidth - margin, yPos); yPos += 15;
-
-            if ((d.cobertura?.deficitAntesPrestamo || 0) > 0) {
-                yPos = addDataRowStyled("Déficit antes de Préstamo:", `(-) $${formatNumber(d.cobertura?.deficitAntesPrestamo)}`, yPos, {valueColor: accentRed, valueFontSize: 10});
-                yPos = addDataRowStyled("Capacidad Máx. Préstamo (30% Pensión M40):", `$${formatNumber(d.cobertura?.prestamoMaximoAlcanzableCon30PorCiento)}`, yPos, {valueColor: rgcBlueMedium});
-                yPos = addDataRowStyled("   con Descuento Mensual Máx:", `$${formatNumber(d.cobertura?.descuentoMaximoPermitidoPorLey)}`, yPos-5, {labelColor: textLight, valueColor: rgcBlueMedium});
-                yPos = addDataRowStyled("Préstamo Estimado Utilizado:", `$${formatNumber(d.cobertura?.prestamoRealUtilizado)}`, yPos, {valueColor: accentAmber});
-                const porcDescReal = (d.m40Resultados?.pensionMensualInicial || 0) > 0 ? ((d.cobertura?.descuentoMensualPrestamoFijo || 0) / (d.m40Resultados?.pensionMensualInicial || 1)) * 100 : 0;
-                yPos = addDataRowStyled("Descuento Mensual Préstamo Fijo:", `$${formatNumber(d.cobertura?.descuentoMensualPrestamoFijo)} (${formatNumber(porcDescReal,1)}% pensión M40)`, yPos, {valueColor: accentAmber});
-                if (d.cobertura?.detalleUsoPrestamo) yPos = addParagraph(d.cobertura.detalleUsoPrestamo, yPos, {fontSize: 8, color: textLight, maxWidth: pageWidth - margin*2 - 20, lineHeightFactor: 1.3});
-            }
-            yPos += 5; 
-            yPos = addResultAnalysisBox(yPos, d.cobertura);
-            yPos += 5; 
-            
-            yPos = addSectionTitle("Datos Clave de Proyección M40", yPos);
-            yPos = addDataRowStyled("Inicio M40:", d.m40Periodo?.inicio || "N/A", yPos, { valueAlign: 'left' });
-            yPos = addDataRowStyled("Meses en M40:", `${d.m40Periodo?.meses || 0} meses`, yPos, { valueAlign: 'left' });
-            yPos = addDataRowStyled("Fecha Fin M40 (Baja):", d.m40Periodo?.fin || "N/A", yPos, { valueAlign: 'left' });
-            yPos = addDataRowStyled("SBC Diario M40 (Aplicado):", `$${formatNumber(d.m40Periodo?.sbcTope)}`, yPos);
-            yPos = addDataRowStyled("SBC Promedio para Cálculo Pensión M40:", `$${formatNumber(d.m40Resultados?.sbcPromedioParaCalculoPensionM40)}`, yPos);
-            yPos = addDataRowStyled("Nueva Edad para % Pensión:", `${d.m40Resultados?.nuevaEdad || 0} años`, yPos, { valueAlign: 'left' });
-            yPos = addDataRowStyled("Nuevas Semanas Totales:", formatNumber(d.m40Resultados?.nuevasSemanas || 0, 0), yPos, { valueAlign: 'left' });
-            yPos = addDataRowStyled("Pensión Mensual M40 Estimada (Inicial):", `$${formatNumber(d.m40Resultados?.pensionMensualInicial)}`, yPos, {valueColor: accentAmber, valueFontSize: 10});
-            yPos = addDataRowStyled("Pensión Mensual Base Estimada:", `(-) $${formatNumber(d.pensionBase?.PENSION_MENSUAL_ESTIMADA)}`, yPos, {valueColor: rgcBlueMedium, valueFontSize: 10});
-            const incColorAdv = (d.ventajas?.incrementoNetoGlobalAnio1 || 0) >= 0 ? accentGreen : accentRed;
-            yPos += 5;
-            pdf.setDrawColor(textMedium[0], textMedium[1], textMedium[2]);
-            pdf.line(pageWidth - margin - 120, yPos, pageWidth - margin, yPos);
-            yPos += 5;
-            yPos = addDataRowStyled("Incremento Mensual Bruto (Año 1):", `$${formatNumber(d.ventajas?.incrementoNetoGlobalAnio1)}`, yPos, {valueColor: incColorAdv, valueFontSize: 11, labelFontWeight: 'bold'});
-            addPageFooter(1, 2);
-
-            // PÁGINA 2: PROPUESTA PARA CLIENTE
-            pdf.addPage();
-            addPageHeader(`TU FUTURO MEJORADO CON RGC PENSIONES`);
-            yPos = addParagraph(`Estimado(a) ${nombreCliente}, esta es una proyección de cómo Modalidad 40 puede transformar tu pensión:`, yPos, {fontSize:10, color:textDark});
-            yPos += 10;
-            yPos = addSectionTitle("Tu Pensión: Antes y Después de Modalidad 40", yPos);
-            pdf.setFillColor(rgcBlueLight[0], rgcBlueLight[1], rgcBlueLight[2]);
-            pdf.rect(margin, yPos, pageWidth - margin*2, 75, 'F');
-            yPos = addDataRowStyled("Pensión Mensual con Modalidad 40 (Año 1):", `$${formatNumber(d.m40Resultados?.pensionMensualInicial)}`, yPos + 10, {labelColor: textMedium, valueColor: accentAmber, valueFontSize: 14, indent:10});
-            yPos = addDataRowStyled("Pensión Mensual Base (Actual Estimada):", `(-) $${formatNumber(d.pensionBase?.PENSION_MENSUAL_ESTIMADA)}`, yPos, {labelColor: textMedium, valueColor: rgcBlueMedium, valueFontSize: 14, indent:10});
-            pdf.setFontSize(14); pdf.setFont('helvetica', 'bold');
-            const incColorCli = (d.ventajas?.incrementoNetoGlobalAnio1 || 0) >= 0 ? accentGreen : accentRed;
-            pdf.setTextColor(incColorCli[0], incColorCli[1], incColorCli[2]);
-            pdf.text(`¡Incremento Mensual de $${formatNumber(d.ventajas?.incrementoNetoGlobalAnio1)}!`, pageWidth/2, yPos + 15, {align:'center'});
-            yPos += 45;
-            yPos = addSectionTitle("Inversión Estimada en tu Futuro", yPos);
-            yPos = addDataRowStyled("Precio Total del Proyecto (aproximado):", `$${formatNumber(d.cobertura?.costoTotalContrato)}`, yPos, {valueColor: accentRed, valueFontSize: 12}); 
-            yPos += 10;
-            yPos = addSectionTitle("¿Cómo se Cubre esta Inversión?", yPos);
-            const bullet = "\u2022"; 
-            yPos = addDataRowStyled(`${bullet} Tu Saldo AFORE Proyectado:`, `$${formatNumber(d.cobertura?.aforeProyectada)}`, yPos, {valueColor: accentGreen, indent: 5});
-            yPos = addDataRowStyled(`${bullet} Primeros ${d.cobertura?.mesesPrimerDeposito} Meses de tu Nueva Pensión M40:`, `(+) $${formatNumber(d.cobertura?.primerDeposito)}`, yPos, {valueColor: accentGreen, indent: 5});
-            yPos = addDataRowStyled(`${bullet} Recuperación SAR/INFONAVIT (de pagos M40):`, `(+) $${formatNumber(d.cobertura?.extraAfore)}`, yPos, {valueColor: accentGreen, indent: 5});
-            if ((d.cobertura?.prestamoRealUtilizado || 0) > 0) {
-                yPos = addDataRowStyled(`${bullet} Préstamo (si es necesario):`, `(+) $${formatNumber(d.cobertura?.prestamoRealUtilizado)}`, yPos, {valueColor: accentAmber, indent: 5});
-                yPos = addParagraph(`   (Este préstamo se pagaría con un descuento mensual fijo de aprox. $${formatNumber(d.cobertura?.descuentoMensualPrestamoFijo)} de tu pensión M40 durante 5 años)`, yPos -8, {fontSize: 8, color: textLight, indent: 25, maxWidth: pageWidth - margin*2 - 30});
-            }
-            yPos += 5;
-            pdf.setDrawColor(textMedium[0], textMedium[1], textMedium[2]);
-            pdf.line(pageWidth - margin - 120, yPos, pageWidth - margin, yPos);
-            yPos += 5;
-            yPos = addDataRowStyled("Cobertura Total Estimada:", `$${formatNumber( (d.cobertura?.subtotalSinPrestamo || 0) + (d.cobertura?.prestamoRealUtilizado || 0) )}`, yPos, {valueColor: accentGreen, valueFontSize: 11, labelFontWeight: 'bold'});
-            yPos += 5; 
-            yPos = addResultAnalysisBox(yPos, d.cobertura);
-            yPos += 5;
-            yPos = addSectionTitle("Proyección de tu Pensión Neta Anual con Modalidad 40", yPos);
-            const proyeccionData = d.ventajas?.proyeccionAnualPensionNeta || [];
-            if (proyeccionData.length > 0) {
-                const tableHead = [['Año', 'Pensión Bruta Mensual Estimada', 'Descuento Préstamo (si aplica)', 'Pensión Neta Mensual Estimada']];
-                const tableBody = proyeccionData.map(p => [ p.anio, `$${formatNumber(p.pensionBruta)}`, p.descuento > 0 ? `$${formatNumber(p.descuento)}` : '-', `$${formatNumber(p.pensionNeta)}` ]);
+                addFooter(1, 5);
+                
+                // --- PDF Page 2: Annual Projection ---
+                pdf.addPage();
+                addHeader("Proyección Anual y Beneficios");
+                
                 pdf.autoTable({
-                    head: tableHead, body: tableBody, startY: yPos, theme: 'grid',
-                    headStyles: { fillColor: rgcBlueMedium, textColor: white, fontStyle: 'bold', fontSize: 9, cellPadding: 5 },
-                    bodyStyles: { fontSize: 8, cellPadding: 4 }, alternateRowStyles: { fillColor: rgcBlueLight },
-                    columnStyles: { 0: { halign: 'center', cellWidth: 40 }, 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right', fontStyle: 'bold' } },
+                    startY: yPos,
+                    head: [['Año', 'Pensión Bruta Mensual', 'Descuento Préstamo', 'Pensión Neta Mensual']],
+                    body: d.ventajas.proyeccionAnualPensionNeta.map(p => [
+                        p.anio,
+                        `$${formatNumber(p.pensionBruta)}`,
+                        p.descuento > 0 ? `$${formatNumber(p.descuento)}` : '-',
+                        `$${formatNumber(p.pensionNeta)}`
+                    ]),
+                    theme: 'grid',
+                    headStyles: { fillColor: RGC_BLUE, textColor: WHITE, fontStyle: 'bold' },
+                    alternateRowStyles: { fillColor: BG_LIGHT_BLUE },
                     didParseCell: (data) => {
-                        if (data.section === 'body' && data.column.index === 3) { 
-                            const neta = proyeccionData[data.row.index].pensionNeta;
-                            const bruta = proyeccionData[data.row.index].pensionBruta;
-                            data.cell.styles.textColor = neta >= bruta ? accentGreen : accentAmber; 
+                        if (data.section === 'body' && data.column.index === 3) {
+                            data.cell.styles.fontStyle = 'bold';
+                            data.cell.styles.textColor = data.cell.raw.includes('-') ? TEXT_DARK : GREEN;
                         }
                     }
                 });
-                yPos = pdf.lastAutoTable.finalY + 10;
-            }
-            yPos = addParagraph(`Nota: La pensión bruta mensual aumenta con la inflación anual estimada (${formatNumber(averageAnnualINPCGrowth*100,1)}%). El descuento del préstamo es fijo durante los primeros 5 años (si aplica).`, yPos, {fontSize: 8, color: textLight});
-            yPos += 15;
-            pdf.setFillColor(rgcBlueLight[0], rgcBlueLight[1], rgcBlueLight[2]);
-            pdf.rect(margin, yPos, pageWidth - margin*2, 60, 'F');
-            pdf.setFontSize(10); pdf.setFont('helvetica', 'bold'); pdf.setTextColor(rgcBlueDark[0], rgcBlueDark[1], rgcBlueDark[2]);
-            pdf.text("Tu Pensión M40 (Año 1) Podría Equivaler a un Inmueble de:", pageWidth/2, yPos + 15, {align:'center'});
-            pdf.setFontSize(16); pdf.setFont('helvetica', 'bold'); pdf.setTextColor(accentGreen[0], accentGreen[1], accentGreen[2]);
-            pdf.text(`$${formatNumber(d.ventajas?.valorInmuebleEquivalenteAnio1)} MXN`, pageWidth/2, yPos + 35, {align:'center'});
-            pdf.setFontSize(7); pdf.setFont('helvetica', 'normal'); pdf.setTextColor(textMedium[0], textMedium[1], textMedium[2]);
-            pdf.text("(Generando rentas vitalicias, estimado con tasa de capitalización conservadora del 4.8% anual / 0.4% mensual).", pageWidth/2, yPos + 50, {align:'center'});
-            addPageFooter(2, 2);
-            
-            pdf.save(`Propuesta_Pension_RGC_${nombreCliente.replace(/\s+/g, '_')}.pdf`);
-        }
+                yPos = pdf.lastAutoTable.finalY + 25;
 
-        function formatMesCuotaForDisplay(mCS) { 
-            if (!mCS) return ''; 
-            const [y,m]=mCS.split('-'); 
-            const mN=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"]; 
-            return `${mN[parseInt(m)-1]}-${y.substring(2)}`; 
-        }
+                pdf.setFontSize(9);
+                pdf.setTextColor(TEXT_MEDIUM[0], TEXT_MEDIUM[1], TEXT_MEDIUM[2]);
+                pdf.text(`Nota: La pensión bruta se proyecta con un incremento anual del ${averageAnnualINPCGrowth*100}%. El descuento de préstamo (si aplica) es fijo por 5 años.`, MARGIN, yPos);
+                yPos += 30;
 
-        async function exportarActRecM40PDFInfografia() {
-            const exportButton = document.getElementById('info_btnDescargarActRec');
-            const originalButtonContent = exportButton.innerHTML;
-            exportButton.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>Generando...`;
-            exportButton.disabled = true;
-            await new Promise(resolve => setTimeout(resolve, 50));
-            try {
-                if (desgloseDetalladoMensualM40Global.length === 0) { 
-                    showCustomAlert("No hay datos de desglose de Actualizaciones y Recargos para exportar. Calcula primero el Escenario M40."); 
-                    return; 
-                }
-                const { jsPDF } = window.jspdf; 
-                const pdf = new jsPDF('l', 'pt', 'letter'); 
-                const nombreCliente = datosClienteInfo.nombre || "Cliente"; 
-                const fechaActual = new Date().toLocaleDateString('es-MX', {year:'numeric',month:'long',day:'numeric'});
-                pdf.setFontSize(14); pdf.setTextColor(0,51,102); 
-                pdf.text(`Desglose de Costo Mensual Modalidad 40 (Periodo Principal) - ${nombreCliente}`, pdf.internal.pageSize.getWidth()/2, 40, {align:'center'});
-                pdf.setFontSize(9); pdf.setTextColor(50,50,50); 
-                pdf.text(`Fecha: ${fechaActual}`, pdf.internal.pageSize.getWidth()-40, 60, {align:'right'});
+                pdf.setFillColor(BG_LIGHT_BLUE[0], BG_LIGHT_BLUE[1], BG_LIGHT_BLUE[2]);
+                pdf.rect(MARGIN, yPos, PAGE_WIDTH - MARGIN*2, 70, 'F');
+                pdf.setFontSize(11);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setTextColor(RGC_BLUE[0], RGC_BLUE[1], RGC_BLUE[2]);
+                pdf.text("Tu pensión M40 (Año 1) podría equivaler a tener un inmueble de:", PAGE_WIDTH / 2, yPos + 25, { align: 'center' });
+                pdf.setFontSize(18);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(RGC_GOLD[0], RGC_GOLD[1], RGC_GOLD[2]);
+                pdf.text(`$${formatNumber(d.ventajas.valorInmuebleEquivalenteAnio1)} MXN`, PAGE_WIDTH / 2, yPos + 50, { align: 'center' });
                 
-                const head = [['Mes Cuota','SBC Diario','Días','Tasa M40','Costo Base','INPC Den.','INPC Num.','Factor Act.','Monto Act.','Base+Act.','Meses Ret.','Tasa Rec.','Monto Rec.','Costo Total Mes']];
-                const body = desgloseDetalladoMensualM40Global.map(r => [ 
-                    formatMesCuotaForDisplay(r.mesCuotaStr), formatNumber(r.sbcDiario), r.diasMes, `${(r.tasaM40*100).toFixed(3)}%`, 
-                    formatNumber(r.costoBase), formatNumber(r.inpcDen,3), formatNumber(r.inpcNum,3), formatNumber(r.factorAct,4), formatNumber(r.montoAct), formatNumber(r.costoBaseMasAct), 
-                    r.mesesRet, `${(r.tasaRec*100).toFixed(2)}%`, formatNumber(r.montoRec), formatNumber(r.costoTotalMes) 
-                ]);
+                addFooter(2, 5);
+
+                // --- PDF Page 3: Client Summary (With Strategy) ---
+                pdf.addPage();
+                addHeader("Estudio de Pensión (Con Estrategia M40)");
+                pdf.text(`Cliente: ${d.cliente.nombre}`, MARGIN, yPos);
+                yPos += 30;
+
+                addSectionTitle("Datos Clave de Proyección");
+                addDataRow("Número de Semanas Cotizadas:", formatNumber(d.m40Resultados.nuevasSemanas, 0));
+                addDataRow("Salario Diario Promedio:", `$ ${formatNumber(d.m40Resultados.sbcPromedioParaCalculoPensionM40)}`);
+                addDataRow("Edad de Pensión:", `${d.m40Resultados.nuevaEdad} años`);
+                addDataRow("SBC M40 Retroactiva:", `$ ${formatNumber(d.m40Periodo.sbcTope)}`);
+                yPos += 10;
+
+                addSectionTitle("Resultados de Pensión");
+                addDataRow("Pensión Mensual por Cesantía:", `$ ${formatNumber(d.m40Resultados.pensionMensualInicial)}`, GREEN);
+                addDataRow("Pensión Anual (12 mensualidades):", `$ ${formatNumber(d.m40Resultados.pensionMensualInicial * 12)}`);
+                addDataRow("Pensión Anual más Aguinaldo:", `$ ${formatNumber((d.m40Resultados.pensionMensualInicial * 12) + d.m40Resultados.aguinaldo)}`);
+                yPos += 10;
                 
-                let gTCB=0,gTMA=0,gTMR=0,gTCT=0; 
-                desgloseDetalladoMensualM40Global.forEach(r => { gTCB+=r.costoBase; gTMA+=r.montoAct; gTMR+=r.montoRec; gTCT+=r.costoTotalMes; });
-                body.push([ {content:'TOTAL PERIODO',colSpan:4,styles:{halign:'left',fontStyle:'bold'}}, formatNumber(gTCB), '', '', '', formatNumber(gTMA), '', '', '', formatNumber(gTMR),formatNumber(gTCT) ]);
+                addSectionTitle("Resumen Financiero");
+                const financialData = d.cobertura;
+                addDataRow("Costo Total del Proyecto:", `$ ${formatNumber(financialData.costoTotalContrato)}`, RED);
+                addDataRow("1er Depósito (Aportación Cliente):", `(-) $ ${formatNumber(financialData.primerDeposito)}`);
+                addDataRow("AFORE:", `(-) $ ${formatNumber(financialData.aforeProyectada)}`);
+                addDataRow("Extra (SAR/INFONAVIT):", `(-) $ ${formatNumber(financialData.extraAfore)}`);
+                addDataRow("Préstamo (Déficit):", `(-) $ ${formatNumber(financialData.prestamoRealUtilizado)}`);
+                pdf.setDrawColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+                pdf.line(PAGE_WIDTH - MARGIN - 150, yPos, PAGE_WIDTH - MARGIN, yPos);
+                yPos += 5;
+                addDataRow(financialData.etiquetaSaldoFinal, `$ ${formatNumber(financialData.montoSaldoFinal)}`, GREEN);
                 
-                pdf.autoTable({ 
-                    head:head, body:body, startY:70, theme:'grid', 
-                    headStyles:{fillColor:[0,51,102],textColor:[255,255,255],fontSize:5.5,cellPadding:1.5}, 
-                    bodyStyles:{fontSize:5,cellPadding:1}, alternateRowStyles:{fillColor:[240,244,248]}, 
-                    columnStyles:{ 0:{halign:'left',cellWidth:40}, 1:{halign:'right',cellWidth:40}, 2:{halign:'right',cellWidth:18}, 3:{halign:'right',cellWidth:33}, 4:{halign:'right',cellWidth:48}, 5:{halign:'right',cellWidth:38}, 6:{halign:'right',cellWidth:38}, 7:{halign:'right',cellWidth:38}, 8:{halign:'right',cellWidth:48}, 9:{halign:'right',cellWidth:48}, 10:{halign:'right',cellWidth:28}, 11:{halign:'right',cellWidth:33}, 12:{halign:'right',cellWidth:48}, 13:{halign:'right',cellWidth:53} }, 
-                    didParseCell: (data) => { if(data.row.index === body.length-1){ data.cell.styles.fontStyle='bold'; data.cell.styles.fillColor=[220,220,220]; data.cell.styles.textColor=[0,0,0]; } } 
+                addFooter(3, 5);
+
+                // --- PDF Page 4: Client Summary (Without Strategy) ---
+                pdf.addPage();
+                addHeader("Estudio de Pensión (Situación Actual)");
+                pdf.text(`Cliente: ${d.cliente.nombre}`, MARGIN, yPos);
+                yPos += 30;
+
+                addSectionTitle("Datos Clave Actuales");
+                addDataRow("Número de Semanas Cotizadas:", formatNumber(d.cliente.semanasCotizadasBase, 0));
+                addDataRow("Salario Diario Promedio:", `$ ${formatNumber(d.cliente.sbcPromedioBase)}`);
+                addDataRow("Edad de Pensión:", `${d.cliente.edadBase} años`);
+                yPos += 10;
+
+                addSectionTitle("Resultados de Pensión Sin Estrategia");
+                addDataRow("Pensión Mensual por Cesantía:", `$ ${formatNumber(d.pensionBase.PENSION_MENSUAL_ESTIMADA)}`, RGC_BLUE);
+                addDataRow("Pensión Anual (12 mensualidades):", `$ ${formatNumber(d.pensionBase.PENSION_MENSUAL_ESTIMADA * 12)}`);
+                addDataRow("Pensión Anual más Aguinaldo:", `$ ${formatNumber((d.pensionBase.PENSION_MENSUAL_ESTIMADA * 12) + d.pensionBase.AGUINALDO_ESTIMADO)}`);
+                
+                addFooter(4, 5);
+
+                // --- PDF Page 5: Technical Cost Breakdown ---
+                pdf.addPage();
+                addHeader("Desglose Técnico de Costos");
+                const costData = d.cobertura;
+                const subtotal = costData.costoM40P1 + costData.factorMultiplicador + costData.comision + costData.sumaFijaAdicional + costData.comisionExcedente;
+                pdf.autoTable({
+                    startY: yPos,
+                    head: [['Concepto', 'Monto']],
+                    body: [
+                        ['Costo M40 (c/Act+Rec)', `$ ${formatNumber(costData.costoM40P1)}`],
+                        ['Factor Multiplicador (50% s/M40)', `$ ${formatNumber(costData.factorMultiplicador)}`],
+                        ['Comisión (16% s/M40)', `$ ${formatNumber(costData.comision)}`],
+                        ['Suma Fija Adicional', `$ ${formatNumber(costData.sumaFijaAdicional)}`],
+                        ['Comisión por Excedente', `$ ${formatNumber(costData.comisionExcedente)}`],
+                        ['Subtotal', `$ ${formatNumber(subtotal)}`],
+                        ['Ajuste Manual', `(-) $ ${formatNumber(Math.abs(costData.ajusteManual))}`],
+                        ['Costo Total Final del Contrato', `$ ${formatNumber(costData.costoTotalContrato)}`]
+                    ],
+                    theme: 'grid',
+                    headStyles: { fillColor: RGC_BLUE, textColor: WHITE, fontStyle: 'bold' },
+                    bodyStyles: { fontStyle: 'bold', fontSize: 10 },
+                    columnStyles: { 1: { halign: 'right' } },
+                    didParseCell: (data) => {
+                        if (data.row.index >= 5) { // Subtotal, Ajuste, Total
+                            data.cell.styles.fillColor = BG_LIGHT_BLUE;
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                        if (data.row.index === 7) { // Total
+                            data.cell.styles.textColor = RGC_BLUE;
+                            data.cell.styles.fontSize = 12;
+                        }
+                    }
                 });
-                pdf.save(`Desglose_ActRec_M40_${nombreCliente.replace(/\s+/g, '_')}.pdf`);
-            } catch (e) {
-                console.error("Error exporting Act/Rec PDF:", e);
-                showCustomAlert("Error al generar el desglose en PDF.");
-            } finally {
-                exportButton.innerHTML = originalButtonContent;
-                exportButton.disabled = false;
-            }
-        }
-        
-        async function generatePdfChartsAsImages(d) {
-            try {
-                // This function is no longer needed as charts are removed from the main PDF.
-                // It can be kept for future use or removed.
-                return {};
+
+                addFooter(5, 5);
+
+                pdf.save(`Propuesta_RGC_${d.cliente.nombre.replace(/\s/g, '_')}.pdf`);
+
             } catch(e) {
-                console.error("Error generating chart images for PDF:", e);
-                showCustomAlert("Hubo un error al preparar las gráficas para el PDF.");
-                return {};
+                console.error("Error generating PDF:", e);
+                showCustomAlert("Ocurrió un error al generar el PDF. Por favor, intenta de nuevo.", "Error de Exportación");
+            } finally {
+                exportButton.innerHTML = `<i class="fas fa-download"></i>Exportar a PDF`;
+                exportButton.disabled = false;
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const agreementCheckbox = document.getElementById('agreementCheckbox');
-            const acceptAgreementButton = document.getElementById('acceptAgreementButton');
-            const agreementDateEl = document.getElementById('agreementDate');
+            document.getElementById('agreementCheckbox').addEventListener('change', (e) => {
+                document.getElementById('acceptAgreementButton').disabled = !e.target.checked;
+            });
+            
+            document.getElementById('login_password').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleLogin();
+            });
+            
+            document.getElementById('agreementDate').textContent = new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
 
-            if (agreementDateEl) {
-                agreementDateEl.textContent = new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
-            }
+            // --- Real-time Validation Setup ---
+            const setValidationState = (element, isValid, message = "") => {
+                const errorElement = document.getElementById(`${element.id}_error`);
+                element.classList.remove('input-valid', 'input-invalid');
+                if (!errorElement) return;
 
-            if (agreementCheckbox && acceptAgreementButton) {
-                agreementCheckbox.addEventListener('change', () => {
-                    acceptAgreementButton.disabled = !agreementCheckbox.checked;
-                });
-            }
+                errorElement.textContent = "";
+                
+                if (element.value.length === 0) return;
 
-            ['info_m40_p1_inicio', 'info_m40_p1_meses', 'info_aforeActual', 'info_tasaAfore', 'info_mesesInversionAfore', 'info_mesesPrimerDeposito', 'info_comisionExcedente', 'info_modoPrecisionContrato'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    const eventType = el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input';
-                    if (id === 'info_m40_p1_inicio') {
-                        el.addEventListener('change', () => {
-                            actualizarSBCMaximoM40();
-                            actualizarFechaFinM40Display();
-                        });
-                    } else if (id === 'info_m40_p1_meses') {
-                        el.addEventListener('input', actualizarFechaFinM40Display);
-                    } else if (id === 'info_modoPrecisionContrato') {
-                        el.addEventListener('change', toggleModoPrecision);
-                    } else {
-                        el.addEventListener('input', recalcularCoberturaTrasCambio);
-                    }
+                if (isValid) {
+                    element.classList.add('input-valid');
+                } else {
+                    element.classList.add('input-invalid');
+                    errorElement.textContent = message;
+                }
+            };
+
+            const validateField = (element) => {
+                const value = element.value;
+                const numValue = parseFloat(value);
+
+                switch (element.id) {
+                    case 'info_semanasCotizadas':
+                        setValidationState(element, !isNaN(numValue) && numValue >= 500, 'Debe ser un número mayor o igual a 500.');
+                        break;
+                    case 'info_edadCliente':
+                        setValidationState(element, !isNaN(numValue) && numValue >= 60, 'La edad mínima para pensionarse es 60.');
+                        break;
+                    case 'info_sbcPromedio':
+                        setValidationState(element, !isNaN(numValue) && numValue > 0, 'Debe ser un número mayor a 0.');
+                        break;
+                    case 'info_curpCliente':
+                        setValidationState(element, value.length === 18, 'El CURP debe tener 18 caracteres.');
+                        break;
+                }
+            };
+
+            const fieldsToValidate = ['info_semanasCotizadas', 'info_edadCliente', 'info_sbcPromedio', 'info_curpCliente'];
+            fieldsToValidate.forEach(id => {
+                const field = document.getElementById(id);
+                if (field) {
+                    field.addEventListener('input', () => validateField(field));
                 }
             });
 
-            document.querySelectorAll('.input-group input, .input-group select').forEach(el => el.classList.add('w-full'));
-            document.querySelectorAll('.sbc-detalle-table input, .sbc-detalle-table select').forEach(el => el.classList.add('w-full', 'p-2', 'border', 'rounded'));
-            
-            const passwordField = document.getElementById('login_password');
-            if (passwordField) {
-                passwordField.addEventListener('keypress', (event) => {
-                    if (event.key === 'Enter') {
-                        event.preventDefault(); 
-                        handleLogin();
-                    }
-                });
-            }
+
+            // Initially show the confidentiality modal
+            showElement('confidentialityModal');
         });
 
     </script>
 </body>
 </html>
+
 
