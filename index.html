@@ -10,6 +10,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -107,7 +109,9 @@
         .input-group input[type="password"],
         .input-group input[type="number"],
         .input-group input[type="month"],
-        .input-group select {
+        .input-group input[type="date"],
+        .input-group select,
+        .input-group textarea {
             padding: 0.8rem 1rem;
             border: 1px solid #CBD5E0;
             border-radius: 0.5rem; /* 8px */
@@ -116,7 +120,7 @@
             transition: all 0.2s ease-in-out;
             background-color: #FDFDFD;
         }
-        .input-group input:focus, .input-group select:focus {
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
             border-color: var(--gold); 
             box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
             outline: none;
@@ -125,22 +129,6 @@
             background-color: #E9ECEF;
         }
         
-        /* Real-time Validation Styles */
-        .input-valid {
-            border-color: var(--success-color);
-            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
-        }
-        .input-invalid {
-            border-color: var(--danger-color);
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
-        }
-        .validation-message {
-            font-size: 0.75rem; /* 12px */
-            color: var(--danger-color);
-            margin-top: 0.25rem;
-            height: 1rem; /* Reserve space to prevent layout shift */
-        }
-
         /* Botones */
         .btn {
             font-family: 'Montserrat', sans-serif;
@@ -208,21 +196,17 @@
             background-color: #E53E3E;
             color: var(--white);
         }
-
-        /* Tarjetas de Resultados */
-        .results-card {
-            background-color: var(--white);
-            padding: 2rem;
-            border-radius: 1rem;
-            margin-top: 2rem;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        
+        /* Employment Card Styles */
+        .employment-card {
+            background-color: #F8F9FA;
+            border: 1px solid #E2E8F0;
+            border-left: 5px solid var(--dark-blue);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
         }
-        .results-card .highlight { font-size: 1.5rem; font-weight: 700; }
-        .results-card .highlight-gold { color: var(--dark-gold); }
-        .results-card .highlight-blue { color: var(--dark-blue); }
-        .results-card .highlight-green { color: #16A34A; }
-        .results-card .highlight-red { color: #DC2626; }
         
         /* Login Container */
         #loginContainer {
@@ -358,6 +342,42 @@
             z-index: 100;
             transition: color 0.3s;
         }
+
+        /* Menu Styles */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        .menu-card {
+            background: var(--white);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(0, 51, 102, 0.08);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .menu-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0, 51, 102, 0.12);
+        }
+        .menu-card i {
+            font-size: 3rem;
+            color: var(--gold);
+            margin-bottom: 1.5rem;
+        }
+        .menu-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark-blue);
+            margin-bottom: 0.5rem;
+        }
+        .menu-card p {
+            font-size: 0.875rem;
+            color: var(--text-medium);
+        }
     </style>
 </head>
 <body>
@@ -397,7 +417,7 @@
     </div>
 
     <div id="sessionTimerContainer" style="display: none;">
-        <i class="fas fa-clock mr-2"></i>Tiempo restante: <span id="sessionCountdown">10:00</span>
+        <i class="fas fa-clock mr-2"></i>Tiempo restante: <span id="sessionCountdown">15:00</span>
     </div>
 
     <!-- Login Section -->
@@ -422,104 +442,133 @@
         </div>
     </div>
 
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl">
-        <!-- Main Application Content -->
-        <div id="mainContentContainer" style="display: none;">
+    <!-- Main Application Container -->
+    <div id="appContainer" class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl" style="display: none;">
+        
+        <!-- Main Menu Section -->
+        <div id="mainMenuSection">
             <header class="main-header">
                 <div class="logo-text">RGC PENSIONES Y SEGUROS</div>
-                <h1>Calculadora de Proyección de Pensión</h1>
-                <p>Una herramienta exclusiva para transformar el futuro de nuestros clientes.</p>
+                <h1>Panel de Asesor</h1>
+                <p>Selecciona una herramienta para comenzar.</p>
             </header>
+            <div class="menu-grid">
+                <div class="menu-card" onclick="showSection('calculatorSection')">
+                    <i class="fas fa-calculator"></i>
+                    <h3>Cálculo de Pensión y Crédito</h3>
+                    <p>Realiza proyecciones detalladas de pensión y financiamiento para clientes.</p>
+                </div>
+                <div class="menu-card" onclick="showCustomAlert('Este módulo se encuentra en desarrollo.', 'Próximamente')">
+                    <i class="fas fa-file-contract"></i>
+                    <h3>Conservacion y Vigencia de Derechos, SBC Exacto.</h3>
+                    <p>Calcula la conservación, vigencia y el SBC exacto para tus clientes.</p>
+                </div>
+                <div class="menu-card" onclick="showSection('contractSection')">
+                    <i class="fas fa-pencil-alt"></i>
+                    <h3>Realizar Contrato</h3>
+                    <p>Módulo para la generación de contratos.</p>
+                </div>
+                <div class="menu-card" onclick="showCustomAlert('Este módulo se encuentra en desarrollo.', 'Próximamente')">
+                    <i class="fas fa-users"></i>
+                    <h3>Cartera de Clientes</h3>
+                    <p>Gestiona y consulta la información de tus clientes.</p>
+                </div>
+                 <div class="menu-card md:col-span-2" onclick="promptForCommissions()">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <h3>Comisiones</h3>
+                    <p>Calcula, registra y reporta comisiones y anticipos para el equipo.</p>
+                </div>
+            </div>
+        </div>
 
+        <!-- Calculator Section -->
+        <div id="calculatorSection" style="display: none;">
+            <button onclick="showSection('mainMenuSection')" class="btn btn-secondary mb-6"><i class="fas fa-arrow-left mr-2"></i>Volver al Menú</button>
             <section id="infoSection1" class="infographic-section">
-                <h2><i class="fas fa-user-edit"></i>Paso 1: Datos del Cliente</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <h2><i class="fas fa-user-edit"></i>Paso 1: Datos y Análisis de Historial</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-8">
                     <div class="input-group">
                         <label for="info_nombreCompleto">Nombre Completo:</label>
                         <input type="text" id="info_nombreCompleto" placeholder="Nombre completo del cliente" class="w-full">
                     </div>
                     <div class="input-group">
-                        <label for="info_semanasCotizadas">Semanas Cotizadas Netas:</label>
-                        <input type="number" id="info_semanasCotizadas" placeholder="Ej: 1250" class="w-full">
-                        <p id="info_semanasCotizadas_error" class="validation-message"></p>
+                        <label for="info_curpCliente">CURP:</label>
+                        <input type="text" id="info_curpCliente" placeholder="CURP del cliente (18 caracteres)" maxlength="18" oninput="this.value = this.value.toUpperCase();" class="w-full">
                     </div>
-                    <div class="input-group">
-                        <label for="info_edadCliente">Edad Actual:</label>
-                        <input type="number" id="info_edadCliente" placeholder="Ej: 60" class="w-full">
-                        <p id="info_edadCliente_error" class="validation-message"></p>
+                    <div class="input-group md:col-span-2">
+                        <label for="info_semanasTotalesManual">Semanas Totales Cotizadas (Manual):</label>
+                        <input type="number" id="info_semanasTotalesManual" placeholder="Ej: 1500" class="w-full">
                     </div>
-                    <div class="input-group">
-                        <label for="info_sbcPromedio">SBC Promedio Base (250 sem):</label>
-                        <input type="number" id="info_sbcPromedio" placeholder="Ingresar o calcular" class="w-full">
-                        <p id="info_sbcPromedio_error" class="validation-message"></p>
-                    </div>
-                </div>
-                
-                <div class="mt-8 mb-4">
-                    <label class="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="info_usarSBCDetallado" class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-gold-500" onchange="toggleSBCDetalladoSeccion()">
-                        <span class="ml-3 text-gray-700 font-medium">Usar Cálculo de SBC Detallado (Modo Precisión)</span>
-                    </label>
                 </div>
 
-                <div id="info_seccionSBCDetallado" class="mt-6 p-6 border border-gray-200 rounded-xl bg-gray-50" style="display: none;">
-                    <h3 class="subsection-title">Cálculo Detallado de SBC Promedio (Últimos 1750 días)</h3>
-                    <div class="overflow-x-auto mb-4">
-                        <table id="info_tablaHistorialLaboral" class="sbc-detalle-table w-full text-sm text-left">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                <h3 class="subsection-title">Historial de Empleos</h3>
+                <div id="employmentCardsContainer">
+                    <!-- Employment cards will be added here by JS -->
+                </div>
+                <button onclick="addEmploymentCard()" class="btn btn-secondary mt-4"><i class="fas fa-plus mr-2"></i>Agregar Empleo</button>
+                
+                <div class="text-center mt-10">
+                    <button onclick="analizarYCalcularSBC()" class="btn btn-blue text-lg">
+                        <i class="fas fa-cogs"></i>Analizar Historial y Calcular
+                    </button>
+                </div>
+
+                <div id="sbcAnalysisResultsContainer" class="mt-8" style="display: none;">
+                    <h3 class="subsection-title">Resultados del Análisis</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-sm text-blue-800">SBC Promedio</p>
+                            <p id="res_sbcPromedio" class="text-2xl font-bold text-blue-900">$0.00</p>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-sm text-blue-800">Edad Actual</p>
+                            <p id="res_edadActual" class="text-2xl font-bold text-blue-900">0 años</p>
+                        </div>
+                        <div id="vigenciaResultBox" class="p-4 rounded-lg">
+                            <p id="vigenciaResultText" class="text-2xl font-bold">--</p>
+                            <p id="vigenciaResultSubText" class="text-sm">--</p>
+                        </div>
+                    </div>
+                     <div class="mt-6 overflow-x-auto">
+                        <h4 class="font-semibold text-gray-700 mb-2">Periodos Utilizados para el Cálculo del SBC</h4>
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-gray-100">
                                 <tr>
-                                    <th scope="col" class="px-4 py-3">Fecha Mov.</th>
-                                    <th scope="col" class="px-4 py-3">Tipo Mov.</th>
-                                    <th scope="col" class="px-4 py-3">Nombre Patrón</th>
-                                    <th scope="col" class="px-4 py-3">SBC Diario ($)</th>
-                                    <th scope="col" class="px-4 py-3 w-24 text-center">Acción</th>
+                                    <th class="p-2">Fecha Inicio</th>
+                                    <th class="p-2">Fecha Fin</th>
+                                    <th class="p-2 text-right">Días Usados</th>
+                                    <th class="p-2 text-right">SBC Diario</th>
+                                    <th class="p-2 text-right">SBC Ponderado</th>
                                 </tr>
                             </thead>
-                            <tbody id="info_tablaHistorialLaboralBody"></tbody>
+                            <tbody id="sbcAnalysisTableBody">
+                                <!-- Rows will be added here by JS -->
+                            </tbody>
                         </table>
                     </div>
-                    <button type="button" onclick="agregarMovimientoHistorialInfografia()" class="btn btn-secondary text-sm py-2 px-4"><i class="fas fa-plus"></i>Agregar</button>
-                    <button type="button" onclick="calcularYUsarSBCDetalladoInfografia()" class="btn btn-blue text-sm py-2 px-4 float-right">
-                        <i class="fas fa-check-circle"></i>Calcular y Usar
-                    </button>
                 </div>
 
-                <div class="text-center mt-10">
-                    <button onclick="calcularPensionBaseInfografia()" class="btn btn-blue">
-                        <i class="fas fa-calculator"></i>Calcular Pensión Base
-                    </button>
-                </div>
-                <div id="info_resultadosPensionBase" class="results-card" style="display: none;">
-                    <h3 class="text-lg font-semibold mb-4 text-blue-700">Pensión Base Estimada</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-6">
-                        <div>
-                            <p class="text-sm text-gray-500">Pensión Mensual:</p>
-                            <p id="info_resPensionMensual" class="text-2xl font-bold highlight-blue">$0.00</p>
+                <div id="basePensionResultsContainer" class="mt-8" style="display: none;">
+                    <h3 class="subsection-title">Resultados de Pensión Base (Sin M40)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <p class="text-sm text-green-800">Pensión Mensual Estimada</p>
+                            <p id="res_base_pensionMensual" class="text-2xl font-bold text-green-900">$0.00</p>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Aguinaldo Anual:</p>
-                            <p id="info_resAguinaldo" class="text-2xl font-bold highlight-blue">$0.00</p>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <p class="text-sm text-green-800">Aguinaldo Estimado</p>
+                            <p id="res_base_aguinaldo" class="text-2xl font-bold text-green-900">$0.00</p>
                         </div>
-                        <div class="md:col-span-2 mt-2 pt-2 border-t">
-                             <p class="text-sm text-gray-500">Ingreso Total (Primer Año):</p>
-                             <p id="info_resIngresoAnual" class="text-2xl font-bold highlight-green">$0.00</p>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <p class="text-sm text-green-800">Ingreso Anual Total</p>
+                            <p id="res_base_ingresoAnual" class="text-2xl font-bold text-green-900">$0.00</p>
                         </div>
                     </div>
-                    <h4 class="text-md font-semibold mt-6 mb-3 text-blue-700">Proyección de Crecimiento (5% inflación anual)</h4>
-                    <div id="info_proyeccionPensionBase" class="overflow-x-auto">
-                        <!-- Table will be generated by JS -->
-                    </div>
                 </div>
-                <div id="info_mensajeErrorBase" class="error-message-infographic" style="display: none;"><p></p></div>
             </section>
 
             <section id="infoSection2" class="infographic-section">
                 <h2><i class="fas fa-chart-line"></i>Paso 2: Estrategia Modalidad 40</h2>
-                 <div class="input-group mb-6">
-                    <label for="info_curpCliente">CURP:</label>
-                    <input type="text" id="info_curpCliente" placeholder="CURP del cliente (18 caracteres)" maxlength="18" oninput="this.value = this.value.toUpperCase()" class="w-full">
-                    <p id="info_curpCliente_error" class="validation-message"></p>
-                </div>
                 <h3 class="subsection-title">Definir Periodo de Inversión en M40</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
                     <div class="input-group">
@@ -534,105 +583,191 @@
                         <label for="info_m40_p1_sbc">SBC Diario M40 (Tope):</label>
                         <input type="number" id="info_m40_p1_sbc" placeholder="Automático" class="w-full">
                     </div>
+                    <div class="md:col-span-3 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
+                        <div id="info_m40_baja_display" class="text-sm font-semibold text-blue-800 leading-relaxed">
+                            -- Ingrese fechas para ver la edad de baja --
+                        </div>
+                    </div>
                 </div>
                 <div class="text-center mt-10">
                     <button id="btnCalcularEscenarioM40" onclick="calcularEscenarioM40Infografia()" class="btn btn-gold">
                         <i class="fas fa-cogs"></i>Calcular Proyección M40
                     </button>
                 </div>
-                <div id="info_resultadosEscenarioM40" class="results-card" style="display: none;">
-                    <h3 class="text-xl font-bold mb-4 text-center" style="color: var(--dark-gold);">Resultados de la Proyección</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div class="text-center p-4 rounded-lg bg-gray-50">
-                            <h4 class="text-gray-500 font-semibold">Pensión Base Mensual</h4>
-                            <p id="info_compPensionBase" class="text-3xl font-bold highlight-blue">$0.00</p>
-                        </div>
-                        <div class="text-center p-4 rounded-lg border-2 border-amber-400 bg-amber-50">
-                            <h4 class="text-amber-800 font-semibold">Pensión M40 Mensual</h4>
-                            <p id="info_compPensionM40" class="text-3xl font-bold highlight-gold">$0.00</p>
-                        </div>
-                    </div>
-                    <p class="text-center text-2xl font-bold mb-6"><span class="highlight-green">Incremento Mensual de: <span id="info_compIncrementoNetoM40">$0.00</span>!</span> 🚀</p>
-                    <hr class="my-6">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                        <p><strong>Nuevo SBC Promedio:</strong> <span id="info_nuevoSBCPromedioM40" class="font-semibold"></span> MXN</p>
-                        <p><strong>Nuevas Semanas Cotizadas:</strong> <span id="info_nuevasSemanasM40" class="font-semibold"></span></p>
-                        <p><strong>Edad para % Pensión:</strong> <span id="info_nuevaEdadM40" class="font-semibold"></span> años</p>
-                        <p><strong>Costo Total M40 (c/Act+Rec):</strong> <span id="info_costoTotalM40Simulacion" class="font-semibold highlight-red"></span> MXN</p>
-                    </div>
-                </div>
             </section>
 
             <section id="infoSection3" class="infographic-section">
                 <h2><i class="fas fa-hand-holding-usd"></i>Paso 3: Análisis Financiero</h2>
-                <h3 class="subsection-title">Fuentes de Cobertura</h3>
+                <h3 class="subsection-title">Fuentes de Cobertura y Comisiones</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <div class="input-group">
                         <label for="info_aforeActual">AFORE Actual ($):</label>
-                        <input type="number" id="info_aforeActual" placeholder="0.00" oninput="recalcularCoberturaTrasCambio()" class="w-full">
+                        <input type="number" id="info_aforeActual" placeholder="0.00" oninput="recalculateScenario(1); recalculateScenario(2);">
                     </div>
                     <div class="input-group">
-                        <label for="info_mesesPrimerDeposito">Meses para Primer Depósito (6-10):</label>
-                        <input type="number" id="info_mesesPrimerDeposito" value="6" min="6" max="10" oninput="recalcularCoberturaTrasCambio()" class="w-full">
+                        <label for="info_mesesPrimerDeposito">Meses para Primer Depósito (6-12):</label>
+                        <input type="number" id="info_mesesPrimerDeposito" value="6" min="6" max="12" onchange="handleMesesDepositoChange(this)" data-last-valid="6">
                     </div>
-                </div>
-                 <div class="mt-8 pt-6 border-t">
-                    <h3 class="subsection-title">Ajustes Adicionales al Costo</h3>
-                    <div class="input-group">
+                     <div class="input-group md:col-span-2">
                         <label for="info_comisionExcedente">Comisión por Excedente ($):</label>
-                        <input type="number" id="info_comisionExcedente" placeholder="0.00" oninput="recalcularCoberturaTrasCambio()" class="w-full">
+                        <input type="number" id="info_comisionExcedente" placeholder="0.00" oninput="recalculateScenario(1); recalculateScenario(2);">
                     </div>
-                </div>
-                <div class="results-card mt-8">
-                    <p><strong>Costo Total del Contrato (Bruto):</strong> <span id="info_costoTotalContratoBruto" class="font-semibold highlight-red float-right">$0.00</span></p>
-                    <hr class="my-4">
-                    <p>1. Saldo AFORE: <span id="info_coberturaAfore" class="font-semibold highlight-green float-right">$0.00</span></p>
-                    <p>2. Primer Depósito (<span id="display_mesesPrimerDeposito">6</span> meses): <span id="info_coberturaPrimerDeposito" class="font-semibold highlight-green float-right">$0.00</span></p>
-                    <p>3. Extra AFORE (Retiro M40): <span id="info_coberturaExtraAfore" class="font-semibold highlight-green float-right">$0.00</span></p>
-                    <hr class="my-4">
-                    <p class="font-bold">Subtotal Cobertura: <span id="info_coberturaSubtotalSinPrestamo" class="font-semibold highlight-green float-right">$0.00</span></p>
-                     <div id="info_prestamoInfo" class="mt-4 border-t pt-4" style="display: none;">
-                        <p class="text-red-700 font-medium">Déficit a cubrir: <span id="info_deficitAntesPrestamo" class="font-semibold float-right">$0.00</span></p>
-                        <p class="text-blue-700 font-medium">Préstamo Necesario (Estimado): <span id="info_prestamoNecesario" class="font-semibold float-right">$0.00</span></p>
-                        <p class="text-blue-700 font-medium">Descuento Mensual Préstamo: <span id="info_descuentoMensualPrestamo" class="font-semibold float-right">$0.00</span></p>
-                    </div>
-                     <p class="mt-6 text-xl font-bold text-center"><span id="info_resultadoAnalisisCredito"></span></p>
-                     <p class="text-center text-lg"><span id="info_etiquetaSaldoFinal" class="font-semibold"></span> <span id="info_montoSaldoFinal" class="font-bold">$0.00</span></p>
-                </div>
-            </section>
-
-            <section id="infoSection4" class="infographic-section">
-                <h2><i class="fas fa-rocket"></i>Paso 4: Resumen de Beneficios</h2>
-                 <div class="results-card bg-blue-50 border-blue-200">
-                    <p class="text-center text-2xl font-bold text-blue-800 mb-6">
-                        Incremento Neto Mensual (Año 1): <span id="info_ventajaIncrementoNeto" class="highlight-green">$0.00</span>
-                    </p>
-                    <div class="text-center mb-6">
-                        <i class="fas fa-home fa-4x text-blue-400 mb-2"></i>
-                        <p class="mt-2 text-lg text-gray-700">Tu nueva pensión equivale a un inmueble de:</p>
-                        <p class="text-3xl font-bold text-blue-700" id="info_ventajaValorInmueble">$0.00 MXN</p>
-                        <p class="text-sm text-gray-500">(Generando rentas vitalicias, cap. 0.4% mensual)</p>
-                    </div>
-                     <hr class="my-6">
-                    <h4 class="text-lg font-semibold text-blue-800 mb-3">Proyección de Pensión Neta Anual:</h4>
-                    <div id="info_proyeccionPensionNetaAnual" class="space-y-1 text-sm overflow-x-auto"></div>
                 </div>
             </section>
             
-            <section id="infoSection5" class="infographic-section text-center">
-                <h2><i class="fas fa-file-pdf"></i>Paso 5: Exportar Propuesta</h2>
-                <p class="mb-8 text-gray-600 text-lg max-w-2xl mx-auto">Genera un reporte profesional en PDF con todos los detalles de esta proyección para compartir con el cliente.</p>
-                <button id="exportPdfButton" onclick="exportarPropuestaPDFInfografia()" class="btn btn-gold text-lg">
-                    <i class="fas fa-download"></i>Exportar a PDF
-                </button>
+            <section id="infoSection4" class="infographic-section">
+                <h2><i class="fas fa-balance-scale-right"></i>Paso 4: Comparador de Escenarios</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Scenario 1 Card -->
+                    <div class="bg-gray-50 p-6 rounded-xl border">
+                        <h3 class="text-lg font-bold text-blue-800 mb-4 text-center">Escenario 1</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="input-group">
+                                <label for="scenario_1_meses">Meses M40:</label>
+                                <input type="number" id="scenario_1_meses" class="w-full" oninput="recalculateScenario(1)">
+                            </div>
+                            <div class="input-group">
+                                <label for="scenario_1_semanas">Semanas Totales:</label>
+                                <input type="number" id="scenario_1_semanas" class="w-full" readonly>
+                            </div>
+                        </div>
+                        <div id="scenario_1_results" class="mt-4 pt-4 border-t text-sm space-y-2">
+                             <!-- Key Data -->
+                            <div class="bg-white p-3 rounded-md shadow-sm mb-3">
+                                <p><strong>Edad Final:</strong> <span id="scenario_1_edad_final" class="font-semibold float-right"></span></p>
+                                <p><strong>SBC Promedio Final:</strong> <span id="scenario_1_sbc_final" class="font-semibold float-right"></span></p>
+                                <p><strong>Semanas Finales:</strong> <span id="scenario_1_semanas_finales" class="font-semibold float-right"></span></p>
+                            </div>
+                            <!-- Pension -->
+                            <p class="font-semibold text-base">Pensión Mensual: <span id="scenario_1_pension" class="float-right font-bold text-green-600">$0.00</span></p>
+                            <p class="font-semibold">Aguinaldo: <span id="scenario_1_aguinaldo" class="float-right font-bold text-green-600">$0.00</span></p>
+                            <hr class="my-2">
+                            <!-- Financials -->
+                            <p>Costo Total Proyecto: <span id="scenario_1_costo_total" class="float-right font-bold text-red-600">$0.00</span></p>
+                            <p>Cobertura AFORE: <span id="scenario_1_cobertura_afore" class="float-right text-gray-700">$0.00</span></p>
+                            <p>Cobertura 1er Depósito: <span id="scenario_1_cobertura_deposito" class="float-right text-gray-700">$0.00</span></p>
+                            <p>Cobertura Extra AFORE: <span id="scenario_1_cobertura_extra" class="float-right text-gray-700">$0.00</span></p>
+                            <p>Préstamo Requerido: <span id="scenario_1_prestamo" class="float-right font-bold text-blue-600">$0.00</span></p>
+                            <p class="font-semibold text-base mt-1">Resultado: <span id="scenario_1_resultado_final" class="float-right font-bold">$0.00</span></p>
+                            <!-- Projection Table -->
+                            <div id="scenario_1_proyeccion" class="mt-3 overflow-x-auto"></div>
+                        </div>
+                    </div>
+                    <!-- Scenario 2 Card -->
+                    <div class="bg-gray-50 p-6 rounded-xl border">
+                        <h3 class="text-lg font-bold text-blue-800 mb-4 text-center">Escenario 2</h3>
+                         <div class="grid grid-cols-2 gap-4">
+                            <div class="input-group">
+                                <label for="scenario_2_meses">Meses M40:</label>
+                                <input type="number" id="scenario_2_meses" class="w-full" oninput="recalculateScenario(2)">
+                            </div>
+                            <div class="input-group">
+                                <label for="scenario_2_semanas">Semanas Totales:</label>
+                                <input type="number" id="scenario_2_semanas" class="w-full" readonly>
+                            </div>
+                        </div>
+                        <div id="scenario_2_results" class="mt-4 pt-4 border-t text-sm space-y-2">
+                            <!-- Key Data -->
+                            <div class="bg-white p-3 rounded-md shadow-sm mb-3">
+                                <p><strong>Edad Final:</strong> <span id="scenario_2_edad_final" class="font-semibold float-right"></span></p>
+                                <p><strong>SBC Promedio Final:</strong> <span id="scenario_2_sbc_final" class="font-semibold float-right"></span></p>
+                                <p><strong>Semanas Finales:</strong> <span id="scenario_2_semanas_finales" class="font-semibold float-right"></span></p>
+                            </div>
+                            <!-- Pension -->
+                            <p class="font-semibold text-base">Pensión Mensual: <span id="scenario_2_pension" class="float-right font-bold text-green-600">$0.00</span></p>
+                            <p class="font-semibold">Aguinaldo: <span id="scenario_2_aguinaldo" class="float-right font-bold text-green-600">$0.00</span></p>
+                            <hr class="my-2">
+                             <!-- Financials -->
+                            <p>Costo Total Proyecto: <span id="scenario_2_costo_total" class="float-right font-bold text-red-600">$0.00</span></p>
+                            <p>Cobertura AFORE: <span id="scenario_2_cobertura_afore" class="float-right text-gray-700">$0.00</span></p>
+                            <p>Cobertura 1er Depósito: <span id="scenario_2_cobertura_deposito" class="float-right text-gray-700">$0.00</span></p>
+                            <p>Cobertura Extra AFORE: <span id="scenario_2_cobertura_extra" class="float-right text-gray-700">$0.00</span></p>
+                            <p>Préstamo Requerido: <span id="scenario_2_prestamo" class="float-right font-bold text-blue-600">$0.00</span></p>
+                            <p class="font-semibold text-base mt-1">Resultado: <span id="scenario_2_resultado_final" class="float-right font-bold">$0.00</span></p>
+                             <!-- Projection Table -->
+                            <div id="scenario_2_proyeccion" class="mt-3 overflow-x-auto"></div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
-            <footer class="app-footer">
-                <div class="logo-text-footer">RGC PENSIONES Y SEGUROS</div>
-                <p>&copy; <span id="currentYear"></span> RGC Pensiones y Seguros. Todos los derechos reservados.</p>
-                <p class="text-xs mt-1 opacity-70">Esta es una simulación y los resultados pueden variar. Consulta a un asesor para una evaluación detallada.</p>
-            </footer>
+            <section id="infoSection5" class="infographic-section text-center">
+                <h2><i class="fas fa-file-pdf"></i>Paso 5: Exportar Reportes</h2>
+                <p class="mb-8 text-gray-600 text-lg max-w-2xl mx-auto">Genera los reportes en PDF con la información de los escenarios analizados en el Paso 4.</p>
+                <div class="flex justify-center gap-6">
+                    <button onclick="generateClientPDF()" class="btn btn-blue text-lg">
+                        <i class="fas fa-user"></i>Comparativa para Cliente
+                    </button>
+                    <button onclick="promptForPassword()" class="btn btn-gold text-lg">
+                        <i class="fas fa-lock"></i>Reporte Técnico Completo
+                    </button>
+                </div>
+            </section>
         </div>
+
+        <!-- Contract Section -->
+        <div id="contractSection" style="display: none;">
+            <button onclick="showSection('mainMenuSection')" class="btn btn-secondary mb-6"><i class="fas fa-arrow-left mr-2"></i>Volver al Menú</button>
+            <section class="infographic-section">
+                <h2><i class="fas fa-file-signature"></i>Generador de Contrato de Servicios</h2>
+                <div class="input-group mb-6">
+                    <label for="contract_monto">Monto del Contrato (Precio de Venta Total) $:</label>
+                    <input type="number" id="contract_monto" placeholder="Ej: 500000.00" class="w-full">
+                </div>
+
+                <h3 class="subsection-title">Datos del Cliente</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div class="input-group">
+                        <label for="contract_cliente_nombre">Nombre Completo:</label>
+                        <input type="text" id="contract_cliente_nombre" placeholder="Nombre(s) Apellido Paterno Apellido Materno" class="w-full">
+                    </div>
+                    <div class="input-group">
+                        <label for="contract_cliente_telefono">Teléfono (10 dígitos):</label>
+                        <input type="text" id="contract_cliente_telefono" placeholder="5512345678" maxlength="10" class="w-full">
+                    </div>
+                    <div class="input-group">
+                        <label for="contract_cliente_email">Correo Electrónico:</label>
+                        <input type="text" id="contract_cliente_email" placeholder="cliente@email.com" class="w-full">
+                    </div>
+                    <div class="input-group">
+                        <label for="contract_cliente_direccion">Dirección Completa:</label>
+                        <input type="text" id="contract_cliente_direccion" placeholder="Calle, Número, Colonia, Alcaldía, C.P., Ciudad" class="w-full">
+                    </div>
+                </div>
+
+                <h3 class="subsection-title mt-8">Datos del Responsable Solidario</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div class="input-group">
+                        <label for="contract_rs_nombre">Nombre Completo:</label>
+                        <input type="text" id="contract_rs_nombre" placeholder="Nombre(s) Apellido Paterno Apellido Materno" class="w-full">
+                    </div>
+                    <div class="input-group">
+                        <label for="contract_rs_telefono">Teléfono (10 dígitos):</label>
+                        <input type="text" id="contract_rs_telefono" placeholder="5587654321" maxlength="10" class="w-full">
+                    </div>
+                     <div class="input-group">
+                        <label for="contract_rs_email">Correo Electrónico:</label>
+                        <input type="text" id="contract_rs_email" placeholder="responsable@email.com" class="w-full">
+                    </div>
+                    <div class="input-group">
+                        <label for="contract_rs_direccion">Dirección Completa:</label>
+                        <input type="text" id="contract_rs_direccion" placeholder="Calle, Número, Colonia, Alcaldía, C.P., Ciudad" class="w-full">
+                    </div>
+                </div>
+
+                <div class="text-center mt-10">
+                    <button onclick="generateContractPDF()" class="btn btn-gold text-lg">
+                        <i class="fas fa-file-pdf"></i>Generar y Descargar Contrato
+                    </button>
+                </div>
+            </section>
+        </div>
+        
+        <footer class="app-footer">
+            <div class="logo-text-footer">RGC PENSIONES Y SEGUROS</div>
+            <p>&copy; <span id="currentYear"></span> RGC Pensiones y Seguros. Todos los derechos reservados.</p>
+            <p class="text-xs mt-1 opacity-70">Esta es una simulación y los resultados pueden variar. Consulta a un asesor para una evaluación detallada.</p>
+        </footer>
     </div>
 
     <!-- Custom Alert Modal -->
@@ -640,18 +775,24 @@
         <div class="modal-content modal-content-alert">
             <h2 id="customAlertTitle" class="text-xl">Alerta</h2>
             <p id="customAlertMessage" class="text-base my-6"></p>
-            <button onclick="closeCustomAlert()" class="btn btn-blue">Aceptar</button>
+            <div id="passwordPromptContainer" style="display: none;" class="mt-4">
+                <input type="password" id="pdfPasswordInput" class="w-full p-2 border rounded" placeholder="Contraseña de asesor">
+            </div>
+            <button id="customAlertButton" onclick="closeCustomAlert()" class="btn btn-blue mt-4">Aceptar</button>
         </div>
     </div>
     
     <script>
         // --- Global Variables ---
         let nombreAsesorGlobal = "";
+        let passwordPromptContext = {};
+        let employmentCardIdCounter = 0;
+        let scenarioData = { 1: {}, 2: {} };
         
         // --- Session Timer Logic ---
         let sessionTimeout;
         let sessionInterval;
-        const sessionDuration = 10 * 60 * 1000; // 10 minutes
+        const sessionDuration = 15 * 60 * 1000; // 15 minutes
         let sessionEndTime;
 
         function startSessionTimer() {
@@ -682,7 +823,7 @@
         function logout() {
             clearTimeout(sessionTimeout);
             clearInterval(sessionInterval);
-            hideElement('mainContentContainer');
+            hideElement('appContainer');
             hideElement('sessionTimerContainer');
             showElement('loginContainer');
             document.getElementById('login_password').value = '';
@@ -713,11 +854,16 @@
         function showCustomAlert(message, title = "Atención") {
             document.getElementById('customAlertTitle').textContent = title;
             document.getElementById('customAlertMessage').textContent = message;
+            document.getElementById('passwordPromptContainer').style.display = 'none';
+            const btn = document.getElementById('customAlertButton');
+            btn.textContent = 'Aceptar';
+            btn.onclick = closeCustomAlert;
             showElement('customAlertModal');
         }
 
         function closeCustomAlert() {
             hideElement('customAlertModal');
+            document.getElementById('passwordPromptContainer').style.display = 'none';
         }
         
         function acceptAgreement() {
@@ -725,6 +871,20 @@
             showElement('loginContainer');
             document.getElementById('login_asesor').focus();
         }
+        
+        function showSection(sectionId) {
+            // Hide all main sections
+            document.getElementById('mainMenuSection').style.display = 'none';
+            document.getElementById('calculatorSection').style.display = 'none';
+            document.getElementById('contractSection').style.display = 'none';
+            
+            // Show the requested section
+            const sectionToShow = document.getElementById(sectionId);
+            if (sectionToShow) {
+                sectionToShow.style.display = 'block';
+            }
+        }
+
 
         // --- LOGIN FUNCTIONALITY ---
         function handleLogin() {
@@ -751,8 +911,8 @@
             setTimeout(() => {
                 if (password === "OICI120566010503") { 
                     hideElement('loginContainer');
-                    showElement('mainContentContainer');
-                    initializeMainAppDisplay();
+                    showElement('appContainer');
+                    showSection('mainMenuSection');
                     startSessionTimer(); 
                 } else {
                     const loginErrorTextEl = document.querySelector('#login_errorMessage p');
@@ -765,15 +925,13 @@
         }
         
         function initializeMainAppDisplay() {
-            hideElement('info_resultadosPensionBase'); 
-            hideElement('info_resultadosEscenarioM40');
             document.getElementById('currentYear').textContent = new Date().getFullYear();
         }
 
 
         // --- LÓGICA DE CÁLCULO Y DATOS ECONÓMICOS ---
         let pensionBaseResultadosInfo = { PENSION_MENSUAL_ESTIMADA: 0, AGUINALDO_ESTIMADO: 0 };
-        let datosClienteInfo = { nombre: '', semanasCotizadasBase: 0, edadBase: 0, sbcPromedioBase: 0, sbcDetalladoUsado: false };
+        let datosClienteInfo = { nombre: '', semanasCotizadasBase: 0, edadBase: 0, sbcPromedioBase: 0 };
         let aforeProyectadaGlobalInfo = 0;
         let m40ResultadosInfo = { 
             pensionMensualInicial: 0, 
@@ -899,10 +1057,6 @@
             fechaFinObj.setUTCDate(0); 
             return `${fechaFinObj.getUTCFullYear()}-${String(fechaFinObj.getUTCMonth() + 1).padStart(2, '0')}`;
         }
-
-        function showError(sectionSuffix, message) {
-            showCustomAlert(message, "Error en Datos");
-        }
         
         function actualizarSBCMaximoM40() {
             const inicioP1Str = document.getElementById('info_m40_p1_inicio').value;
@@ -922,234 +1076,288 @@
         function actualizarFechaFinM40Display() {
             const fechaInicioStr = document.getElementById('info_m40_p1_inicio').value;
             const numMesesStr = document.getElementById('info_m40_p1_meses').value;
+            const curp = document.getElementById('info_curpCliente').value;
             const calcularBtn = document.getElementById('btnCalcularEscenarioM40');
+            const bajaDisplayEl = document.getElementById('info_m40_baja_display');
 
-            if (fechaInicioStr && numMesesStr) {
-                const numMeses = parseInt(numMesesStr);
-                if (numMeses > 0) {
-                    const fechaFinStr = calcularFechaFinDesdeMeses(fechaInicioStr, numMeses);
-                    if (fechaFinStr) {
-                        const [finAnio, finMes] = fechaFinStr.split('-').map(Number);
-                        const hoy = new Date();
-                        const primerDiaMesActual = new Date(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth(), 1));
-                        const ultimoDiaMesFinM40 = new Date(Date.UTC(finAnio, finMes -1, getDiasEnMes(finAnio, finMes)));
-                        
-                        if (ultimoDiaMesFinM40 < primerDiaMesActual) {
-                            if(calcularBtn) calcularBtn.disabled = true;
-                        } else {
-                            if(calcularBtn) calcularBtn.disabled = false;
-                        }
-                    }
-                }
+            if(calcularBtn) calcularBtn.disabled = false;
+
+            if (!fechaInicioStr || !numMesesStr || numMesesStr === '0') {
+                bajaDisplayEl.innerHTML = '-- Ingrese fechas y CURP para ver la edad de baja --';
+                return;
             }
-        }
+            
+            if (curp.length !== 18) {
+                bajaDisplayEl.innerHTML = '<span class="text-red-600">Ingrese un CURP válido (18 caracteres) para calcular la edad.</span>';
+                return;
+            }
+            
+            const fechaNacimiento = extraerFechaNacimientoCURP(curp);
+            if (!fechaNacimiento) {
+                bajaDisplayEl.innerHTML = '<span class="text-red-600">CURP inválido, no se puede calcular la edad.</span>';
+                return;
+            }
 
-        function toggleSBCDetalladoSeccion() {
-            const checkbox = document.getElementById('info_usarSBCDetallado');
-            const sbcPromedioInput = document.getElementById('info_sbcPromedio');
-            const tbody = document.getElementById('info_tablaHistorialLaboralBody'); 
-            if (checkbox.checked) {
-                showElement('info_seccionSBCDetallado');
-                sbcPromedioInput.readOnly = true;
-                sbcPromedioInput.placeholder = "Se calculará abajo";
-                datosClienteInfo.sbcDetalladoUsado = true;
-                 if (tbody.querySelectorAll('tr').length === 0) { 
-                    agregarMovimientoHistorialInfografia();
-                 }
+            const numMeses = parseInt(numMesesStr);
+            if (numMeses > 0) {
+                const fechaFinStr = calcularFechaFinDesdeMeses(fechaInicioStr, numMeses);
+                if (fechaFinStr) {
+                    const [finAnio, finMes] = fechaFinStr.split('-').map(Number);
+                    
+                    const fechaFinM40RealObj = new Date(Date.UTC(finAnio, finMes - 1, getDiasEnMes(finAnio, finMes)));
+                    const edadFinM40 = calcularEdadExacta(fechaNacimiento, fechaFinM40RealObj);
+                    
+                    const fechaFinDisplay = new Date(Date.UTC(finAnio, finMes - 1, 1)).toLocaleDateString('es-MX', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+                    bajaDisplayEl.innerHTML = `
+                        <i class="fas fa-calendar-alt mr-2"></i>Fecha de Baja Modalidad 40: <strong class="text-blue-900">${fechaFinDisplay.charAt(0).toUpperCase() + fechaFinDisplay.slice(1)}</strong><br>
+                        <i class="fas fa-birthday-cake mr-2 mt-1"></i>Edad al finalizar: <strong class="text-blue-900">${edadFinM40.anos} años, ${edadFinM40.meses} meses y ${edadFinM40.dias} días</strong>
+                    `;
+
+                    const hoy = new Date();
+                    const primerDiaMesActual = new Date(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth(), 1));
+                    const ultimoDiaMesFinM40 = new Date(Date.UTC(finAnio, finMes -1, getDiasEnMes(finAnio, finMes)));
+                    
+                    if (ultimoDiaMesFinM40 < primerDiaMesActual) {
+                        if(calcularBtn) calcularBtn.disabled = true;
+                    } else {
+                        if(calcularBtn) calcularBtn.disabled = false;
+                    }
+                } else {
+                     bajaDisplayEl.innerHTML = '-- Ingrese fechas y CURP para ver la edad de baja --';
+                }
             } else {
-                hideElement('info_seccionSBCDetallado');
-                sbcPromedioInput.readOnly = false;
-                sbcPromedioInput.placeholder = "Ingresar o calcular";
-                datosClienteInfo.sbcDetalladoUsado = false;
+                 bajaDisplayEl.innerHTML = '-- Ingrese fechas y CURP para ver la edad de baja --';
             }
-        }
-
-        function agregarMovimientoHistorialInfografia() {
-            const tbody = document.getElementById('info_tablaHistorialLaboralBody');
-            const newRow = tbody.insertRow();
-            newRow.innerHTML = `
-                <td class="px-4 py-2"><input type="date" name="hist_fechaMov" class="w-full p-2 border rounded"></td>
-                <td class="px-4 py-2">
-                    <select name="hist_tipoMov" class="w-full p-2 border rounded">
-                        <option value="ALTA">ALTA</option>
-                        <option value="MODIFICACION">MODIFICACION</option>
-                        <option value="BAJA">BAJA</option>
-                    </select>
-                </td>
-                <td class="px-4 py-2"><input type="text" name="hist_patron" placeholder="Patrón" class="w-full p-2 border rounded"></td>
-                <td class="px-4 py-2"><input type="number" name="hist_sbc" placeholder="0.00" step="0.01" class="w-full p-2 border rounded"></td>
-                <td class="px-4 py-2 text-center"><button type="button" class="btn btn-danger-icon" onclick="eliminarMovimientoHistorialInfografia(this)"><i class="fas fa-trash-alt"></i></button></td>
-            `;
-        }
-        function eliminarMovimientoHistorialInfografia(button) {
-            button.closest('tr').remove();
-        }
-
-        function calcularYUsarSBCDetalladoInfografia() {
-            const tbody = document.getElementById('info_tablaHistorialLaboralBody');
-            const rows = Array.from(tbody.querySelectorAll('tr'));
-            if (rows.length === 0) {
-                showCustomAlert("Agregue al menos un movimiento para calcular el SBC detallado.", "Error");
-                return;
-            }
-
-            let movimientos = rows.map(row => ({
-                fecha: row.querySelector('input[name="hist_fechaMov"]').value,
-                tipo: row.querySelector('select[name="hist_tipoMov"]').value,
-                patron: row.querySelector('input[name="hist_patron"]').value,
-                sbc: parseFloat(row.querySelector('input[name="hist_sbc"]').value) || 0,
-            }));
-
-            for (const mov of movimientos) {
-                if (!mov.fecha || !mov.tipo || !mov.patron || mov.sbc <= 0) {
-                    showCustomAlert(`Fila inválida en historial: Verifique Fecha, Tipo, Patrón y SBC (>0). Patrón: ${mov.patron || 'N/A'}`, "Error");
-                    return;
-                }
-            }
-            
-            movimientos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-
-            let segmentosSBC = [];
-            let fechaInicioSegmentoActual = null;
-            let sbcSegmentoActual = 0;
-            const todayForCalc = new Date(); todayForCalc.setUTCHours(0,0,0,0);
-
-            for (let i = 0; i < movimientos.length; i++) {
-                const mov = movimientos[i];
-                const fechaMovimiento = new Date(mov.fecha + "T00:00:00Z");
-
-                if (mov.tipo === 'ALTA' || mov.tipo === 'MODIFICACION') {
-                    if (fechaInicioSegmentoActual && sbcSegmentoActual > 0) {
-                        const fechaFinPrevSegmento = new Date(fechaMovimiento);
-                        fechaFinPrevSegmento.setUTCDate(fechaFinPrevSegmento.getUTCDate() -1);
-                        if (fechaFinPrevSegmento >= fechaInicioSegmentoActual) {
-                            const dias = (fechaFinPrevSegmento - fechaInicioSegmentoActual) / (1000 * 60 * 60 * 24) + 1;
-                            segmentosSBC.push({ sbc: sbcSegmentoActual, dias: dias });
-                        }
-                    }
-                    fechaInicioSegmentoActual = fechaMovimiento;
-                    sbcSegmentoActual = mov.sbc;
-                } else if (mov.tipo === 'BAJA') {
-                    if (fechaInicioSegmentoActual && sbcSegmentoActual > 0 && fechaMovimiento >= fechaInicioSegmentoActual) {
-                        const dias = (fechaMovimiento - fechaInicioSegmentoActual) / (1000 * 60 * 60 * 24) + 1; 
-                        segmentosSBC.push({ sbc: sbcSegmentoActual, dias: dias });
-                    }
-                    fechaInicioSegmentoActual = null;
-                    sbcSegmentoActual = 0;
-                }
-
-                if (i === movimientos.length - 1 && (mov.tipo === 'ALTA' || mov.tipo === 'MODIFICACION') && fechaInicioSegmentoActual) {
-                    if (todayForCalc >= fechaInicioSegmentoActual) {
-                        const dias = (todayForCalc - fechaInicioSegmentoActual) / (1000 * 60 * 60 * 24) + 1;
-                        segmentosSBC.push({ sbc: sbcSegmentoActual, dias: dias });
-                    }
-                }
-            }
-            
-            segmentosSBC.reverse(); 
-            let totalDiasConsiderados = 0;
-            let sumaPonderadaSBC = 0;
-            
-            for (const seg of segmentosSBC) {
-                if (totalDiasConsiderados >= DIAS_PROMEDIO_PENSION) break;
-                let diasASumarDeSegmento = seg.dias;
-                if (totalDiasConsiderados + diasASumarDeSegmento > DIAS_PROMEDIO_PENSION) {
-                    diasASumarDeSegmento = DIAS_PROMEDIO_PENSION - totalDiasConsiderados;
-                }
-                sumaPonderadaSBC += seg.sbc * diasASumarDeSegmento;
-                totalDiasConsiderados += diasASumarDeSegmento;
-            }
-
-            if (totalDiasConsiderados === 0) {
-                showCustomAlert("No se calcularon días para el promedio de SBC detallado. Verifique los movimientos y sus fechas.", "Error");
-                return;
-            }
-
-            const sbcPromedioDetallado = sumaPonderadaSBC / totalDiasConsiderados;
-            datosClienteInfo.sbcPromedioBase = sbcPromedioDetallado; 
-            document.getElementById('info_sbcPromedio').value = formatNumber(sbcPromedioDetallado, 2).replace(/,/g,'');
-            showCustomAlert("SBC Detallado calculado y aplicado: $" + formatNumber(sbcPromedioDetallado), "Cálculo Exitoso");
         }
         
-        function calcularPensionBaseInfografia() {
-            datosClienteInfo.nombre = document.getElementById('info_nombreCompleto').value;
-            datosClienteInfo.semanasCotizadasBase = getNumeroInfo('info_semanasCotizadas');
-            datosClienteInfo.edadBase = getNumeroInfo('info_edadCliente');
-            datosClienteInfo.sbcPromedioBase = getNumeroInfo('info_sbcPromedio');
+        function addEmploymentCard() {
+            employmentCardIdCounter++;
+            const container = document.getElementById('employmentCardsContainer');
+            const cardHTML = `
+                <div class="employment-card" id="empCard_${employmentCardIdCounter}">
+                     <button onclick="removeEmploymentCard(this)" class="btn-danger-icon absolute top-4 right-4" title="Eliminar Empleo"><i class="fas fa-times"></i></button>
+                    <div class="input-group">
+                        <label for="emp_history_${employmentCardIdCounter}">Historial para Empleo #${employmentCardIdCounter}:</label>
+                        <textarea id="emp_history_${employmentCardIdCounter}" class="emp_history_text w-full font-mono text-sm" rows="6" placeholder="Pegue aquí los movimientos (REINGRESO, MODIFICACION, BAJA) para este empleador."></textarea>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', cardHTML);
+        }
 
-            if (!datosClienteInfo.nombre || datosClienteInfo.semanasCotizadasBase < 500 || datosClienteInfo.edadBase < 60 || datosClienteInfo.sbcPromedioBase <= 0) {
-                showError('Base', "Verifica los datos: Nombre, Semanas (mín. 500), Edad (mín. 60) y SBC Promedio Base (> 0) son obligatorios.");
-                hideElement('info_resultadosPensionBase');
+        function removeEmploymentCard(button) {
+            button.closest('.employment-card').remove();
+        }
+
+        function analizarYCalcularSBC() {
+            const cards = document.querySelectorAll('.employment-card');
+            const curp = document.getElementById('info_curpCliente').value;
+            const nombre = document.getElementById('info_nombreCompleto').value;
+            const semanasManuales = getNumeroInfo('info_semanasTotalesManual');
+
+            if (!nombre || curp.length !== 18 || !extraerFechaNacimientoCURP(curp) || semanasManuales <= 0) {
+                showCustomAlert("Por favor, complete Nombre, CURP y Semanas Totales (debe ser > 0) antes de analizar.", "Datos Faltantes");
                 return;
             }
+            if (cards.length === 0) {
+                showCustomAlert("Por favor, agregue al menos un bloque de empleo.", "Datos Faltantes");
+                return;
+            }
+
+            let todosLosMovimientos = [];
+            let isValid = true;
             
-            pensionBaseResultadosInfo = _calcularPensionDetallado(datosClienteInfo.sbcPromedioBase, datosClienteInfo.semanasCotizadasBase, datosClienteInfo.edadBase, SMGV_DF_Global, FACTOR_FOX_Global, tablaCuantiasGlobal);
+            cards.forEach((card, index) => {
+                if (!isValid) return;
+                const texto = card.querySelector('.emp_history_text').value.trim();
+                if (!texto) {
+                    showCustomAlert(`El cuadro de texto para el Empleo #${index + 1} está vacío.`, "Datos Faltantes");
+                    isValid = false;
+                    return;
+                }
+
+                const lineas = texto.split('\n').filter(line => line.trim() !== '');
+                const regex = /(.+?)\s+(\d{2}\/\d{2}\/\d{4})\s*(?:\$\s*([\d,]+\.?\d*))?/;
+                
+                for (const linea of lineas) {
+                    const match = linea.trim().match(regex);
+                    if (match) {
+                        const tipo = match[1].trim().toUpperCase();
+                        const fechaStr = match[2];
+                        const [dia, mes, anio] = fechaStr.split('/');
+                        const fecha = new Date(Date.UTC(anio, mes - 1, dia));
+                        const sbc = match[3] ? parseFloat(match[3].replace(/,/g, '')) : null;
+                        todosLosMovimientos.push({ tipo, fecha, sbc });
+                    } else {
+                        showCustomAlert(`En Empleo #${index + 1}, la línea "${linea}" no tiene un formato válido.`, "Error de Formato");
+                        isValid = false; return;
+                    }
+                }
+            });
+
+            if (!isValid) return;
             
-            const pensionMensual = pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA;
-            const aguinaldo = pensionBaseResultadosInfo.AGUINALDO_ESTIMADO;
-            const ingresoAnualTotal = (pensionMensual * 12) + aguinaldo;
+            todosLosMovimientos.sort((a, b) => a.fecha - b.fecha); // Oldest first
 
-            document.getElementById('info_resPensionMensual').textContent = '$' + formatNumber(pensionMensual);
-            document.getElementById('info_resAguinaldo').textContent = '$' + formatNumber(aguinaldo);
-            document.getElementById('info_resIngresoAnual').textContent = '$' + formatNumber(ingresoAnualTotal);
+            let periodos = [];
+            for(let i = 0; i < todosLosMovimientos.length; i++) {
+                const mov = todosLosMovimientos[i];
+                if(mov.sbc === null) continue; 
 
-            // --- Projection Logic ---
-            const proyeccionContenedor = document.getElementById('info_proyeccionPensionBase');
-            proyeccionContenedor.innerHTML = ''; // Clear previous results
-            const tablaProyeccion = document.createElement('table');
-            tablaProyeccion.className = 'w-full text-left border-collapse text-sm';
-            let htmlProyeccion = `<thead><tr class="bg-gray-100"><th class="p-2 border">Año</th><th class="p-2 border">Pensión Mensual Estimada</th></tr></thead><tbody>`;
+                const fechaInicio = mov.fecha;
+                let fechaFin;
 
-            const inflacionProyeccionBase = 0.05; // 5% as requested for this specific table
+                if (i + 1 < todosLosMovimientos.length) {
+                    const siguienteMov = todosLosMovimientos[i+1];
+                    fechaFin = new Date(siguienteMov.fecha);
+                    fechaFin.setUTCDate(fechaFin.getUTCDate() - 1);
+                } else {
+                    const hoy = new Date();
+                    fechaFin = new Date(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth() + 1, 0));
+                }
 
-            for (let i = 1; i <= 5; i++) {
-                const pensionProyectada = pensionMensual * Math.pow(1 + inflacionProyeccionBase, i - 1);
-                htmlProyeccion += `<tr>
-                    <td class="p-2 border">${i}</td>
-                    <td class="p-2 border font-semibold text-gray-800">$${formatNumber(pensionProyectada)}</td>
+                if (mov.tipo.includes('BAJA')) {
+                   fechaFin = mov.fecha;
+                }
+
+                if (fechaFin >= fechaInicio) {
+                     periodos.push({
+                        fechaInicio: fechaInicio,
+                        fechaFin: fechaFin,
+                        sbc: mov.sbc,
+                        dias: Math.round((fechaFin - fechaInicio) / (1000 * 60 * 60 * 24)) + 1
+                    });
+                }
+            }
+
+            periodos.sort((a, b) => b.fechaFin - a.fechaFin);
+
+            let diasAcumuladosSBC = 0;
+            let sbcPonderadoTotal = 0;
+            const periodosParaTabla = [];
+            
+            for (const p of periodos) {
+                if (diasAcumuladosSBC >= DIAS_PROMEDIO_PENSION) break;
+                const diasAUsar = Math.min(p.dias, DIAS_PROMEDIO_PENSION - diasAcumuladosSBC);
+                sbcPonderadoTotal += p.sbc * diasAUsar;
+                diasAcumuladosSBC += diasAUsar;
+                 periodosParaTabla.push({
+                    fechaInicio: p.fechaInicio,
+                    fechaFin: p.fechaFin,
+                    dias: diasAUsar,
+                    sbc: p.sbc,
+                    ponderado: p.sbc * diasAUsar
+                });
+            }
+
+            const sbcPromedioFinal = diasAcumuladosSBC > 0 ? sbcPonderadoTotal / diasAcumuladosSBC : 0;
+            
+            const fechaNacimiento = extraerFechaNacimientoCURP(curp);
+            const edadObj = calcularEdadExacta(fechaNacimiento, new Date());
+            const edadActual = edadObj.anos;
+
+            datosClienteInfo = { nombre, sbcPromedioBase: sbcPromedioFinal, semanasCotizadasBase: semanasManuales, edadBase: edadActual };
+
+            document.getElementById('res_sbcPromedio').textContent = '$' + formatNumber(sbcPromedioFinal);
+            document.getElementById('res_edadActual').textContent = `${edadActual} años`;
+            
+            const tableBody = document.getElementById('sbcAnalysisTableBody');
+            tableBody.innerHTML = '';
+            for (const p of periodosParaTabla) {
+                const row = `<tr>
+                    <td class="p-2 border-b">${p.fechaInicio.toLocaleDateString('es-MX', {timeZone: 'UTC'})}</td>
+                    <td class="p-2 border-b">${p.fechaFin.toLocaleDateString('es-MX', {timeZone: 'UTC'})}</td>
+                    <td class="p-2 border-b text-right">${formatNumber(p.dias, 0)}</td>
+                    <td class="p-2 border-b text-right">$${formatNumber(p.sbc)}</td>
+                    <td class="p-2 border-b text-right">$${formatNumber(p.ponderado)}</td>
                 </tr>`;
+                tableBody.innerHTML += row;
             }
-            htmlProyeccion += `</tbody>`;
-            tablaProyeccion.innerHTML = htmlProyeccion;
-            proyeccionContenedor.appendChild(tablaProyeccion);
-
-            showElement('info_resultadosPensionBase');
-            document.getElementById('info_compPensionBase').textContent = '$' + formatNumber(pensionMensual);
             
-            hideElement('info_resultadosEscenarioM40');
-            m40ResultadosInfo = { pensionMensualInicial: 0, aguinaldo: 0, costoTotalP1: 0, sbcPromedioParaCalculoPensionM40: 0, sbcM40Ingresado: 0, nuevasSemanas: 0, nuevaEdad: 0 };
-        }
-
-        function recalcularCoberturaTrasCambio() {
-            if (document.getElementById('info_resultadosEscenarioM40').style.display !== 'none') {
-                 if (m40ResultadosInfo.pensionMensualInicial > 0 || m40ResultadosInfo.costoTotalP1 > 0) {
-                     calcularAFOREProyectadaInfografia(); 
-                 }
+            // Vigencia de Derechos Calculation
+            const movimientosDeBaja = todosLosMovimientos.filter(m => m.tipo.includes('BAJA')).sort((a,b) => b.fecha - a.fecha);
+            let ultimaFechaBaja = null;
+            if(movimientosDeBaja.length > 0) {
+                ultimaFechaBaja = movimientosDeBaja[0].fecha;
+            } else if (periodos.length > 0) {
+                const ultimoMovimiento = todosLosMovimientos[todosLosMovimientos.length - 1];
+                if (!ultimoMovimiento.tipo.includes('BAJA')) {
+                    ultimaFechaBaja = new Date(); // Assume currently employed
+                }
             }
-        }
 
-        function calcularAFOREProyectadaInfografia() {
-            const aforeActual = getNumeroInfo('info_aforeActual');
-            aforeProyectadaGlobalInfo = aforeActual;
-            document.getElementById('info_coberturaAfore').textContent = '$' + formatNumber(aforeProyectadaGlobalInfo);
+            const vigenciaBox = document.getElementById('vigenciaResultBox');
+            const vigenciaText = document.getElementById('vigenciaResultText');
+            const vigenciaSubText = document.getElementById('vigenciaResultSubText');
+
+            if (ultimaFechaBaja) {
+                const fechaCincoAniosAtras = new Date(ultimaFechaBaja);
+                fechaCincoAniosAtras.setFullYear(fechaCincoAniosAtras.getFullYear() - 5);
+
+                let diasCotizadosEnVentana = 0;
+                for (const p of periodos) {
+                    const inicio = p.fechaInicio > fechaCincoAniosAtras ? p.fechaInicio : fechaCincoAniosAtras;
+                    const fin = p.fechaFin < ultimaFechaBaja ? p.fechaFin : ultimaFechaBaja;
+                    if (fin >= inicio) {
+                        diasCotizadosEnVentana += ((fin - inicio) / (1000 * 60 * 60 * 24)) + 1;
+                    }
+                }
+                diasCotizadosEnVentana = Math.round(diasCotizadosEnVentana);
+
+                if (diasCotizadosEnVentana >= 365) {
+                    vigenciaBox.className = "p-4 rounded-lg bg-green-100 text-green-800";
+                    vigenciaText.textContent = "CON DERECHO A M40";
+                    vigenciaSubText.textContent = `Cotizó ${diasCotizadosEnVentana} días en los 5 años previos a la baja.`;
+                } else {
+                    vigenciaBox.className = "p-4 rounded-lg bg-red-100 text-red-800";
+                    vigenciaText.textContent = "SIN DERECHO A M40";
+                    vigenciaSubText.textContent = `Cotizó solo ${diasCotizadosEnVentana} días de 365 requeridos.`;
+                }
+            } else {
+                 vigenciaBox.className = "p-4 rounded-lg bg-gray-100 text-gray-800";
+                 vigenciaText.textContent = "Estado Indeterminado";
+                 vigenciaSubText.textContent = `No se encontró una fecha de baja.`;
+            }
+
+
+            showElement('sbcAnalysisResultsContainer');
+
+            const pensionData = _calcularPensionDetallado(sbcPromedioFinal, semanasManuales, edadActual, SMGV_DF_Global, FACTOR_FOX_Global, tablaCuantiasGlobal);
+            pensionBaseResultadosInfo = pensionData;
+
+            const pensionMensual = pensionData.PENSION_MENSUAL_ESTIMADA;
+            const aguinaldo = pensionData.AGUINALDO_ESTIMADO;
+            const ingresoAnual = (pensionMensual * 12) + aguinaldo;
+
+            document.getElementById('res_base_pensionMensual').textContent = '$' + formatNumber(pensionMensual);
+            document.getElementById('res_base_aguinaldo').textContent = '$' + formatNumber(aguinaldo);
+            document.getElementById('res_base_ingresoAnual').textContent = '$' + formatNumber(ingresoAnual);
             
-             if (document.getElementById('info_resultadosEscenarioM40').style.display !== 'none' && 
-                 (m40ResultadosInfo.pensionMensualInicial > 0 || m40ResultadosInfo.costoTotalP1 > 0)) {
-                calcularCoberturaInfografia();
+            showElement('basePensionResultsContainer');
+            
+            if(ultimaFechaBaja) {
+                const fechaInicioM40 = new Date(ultimaFechaBaja);
+                fechaInicioM40.setUTCDate(fechaInicioM40.getUTCDate() + 1);
+                const anioSugerido = fechaInicioM40.getUTCFullYear();
+                const mesSugerido = String(fechaInicioM40.getUTCMonth() + 1).padStart(2, '0');
+                document.getElementById('info_m40_p1_inicio').value = `${anioSugerido}-${mesSugerido}`;
+                actualizarSBCMaximoM40();
+                actualizarFechaFinM40Display();
             }
-        }
 
+            showCustomAlert("Análisis completado. El SBC Promedio y la pensión base han sido calculados.", "Éxito");
+        }
+        
         function calcularEscenarioM40Infografia() {
-            if (pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA === 0 && datosClienteInfo.sbcPromedioBase === 0) {
-                 showError('M40', "Primero calcula tu Pensión Base en el Paso 1.");
+            if (datosClienteInfo.sbcPromedioBase <= 0) {
+                 showCustomAlert("Primero debes analizar el historial en el Paso 1.", "Acción Requerida");
                  return;
             }
 
             const curp = document.getElementById('info_curpCliente').value;
-            if (curp.length !== 18) { showError('M40', "El CURP debe tener 18 caracteres."); return; }
-            const fechaNacimiento = extraerFechaNacimientoCURP(curp);
-            if (!fechaNacimiento) { showError('M40', "CURP inválido o formato de fecha no reconocido."); return; }
-
+            if (curp.length !== 18) { showCustomAlert("El CURP debe tener 18 caracteres.", "Dato Inválido"); return; }
+            
             const inicioP1Str = document.getElementById('info_m40_p1_inicio').value;
             const numMesesP1 = parseInt(document.getElementById('info_m40_p1_meses').value) || 0;
             
@@ -1157,507 +1365,480 @@
             m40ResultadosInfo.sbcM40Ingresado = sbcM40Ingresado;
 
             if (!inicioP1Str || numMesesP1 <= 0 || sbcM40Ingresado <= 0) {
-                showError('M40', "Define el periodo M40: Fecha de Inicio, Meses y SBC M40 son obligatorios.");
-                hideElement('info_resultadosEscenarioM40');
+                showCustomAlert("Define el periodo M40: Fecha de Inicio, Meses y SBC M40 son obligatorios.", "Datos Faltantes");
+                return;
+            }
+            
+            document.getElementById('scenario_1_meses').value = numMesesP1;
+            recalculateScenario(1);
+            document.getElementById('scenario_2_meses').value = '';
+            recalculateScenario(2);
+            
+            showCustomAlert("Proyección calculada. Revisa los resultados en el Comparador de Escenarios (Paso 4).", "Éxito");
+        }
+        
+        // --- CONTRACT GENERATION LOGIC ---
+        function generateContractPDF() {
+            const data = {
+                monto: getNumeroInfo('contract_monto'),
+                clienteNombre: document.getElementById('contract_cliente_nombre').value.trim().toUpperCase(),
+                clienteTel: document.getElementById('contract_cliente_telefono').value.trim(),
+                clienteEmail: document.getElementById('contract_cliente_email').value.trim(),
+                clienteDir: document.getElementById('contract_cliente_direccion').value.trim(),
+                rsNombre: document.getElementById('contract_rs_nombre').value.trim().toUpperCase(),
+                rsTel: document.getElementById('contract_rs_telefono').value.trim(),
+                rsEmail: document.getElementById('contract_rs_email').value.trim(),
+                rsDir: document.getElementById('contract_rs_direccion').value.trim()
+            };
+
+            if (!data.monto || !data.clienteNombre || !data.clienteTel || !data.clienteEmail || !data.clienteDir || !data.rsNombre || !data.rsTel || !data.rsEmail || !data.rsDir) {
+                showCustomAlert("Todos los campos son obligatorios para generar el contrato.", "Datos Incompletos");
+                return;
+            }
+            if (data.clienteTel.length !== 10 || data.rsTel.length !== 10 || !/^\d+$/.test(data.clienteTel) || !/^\d+$/.test(data.rsTel)) {
+                showCustomAlert("Los números de teléfono deben contener 10 dígitos numéricos.", "Dato Inválido");
                 return;
             }
 
-            const finP1Str = calcularFechaFinDesdeMeses(inicioP1Str, numMesesP1); 
-            if (!finP1Str) { showError('M40', "Error calculando fecha fin de M40."); return; }
-            const [aF, mF] = finP1Str.split('-').map(Number);
-            const fechaFinM40RealObj = new Date(Date.UTC(aF, mF - 1, getDiasEnMes(aF, mF))); 
-            
-            const edadFinM40 = calcularEdadExacta(fechaNacimiento, fechaFinM40RealObj);
-            let edadParaPorcentajeM40 = edadFinM40.anos;
-            if (edadFinM40.meses > 6 || (edadFinM40.meses === 6 && edadFinM40.dias >= 1)) {
-                edadParaPorcentajeM40++;
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'pt', 'letter');
+                const PAGE_WIDTH = pdf.internal.pageSize.getWidth();
+                const MARGIN = 50;
+                let yPos = MARGIN;
+
+                const printText = (text, x, y, options = {}) => {
+                    const maxWidth = PAGE_WIDTH - (MARGIN * 2);
+                    const lines = pdf.splitTextToSize(text, maxWidth);
+                    pdf.text(lines, x, y, options);
+                    return y + (lines.length * pdf.getLineHeight() * 0.7);
+                };
+
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(12);
+                pdf.text("CONTRATO DE PRESTACIÓN DE SERVICIOS PROFESIONALES Y FINANCIAMIENTO", PAGE_WIDTH / 2, yPos, { align: 'center' });
+                yPos += 30;
+
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(10);
+                let partiesText = `CONTRATO DE PRESTACIÓN DE SERVICIOS QUE CELEBRAN, POR UNA PARTE, RGC PENSIONES Y SEGUROS, REPRESENTADA EN ESTE ACTO POR LOS CC. ALMA GUADALUPE CANO PEREZ, MIGUEL ANGEL ROSEMBERG SALAZAR Y MARIANO GODINEZ NAVA, A QUIEN EN LO SUCESIVO SE LE DENOMINARÁ "EL PRESTADOR", Y POR LA OTRA PARTE, EL/LA C. ${data.clienteNombre}, A QUIEN EN LO SUCESIVO SE LE DENOMINARÁ "EL CLIENTE". AMBAS PARTES SE SUJETAN AL TENOR DE LAS SIGUIENTES DECLARACIONES Y CLÁUSULAS:`;
+                yPos = printText(partiesText, MARGIN, yPos);
+                yPos += 20;
+
+                pdf.setFont('helvetica', 'bold');
+                pdf.text("C L Á U S U L A S", PAGE_WIDTH / 2, yPos, { align: 'center' });
+                yPos += 20;
+
+                const clauses = [
+                    { title: "PRIMERA. - OBJETO.", text: `EL PRESTADOR se obliga a proporcionar a EL CLIENTE servicios de asesoría, gestoría, planeación estratégica y financiamiento con el único fin de mejorar las condiciones de su futura pensión bajo la Ley del Seguro Social de 1973.` },
+                    { title: "SEGUNDA. - MONTO Y FORMA DE PAGO.", text: `EL CLIENTE se obliga a pagar a EL PRESTADOR la cantidad total de $${formatNumber(data.monto)} MXN (SON: ${numeroALetras(data.monto)} 00/100 M.N.). Este monto será liquidado en su totalidad una vez que EL CLIENTE reciba la resolución de su pensión y los fondos correspondientes a su cuenta AFORE, primer(os) pago(s) de pensión y/o el préstamo para pensionado que se gestione. EL CLIENTE autoriza en este acto a que dichos fondos sean utilizados para liquidar el presente contrato, manifestando que no se requiere ningún pago por adelantado.` },
+                    { title: "TERCERA. - OBLIGACIONES DEL PRESTADOR.", text: `EL PRESTADOR se compromete a realizar todos los análisis, cálculos, trámites y gestiones necesarias ante las instituciones correspondientes para lograr el objetivo pactado, manteniendo siempre informado a EL CLIENTE del progreso.` },
+                    { title: "QUARTA. - OBLIGACIONES DEL CLIENTE.", text: `EL CLIENTE deberá proporcionar toda la documentación e información verídica que EL PRESTADOR requiera, así como firmar los documentos necesarios para la gestión de los trámites. La omisión o falsedad en la información proporcionada será causa de rescisión del contrato.` },
+                    { title: "QUINTA. - RESPONSABLE SOLIDARIO.", text: `El/La C. ${data.rsNombre}, con domicilio en ${data.rsDir}, se constituye en este acto como RESPONSABLE SOLIDARIO de todas las obligaciones de pago adquiridas por EL CLIENTE, renunciando a los beneficios de orden y excusión.` },
+                    { title: "SEXTA. - PAGARÉ.", text: `Para garantizar la obligación de pago, EL CLIENTE y su RESPONSABLE SOLIDARIO suscriben en este mismo acto un pagaré mercantil que forma parte integral del presente contrato, el cual se detalla al final de este documento.` },
+                    { title: "SÉPTIMA. - CONFIDENCIALIDAD.", text: `Ambas partes se comprometen a guardar la más estricta confidencialidad sobre la información y documentos proporcionados mutuamente.` },
+                    { title: "OCTAVA. - JURISDICCIÓN.", text: `Para la interpretación y cumplimiento del presente contrato, las partes se someten a la jurisdicción de los tribunales competentes de la Ciudad de México, renunciando a cualquier otro fuero que pudiera corresponderles por razón de sus domicilios presentes o futuros.` }
+                ];
+
+                pdf.setFontSize(9);
+                clauses.forEach(clause => {
+                    pdf.setFont('helvetica', 'bold');
+                    yPos = printText(clause.title, MARGIN, yPos);
+                    pdf.setFont('helvetica', 'normal');
+                    yPos = printText(clause.text, MARGIN, yPos);
+                    yPos += 10;
+                });
+                
+                yPos = printText(`Leído que fue el presente contrato y enteradas las partes de su contenido y alcance legal, lo firman por duplicado en la Ciudad de México el día ${new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}.`, MARGIN, yPos);
+                yPos += 50;
+
+                pdf.text("__________________________________", MARGIN, yPos);
+                pdf.text("__________________________________", PAGE_WIDTH - MARGIN, yPos, { align: 'right'});
+                yPos += 15;
+                pdf.text("EL CLIENTE", MARGIN, yPos);
+                pdf.text("RESPONSABLE SOLIDARIO", PAGE_WIDTH - MARGIN, yPos, { align: 'right'});
+                yPos += 15;
+                pdf.text(data.clienteNombre, MARGIN, yPos);
+                pdf.text(data.rsNombre, PAGE_WIDTH - MARGIN, yPos, { align: 'right'});
+                yPos += 50;
+                pdf.text("__________________________________", PAGE_WIDTH/2, yPos, { align: 'center'});
+                yPos += 15;
+                pdf.text("EL PRESTADOR", PAGE_WIDTH/2, yPos, { align: 'center'});
+                yPos += 15;
+                pdf.text("RGC PENSIONES Y SEGUROS", PAGE_WIDTH/2, yPos, { align: 'center'});
+
+                yPos += 40;
+                pdf.setLineDash([2, 2], 0);
+                pdf.line(MARGIN, yPos, PAGE_WIDTH - MARGIN, yPos);
+                pdf.setLineDash([], 0);
+                yPos += 20;
+
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(14);
+                pdf.text("P A G A R É", PAGE_WIDTH / 2, yPos, { align: 'center' });
+                yPos += 20;
+
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(9);
+                let pagareText = `Por valor recibido, DEBO(EMOS) Y PAGARÉ(MOS) incondicionalmente por este Pagaré a la orden de RGC PENSIONES Y SEGUROS en la Ciudad de México, el día que reciba mi resolución de pensión, la cantidad de $${formatNumber(data.monto)} MXN (SON: ${numeroALetras(data.monto)} 00/100 M.N.). Este pagaré forma parte del contrato de prestación de servicios de esta misma fecha y está sujeto a sus términos y condiciones.`;
+                yPos = printText(pagareText, MARGIN, yPos);
+                yPos += 30;
+
+                pdf.text(`DEUDOR PRINCIPAL (EL CLIENTE)`, MARGIN, yPos);
+                pdf.text(`RESPONSABLE SOLIDARIO`, PAGE_WIDTH - MARGIN, yPos, { align: 'right'});
+                yPos += 15;
+                pdf.text(`Nombre: ${data.clienteNombre}`, MARGIN, yPos);
+                pdf.text(`Nombre: ${data.rsNombre}`, PAGE_WIDTH - MARGIN, yPos, { align: 'right'});
+                yPos += 15;
+                pdf.text(`Dirección: ${data.clienteDir}`, MARGIN, yPos);
+                pdf.text(`Dirección: ${data.rsDir}`, PAGE_WIDTH - MARGIN, yPos, { align: 'right'});
+                yPos += 15;
+                pdf.text(`Teléfono: ${data.clienteTel}`, MARGIN, yPos);
+                pdf.text(`Teléfono: ${data.rsTel}`, PAGE_WIDTH - MARGIN, yPos, { align: 'right'});
+                yPos += 30;
+                pdf.text("___________________________", MARGIN, yPos);
+                pdf.text("___________________________", PAGE_WIDTH - MARGIN, yPos, { align: 'right'});
+                yPos += 15;
+                pdf.text("Firma", MARGIN, yPos);
+                pdf.text("Firma", PAGE_WIDTH - MARGIN, yPos, { align: 'right'});
+
+                pdf.save(`Contrato_RGC_${data.clienteNombre.replace(/\s/g, '_')}.pdf`);
+
+            } catch(e) {
+                console.error("Error al generar el PDF del contrato:", e);
+                showCustomAlert("Ocurrió un error al generar el PDF. Revisa la consola para más detalles.", "Error de Exportación");
             }
+        }
+        
+        function numeroALetras(n) {
+            const unidades = ["", "UN", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE"];
+            const decenas = ["", "DIEZ", "VEINTE", "TREINTA", "CUARENTA", "CINCUENTA", "SESENTA", "SETENTA", "OCHENTA", "NOVENTA"];
+            const centenas = ["", "CIENTO", "DOSCIENTOS", "TRESCIENTOS", "CUATROCIENTOS", "QUINIENTOS", "SEISCIENTOS", "SETECIENTOS", "OCHOCIENTOS", "NOVECIENTOS"];
+            const especiales = {11:"ONCE", 12:"DOCE", 13:"TRECE", 14:"CATORCE", 15:"QUINCE", 16:"DIECISEIS", 17:"DIECISIETE", 18:"DIECIOCHO", 19:"DIECINUEVE", 21:"VEINTIUN", 22:"VEINTIDOS", 23:"VEINTITRES", 24:"VEINTICUATRO", 25:"VEINTICINCO", 26:"VEINTISEIS", 27:"VEINTISIETE", 28:"VEINTIOCHO", 29:"VEINTINUEVE"};
             
-            const diasEnM40 = numMesesP1 * (365.25 / 12); 
-            const diasBasePrevios = Math.max(0, DIAS_PROMEDIO_PENSION - diasEnM40); 
-            let sbcPromedioCalculadoParaPensionM40 = ((sbcM40Ingresado * diasEnM40) + (datosClienteInfo.sbcPromedioBase * diasBasePrevios)) / DIAS_PROMEDIO_PENSION;
-            m40ResultadosInfo.sbcPromedioParaCalculoPensionM40 = sbcPromedioCalculadoParaPensionM40;
+            function getDecenas(num) {
+                if (num < 10) return unidades[num];
+                if (num >= 10 && num < 20 || num > 20 && num < 30) return especiales[num] || (decenas[Math.floor(num/10)] + (num%10 !== 0 ? " Y " + unidades[num%10] : ""));
+                return decenas[Math.floor(num/10)] + (num%10 !== 0 ? " Y " + unidades[num%10] : "");
+            }
+            function getCentenas(num) {
+                if(num > 99) {
+                    if (num === 100) return "CIEN";
+                    return centenas[Math.floor(num/100)] + " " + getDecenas(num%100);
+                }
+                return getDecenas(num);
+            }
+            function getMiles(num) {
+                if (num > 999) {
+                    const mil = Math.floor(num/1000);
+                    const resto = num%1000;
+                    return (mil === 1 ? "MIL" : getCentenas(mil) + " MIL") + (resto > 0 ? " " + getCentenas(resto) : "");
+                }
+                return getCentenas(num);
+            }
+            function getMillones(num) {
+                if (num >= 1000000) {
+                     const millon = Math.floor(num/1000000);
+                     const resto = num%1000000;
+                     return (millon === 1 ? "UN MILLON" : getMiles(millon) + " MILLONES") + (resto > 0 ? " " + getMiles(resto) : "");
+                }
+                return getMiles(num);
+            }
+            if (n === 0) return "CERO";
+            return getMillones(n);
+        }
+
+        // --- PASSWORD & SCENARIO LOGIC ---
+        function showPasswordPrompt(message, title, onConfirm) {
+            document.getElementById('customAlertTitle').textContent = title;
+            document.getElementById('customAlertMessage').textContent = message;
             
-            m40ResultadosInfo.nuevasSemanas = Math.round((datosClienteInfo.semanasCotizadasBase || 0) + (numMesesP1 * (52/12)));
-            m40ResultadosInfo.nuevaEdad = edadParaPorcentajeM40;
+            const passwordInput = document.getElementById('pdfPasswordInput');
+            passwordInput.value = ''; 
+            document.getElementById('passwordPromptContainer').style.display = 'block';
 
-            const pensionConM40 = _calcularPensionDetallado(m40ResultadosInfo.sbcPromedioParaCalculoPensionM40, m40ResultadosInfo.nuevasSemanas, m40ResultadosInfo.nuevaEdad, SMGV_DF_Global, FACTOR_FOX_Global, tablaCuantiasGlobal);
-            m40ResultadosInfo.pensionMensualInicial = pensionConM40.PENSION_MENSUAL_ESTIMADA - 250; 
-            m40ResultadosInfo.aguinaldo = pensionConM40.AGUINALDO_ESTIMADO;
+            const confirmButton = document.getElementById('customAlertButton');
+            confirmButton.textContent = 'Confirmar';
+            confirmButton.onclick = () => {
+                onConfirm(passwordInput.value);
+            };
+            
+            showElement('customAlertModal');
+        }
 
-            // --- Corrected Cost Calculation with Updates and Surcharges ---
-            let costoTotalM40P1 = 0;
+        function promptForPassword() {
+             if (Object.keys(scenarioData[1]).length === 0) {
+                showCustomAlert("Primero debe calcular al menos un escenario en el Paso 4.", "Acción Requerida");
+                return;
+            }
+            showPasswordPrompt(
+                "Esta acción requiere privilegios de asesor. Por favor, ingresa tu contraseña para generar el reporte técnico completo.",
+                "Acceso Restringido",
+                (password) => {
+                    if (password === "OICI120566010503") {
+                        closeCustomAlert();
+                        generateTechnicalPDF();
+                    } else {
+                        showCustomAlert("Contraseña incorrecta. No se puede generar el reporte.", "Acceso Denegado");
+                    }
+                }
+            );
+        }
+
+        function handleMesesDepositoChange(input) {
+            let value = parseInt(input.value);
+            const lastValidValue = input.getAttribute('data-last-valid');
+
+            if (isNaN(value) || value < 6 || value > 12) {
+                input.value = lastValidValue;
+                showCustomAlert("El valor debe ser un número entre 6 y 12.", "Valor Inválido");
+                return;
+            }
+
+            if (value > 9) {
+                passwordPromptContext = {
+                    inputElement: input,
+                    newValue: value,
+                    oldValue: lastValidValue
+                };
+                showPasswordPrompt(
+                    "Se requiere autorización para plazos mayores a 9 meses.",
+                    "Contraseña de Autorización",
+                    (password) => {
+                        const ctx = passwordPromptContext;
+                        if (password === "OICI120566010503") {
+                            ctx.inputElement.setAttribute('data-last-valid', ctx.newValue);
+                            showCustomAlert("Autorización exitosa. Plazo extendido.", "Éxito");
+                            closeCustomAlert();
+                            recalculateScenario(1);
+                            recalculateScenario(2);
+                        } else {
+                            showCustomAlert("Contraseña incorrecta.", "Error de Autorización");
+                            ctx.inputElement.value = ctx.oldValue;
+                        }
+                    }
+                );
+            } else {
+                input.setAttribute('data-last-valid', value);
+                recalculateScenario(1);
+                recalculateScenario(2);
+            }
+        }
+
+        function recalculateScenario(scenarioNum) {
+            const meses = parseInt(document.getElementById(`scenario_${scenarioNum}_meses`).value) || 0;
+            const semanasInput = document.getElementById(`scenario_${scenarioNum}_semanas`);
+            const semanas = Math.round(datosClienteInfo.semanasCotizadasBase + (meses * (52.1429 / 12)));
+            semanasInput.value = semanas;
+            
+            const results = {
+                pension: document.getElementById(`scenario_${scenarioNum}_pension`),
+                aguinaldo: document.getElementById(`scenario_${scenarioNum}_aguinaldo`),
+                costoTotal: document.getElementById(`scenario_${scenarioNum}_costo_total`),
+                coberturaAfore: document.getElementById(`scenario_${scenarioNum}_cobertura_afore`),
+                coberturaDeposito: document.getElementById(`scenario_${scenarioNum}_cobertura_deposito`),
+                coberturaExtra: document.getElementById(`scenario_${scenarioNum}_cobertura_extra`),
+                prestamo: document.getElementById(`scenario_${scenarioNum}_prestamo`),
+                resultadoFinal: document.getElementById(`scenario_${scenarioNum}_resultado_final`),
+                proyeccionContainer: document.getElementById(`scenario_${scenarioNum}_proyeccion`),
+                edadFinal: document.getElementById(`scenario_${scenarioNum}_edad_final`),
+                sbcFinal: document.getElementById(`scenario_${scenarioNum}_sbc_final`),
+                semanasFinales: document.getElementById(`scenario_${scenarioNum}_semanas_finales`),
+            };
+
+            if (meses <= 0 || semanas < 500) {
+                Object.values(results).forEach(el => {
+                    if(el.tagName === 'SPAN') el.textContent = '$0.00';
+                    if(el.tagName === 'DIV') el.innerHTML = '';
+                });
+                results.edadFinal.textContent = '--';
+                results.sbcFinal.textContent = '--';
+                results.semanasFinales.textContent = '--';
+                semanasInput.value = datosClienteInfo.semanasCotizadasBase;
+                scenarioData[scenarioNum] = {};
+                return;
+            }
+
+            const curp = document.getElementById('info_curpCliente').value;
+            const fechaNacimiento = extraerFechaNacimientoCURP(curp);
+            const inicioP1Str = document.getElementById('info_m40_p1_inicio').value;
+            const sbcM40Ingresado = parseFloat(document.getElementById('info_m40_p1_sbc').value.replace(/,/g, '')) || 0;
+
+            if (!fechaNacimiento || !inicioP1Str || !sbcM40Ingresado) {
+                showCustomAlert("Faltan datos base (CURP, Fecha Inicio M40) del cálculo principal.", "Error");
+                return;
+            }
+
+            const finP1Str = calcularFechaFinDesdeMeses(inicioP1Str, meses);
+            if (!finP1Str) return;
+            const [aF, mF] = finP1Str.split('-').map(Number);
+            const fechaFinM40RealObj = new Date(Date.UTC(aF, mF - 1, getDiasEnMes(aF, mF)));
+            const edadFinM40 = calcularEdadExacta(fechaNacimiento, fechaFinM40RealObj);
+            let edadParaPorcentaje = edadFinM40.anos;
+            if (edadFinM40.meses > 6 || (edadFinM40.meses === 6 && edadFinM40.dias >= 1)) {
+                edadParaPorcentaje++;
+            }
+
+            const diasEnM40 = meses * (365.25 / 12);
+            const diasASumarDeM40 = Math.min(diasEnM40, DIAS_PROMEDIO_PENSION);
+            const diasBasePrevios = DIAS_PROMEDIO_PENSION - diasASumarDeM40;
+            const sbcPromedio = ((sbcM40Ingresado * diasASumarDeM40) + (datosClienteInfo.sbcPromedioBase * diasBasePrevios)) / DIAS_PROMEDIO_PENSION;
+
+            const pensionData = _calcularPensionDetallado(sbcPromedio, semanas, edadParaPorcentaje, SMGV_DF_Global, FACTOR_FOX_Global, tablaCuantiasGlobal);
+            const pensionMensual = pensionData.PENSION_MENSUAL_ESTIMADA - 250;
+            const aguinaldo = pensionData.AGUINALDO_ESTIMADO;
+
+            let costoM40 = 0;
+            let totalActualizacion = 0;
+            let totalRecargos = 0;
             const [anioInicioP1Val, mesInicioP1Val] = inicioP1Str.split('-').map(Number);
             const fechaSimulacionPago = new Date(Date.UTC(aF, mF - 1, getDiasEnMes(aF, mF)));
             const mesActualizacion = new Date(fechaSimulacionPago);
             mesActualizacion.setUTCMonth(mesActualizacion.getUTCMonth() - 1);
             const inpcNumerador = getINPC(mesActualizacion.getUTCFullYear(), mesActualizacion.getUTCMonth() + 1);
 
-            for (let m = 0; m < numMesesP1; m++) {
+            for (let m = 0; m < meses; m++) {
                 const fechaCuota = new Date(Date.UTC(anioInicioP1Val, mesInicioP1Val - 1 + m, 1));
                 const anioCuota = fechaCuota.getUTCFullYear();
                 const mesCuota = fechaCuota.getUTCMonth() + 1;
-
                 const tasaM40Anual = getTasaM40Porcentaje(anioCuota);
                 const costoBaseMensual = sbcM40Ingresado * tasaM40Anual * getDiasEnMes(anioCuota, mesCuota);
                 
-                let montoActualizacion = 0;
-                let pagoBaseActualizado = costoBaseMensual;
-                
+                let actualizacion = 0;
                 const inpcDenominador = getINPC(anioCuota, mesCuota);
-
                 if (inpcNumerador && inpcDenominador && inpcNumerador > inpcDenominador) {
-                    montoActualizacion = costoBaseMensual * ((inpcNumerador / inpcDenominador) - 1);
-                    pagoBaseActualizado += montoActualizacion;
+                    actualizacion = costoBaseMensual * ((inpcNumerador / inpcDenominador) - 1);
                 }
+                const pagoBaseActualizado = costoBaseMensual + actualizacion;
                 
                 let montoRecargos = 0;
-                const fechaVencimiento = new Date(Date.UTC(anioCuota, mesCuota, 17)); // Payment due on 17th of next month
+                const fechaVencimiento = new Date(Date.UTC(anioCuota, mesCuota, 17));
                 if (fechaSimulacionPago > fechaVencimiento) {
                     const mesesRetraso = (fechaSimulacionPago.getUTCFullYear() - fechaVencimiento.getUTCFullYear()) * 12 + (fechaSimulacionPago.getUTCMonth() - fechaVencimiento.getUTCMonth());
-                    if (mesesRetraso > 0) {
-                        montoRecargos = pagoBaseActualizado * 0.0147 * mesesRetraso;
-                    }
+                    if (mesesRetraso > 0) montoRecargos = pagoBaseActualizado * 0.0147 * mesesRetraso;
                 }
-                
-                costoTotalM40P1 += pagoBaseActualizado + montoRecargos;
+                costoM40 += pagoBaseActualizado + montoRecargos;
+                totalActualizacion += actualizacion;
+                totalRecargos += montoRecargos;
             }
-            m40ResultadosInfo.costoTotalP1 = costoTotalM40P1;
 
-            document.getElementById('info_compPensionM40').textContent = '$' + formatNumber(m40ResultadosInfo.pensionMensualInicial);
-            const incrementoNeto = m40ResultadosInfo.pensionMensualInicial - (pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA || 0);
-            document.getElementById('info_compIncrementoNetoM40').textContent = '$' + formatNumber(incrementoNeto);
+            const comisionExcedente = getNumeroInfo('info_comisionExcedente');
+            const costoFijoAdicional = 140000;
+            const comision = costoM40 * 0.16;
+            const factorMultiplicador = costoM40 * 0.5;
+            const costoTotalContrato = (costoM40 + factorMultiplicador + costoFijoAdicional + comision + comisionExcedente) - 35000;
             
-            document.getElementById('info_nuevoSBCPromedioM40').textContent = formatNumber(m40ResultadosInfo.sbcPromedioParaCalculoPensionM40);
-            document.getElementById('info_nuevasSemanasM40').textContent = formatNumber(m40ResultadosInfo.nuevasSemanas, 0);
-            document.getElementById('info_nuevaEdadM40').textContent = m40ResultadosInfo.nuevaEdad;
-            document.getElementById('info_costoTotalM40Simulacion').textContent = '$' + formatNumber(m40ResultadosInfo.costoTotalP1);
-            
-            showElement('info_resultadosEscenarioM40');
-            calcularAFOREProyectadaInfografia(); 
-        }
-
-        function calcularCoberturaInfografia() {
-            const costoM40P1 = m40ResultadosInfo.costoTotalP1 || 0;
-            const pensionM40Inicial = m40ResultadosInfo.pensionMensualInicial || 0; 
-            
-            const comisionExcedente = getNumeroInfo('info_comisionExcedente'); 
-            const costoFijoAdicional = 140000; 
-            const comision = costoM40P1 * 0.16;
-            const factorMultiplicador = costoM40P1 * 0.5; 
-            const costoTotalContrato = (costoM40P1 + factorMultiplicador + costoFijoAdicional + comision + comisionExcedente) - 35000;
-            document.getElementById('info_costoTotalContratoBruto').textContent = '$' + formatNumber(costoTotalContrato);
-
-            const aforeProy = aforeProyectadaGlobalInfo;
-            
-            let mesesPrimerDepositoInput = parseInt(document.getElementById('info_mesesPrimerDeposito').value) || 6;
-            document.getElementById('display_mesesPrimerDeposito').textContent = mesesPrimerDepositoInput;
-
-            const primerDeposito = pensionM40Inicial * mesesPrimerDepositoInput; 
-            document.getElementById('info_coberturaPrimerDeposito').textContent = '$' + formatNumber(primerDeposito);
-
-            const sbcM40Ingresado = m40ResultadosInfo.sbcM40Ingresado || 0;
-            const diasP1Total = (parseInt(document.getElementById('info_m40_p1_meses').value) || 0) * (365.25 / 12);
-            const extraAfore = diasP1Total * sbcM40Ingresado * 0.02; // SAR 2%
-            document.getElementById('info_coberturaExtraAfore').textContent = '$' + formatNumber(extraAfore);
-
-            const subtotalCobertura = aforeProy + primerDeposito + extraAfore;
-            document.getElementById('info_coberturaSubtotalSinPrestamo').textContent = '$' + formatNumber(subtotalCobertura);
-
+            const aforeActual = getNumeroInfo('info_aforeActual');
+            const mesesPrimerDeposito = parseInt(document.getElementById('info_mesesPrimerDeposito').value) || 6;
+            const primerDeposito = pensionMensual * mesesPrimerDeposito;
+            const extraAfore = diasEnM40 * sbcM40Ingresado * 0.02;
+            const subtotalCobertura = aforeActual + primerDeposito + extraAfore;
             const deficit = costoTotalContrato - subtotalCobertura;
             
-            const descuentoMaximoPermitidoPorLey = pensionM40Inicial * 0.30;
-            const slopePrestamoPorDescuento = (PRESTAMO_PUNTO_B_MONTO - PRESTAMO_PUNTO_A_MONTO) / (PRESTAMO_PUNTO_B_DESCUENTO - PRESTAMO_PUNTO_A_DESCUENTO);
-            let prestamoAlcanzableConDescMaxLey = slopePrestamoPorDescuento * (descuentoMaximoPermitidoPorLey - PRESTAMO_PUNTO_A_DESCUENTO) + PRESTAMO_PUNTO_A_MONTO;
-            prestamoAlcanzableConDescMaxLey = Math.max(0, prestamoAlcanzableConDescMaxLey);
+            const descuentoMaximoPermitido = pensionMensual * 0.30;
+            const slopePrestamo = (PRESTAMO_PUNTO_B_MONTO - PRESTAMO_PUNTO_A_MONTO) / (PRESTAMO_PUNTO_B_DESCUENTO - PRESTAMO_PUNTO_A_DESCUENTO);
+            let prestamoAlcanzable = slopePrestamo * (descuentoMaximoPermitido - PRESTAMO_PUNTO_A_DESCUENTO) + PRESTAMO_PUNTO_A_MONTO;
+            prestamoAlcanzable = Math.max(0, prestamoAlcanzable);
             
-            let prestamoRealUtilizado = 0;
-            let descuentoMensualRealDelPrestamo = 0;
+            let prestamoReal = 0;
+            let descuentoMensual = 0;
+            let resultadoFinalTexto = '';
+            let resultadoFinalColor = 'text-gray-800';
 
             if (deficit > 0) {
-                showElement('info_prestamoInfo');
-                document.getElementById('info_deficitAntesPrestamo').textContent = '$' + formatNumber(deficit);
-                if(deficit <= prestamoAlcanzableConDescMaxLey) {
-                    prestamoRealUtilizado = deficit;
-                    const slopeDescuentoPorPrestamo = (PRESTAMO_PUNTO_B_DESCUENTO - PRESTAMO_PUNTO_A_DESCUENTO) / (PRESTAMO_PUNTO_B_MONTO - PRESTAMO_PUNTO_A_MONTO);
-                    descuentoMensualRealDelPrestamo = slopeDescuentoPorPrestamo * (prestamoRealUtilizado - PRESTAMO_PUNTO_A_MONTO) + PRESTAMO_PUNTO_A_DESCUENTO;
-                } else {
-                    prestamoRealUtilizado = prestamoAlcanzableConDescMaxLey;
-                    descuentoMensualRealDelPrestamo = descuentoMaximoPermitidoPorLey;
+                prestamoReal = Math.min(deficit, prestamoAlcanzable);
+                if (prestamoReal > 0) {
+                    const slopeDescuento = (PRESTAMO_PUNTO_B_DESCUENTO - PRESTAMO_PUNTO_A_DESCUENTO) / (PRESTAMO_PUNTO_B_MONTO - PRESTAMO_PUNTO_A_MONTO);
+                    descuentoMensual = slopeDescuento * (prestamoReal - PRESTAMO_PUNTO_A_MONTO) + PRESTAMO_PUNTO_A_DESCUENTO;
                 }
-                document.getElementById('info_prestamoNecesario').textContent = '$' + formatNumber(prestamoRealUtilizado);
-                document.getElementById('info_descuentoMensualPrestamo').textContent = '$' + formatNumber(descuentoMensualRealDelPrestamo);
-            } else {
-                hideElement('info_prestamoInfo');
             }
             
-            const coberturaFinal = subtotalCobertura + prestamoRealUtilizado;
-            const saldoFinal = coberturaFinal - costoTotalContrato;
-            
-            if (saldoFinal > 0.01) {
-                document.getElementById('info_resultadoAnalisisCredito').textContent = "¡EXCELENTE! PROYECTO FINANCIADO CON SALDO A FAVOR";
-                document.getElementById('info_etiquetaSaldoFinal').textContent = "Saldo a tu favor:";
-                document.getElementById('info_montoSaldoFinal').textContent = '$' + formatNumber(saldoFinal);
-                document.getElementById('info_montoSaldoFinal').className = 'font-bold highlight-green';
-            } else if (saldoFinal >= -0.01 && saldoFinal <= 0.01) {
-                document.getElementById('info_resultadoAnalisisCredito').textContent = "¡PROYECTO VIABLE!";
-                document.getElementById('info_etiquetaSaldoFinal').textContent = "CRÉDITO AUTORIZADO";
-                document.getElementById('info_montoSaldoFinal').textContent = "";
-            } else {
-                document.getElementById('info_resultadoAnalisisCredito').textContent = "REQUIERE ANÁLISIS ADICIONAL";
-                document.getElementById('info_etiquetaSaldoFinal').textContent = "Déficit Restante:";
-                document.getElementById('info_montoSaldoFinal').textContent = '$' + formatNumber(Math.abs(saldoFinal));
-                document.getElementById('info_montoSaldoFinal').className = 'font-bold highlight-red';
-            }
+            const saldoFinal = subtotalCobertura + prestamoReal - costoTotalContrato;
 
-            const incrementoNetoGlobalAnio1 = (m40ResultadosInfo.pensionMensualInicial || 0) - (pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA || 0);
-            document.getElementById('info_ventajaIncrementoNeto').textContent = '$' + formatNumber(incrementoNetoGlobalAnio1);
+            if (saldoFinal > 0.01) {
+                resultadoFinalTexto = `SALDO A FAVOR: $${formatNumber(saldoFinal)}`;
+                resultadoFinalColor = 'text-green-600';
+            } else if (saldoFinal >= -0.01) {
+                resultadoFinalTexto = "PROYECTO VIABLE";
+                resultadoFinalColor = 'text-blue-600';
+            } else {
+                resultadoFinalTexto = `DÉFICIT: $${formatNumber(Math.abs(saldoFinal))}`;
+                resultadoFinalColor = 'text-red-600';
+            }
             
-            const valorInmuebleAnio1 = (m40ResultadosInfo.pensionMensualInicial || 0) / 0.004;
-            document.getElementById('info_ventajaValorInmueble').textContent = '$' + formatNumber(valorInmuebleAnio1);
+            results.pension.textContent = '$' + formatNumber(pensionMensual);
+            results.aguinaldo.textContent = '$' + formatNumber(aguinaldo);
+            results.costoTotal.textContent = '$' + formatNumber(costoTotalContrato);
+            results.coberturaAfore.textContent = '$' + formatNumber(aforeActual);
+            results.coberturaDeposito.textContent = '$' + formatNumber(primerDeposito);
+            results.coberturaExtra.textContent = '$' + formatNumber(extraAfore);
+            results.prestamo.textContent = '$' + formatNumber(prestamoReal);
+            results.resultadoFinal.textContent = resultadoFinalTexto;
+            results.resultadoFinal.className = `float-right font-bold ${resultadoFinalColor}`;
+            results.edadFinal.textContent = `${edadFinM40.anos}a, ${edadFinM40.meses}m, ${edadFinM40.dias}d`;
+            results.sbcFinal.textContent = '$' + formatNumber(sbcPromedio);
+            results.semanasFinales.textContent = formatNumber(semanas, 0);
+
+            let htmlProyeccion = `<table class="w-full text-xs mt-2">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-1 text-left">Año</th>
+                        <th class="p-1 text-right">P. Bruta (Inflación)</th>
+                        <th class="p-1 text-right">Desc. Préstamo</th>
+                        <th class="p-1 text-right">P. Neta Mensual</th>
+                    </tr>
+                </thead>
+                <tbody>`;
             
-            const proyeccionContenedor = document.getElementById('info_proyeccionPensionNetaAnual');
-            proyeccionContenedor.innerHTML = ''; 
-            const tablaProyeccion = document.createElement('table');
-            tablaProyeccion.className = 'w-full text-left border-collapse';
-            let htmlProyeccion = `<thead><tr class="bg-blue-100"><th class="p-2 border">Año</th><th class="p-2 border">Pensión Bruta</th><th class="p-2 border">Descuento</th><th class="p-2 border">Pensión Neta</th></tr></thead><tbody>`;
-            
-            let proyeccionAnualData = [];
-            for (let i = 1; i <= 10; i++) { 
-                const pensionBrutaEsteAnio = (m40ResultadosInfo.pensionMensualInicial || 0) * Math.pow(1 + averageAnnualINPCGrowth, i - 1);
-                const descuentoEsteAnio = (i <= 5 && deficit > 0) ? descuentoMensualRealDelPrestamo : 0; 
-                const pensionNetaEsteAnio = pensionBrutaEsteAnio - descuentoEsteAnio;
-                proyeccionAnualData.push({ anio: i, pensionBruta: pensionBrutaEsteAnio, descuento: descuentoEsteAnio, pensionNeta: pensionNetaEsteAnio });
+            for (let i = 1; i <= 10; i++) {
+                const pensionBruta = pensionMensual * Math.pow(1 + averageAnnualINPCGrowth, i - 1);
+                const descuentoAplicado = (i <= 5 && deficit > 0) ? descuentoMensual : 0;
+                const pensionNeta = pensionBruta - descuentoAplicado;
+                
                 htmlProyeccion += `<tr>
-                    <td class="p-2 border">${i}</td>
-                    <td class="p-2 border">$${formatNumber(pensionBrutaEsteAnio)}</td>
-                    <td class="p-2 border">$${formatNumber(descuentoEsteAnio)}</td>
-                    <td class="p-2 border font-semibold ${pensionNetaEsteAnio >= pensionBrutaEsteAnio ? 'text-green-700' : 'text-amber-700'}">$${formatNumber(pensionNetaEsteAnio)}</td>
+                    <td class="p-1 border-b text-left">${i}</td>
+                    <td class="p-1 border-b text-right">$${formatNumber(pensionBruta)}</td>
+                    <td class="p-1 border-b text-right text-red-600">-$${formatNumber(descuentoAplicado)}</td>
+                    <td class="p-1 border-b text-right font-bold text-green-700">$${formatNumber(pensionNeta)}</td>
                 </tr>`;
             }
-            tablaProyeccion.innerHTML = htmlProyeccion + `</tbody>`;
-            proyeccionContenedor.appendChild(tablaProyeccion);
+            htmlProyeccion += `</tbody></table>`;
+            results.proyeccionContainer.innerHTML = htmlProyeccion;
             
-            // Populate data for PDF
-            let resultadoAnalisis, etiquetaSaldoFinal, montoSaldoFinal;
-            if (saldoFinal > 0.01) {
-                resultadoAnalisis = "¡EXCELENTE! PROYECTO FINANCIADO CON SALDO A FAVOR";
-                etiquetaSaldoFinal = "Saldo a tu favor:";
-                montoSaldoFinal = saldoFinal;
-            } else if (saldoFinal >= -0.01 && saldoFinal <= 0.01) {
-                resultadoAnalisis = "¡PROYECTO VIABLE!";
-                etiquetaSaldoFinal = "CRÉDITO AUTORIZADO";
-                montoSaldoFinal = 0;
-            } else {
-                resultadoAnalisis = "REQUIERE ANÁLISIS ADICIONAL";
-                etiquetaSaldoFinal = "Déficit Restante:";
-                montoSaldoFinal = Math.abs(saldoFinal);
-            }
-
-            datosCompletosParaPDFInfo = {
-                 asesor: nombreAsesorGlobal,
-                 cliente: datosClienteInfo, pensionBase: pensionBaseResultadosInfo,
-                 curp: document.getElementById('info_curpCliente').value,
-                 m40Periodo: {
-                     inicio: document.getElementById('info_m40_p1_inicio').value,
-                     meses: parseInt(document.getElementById('info_m40_p1_meses').value) || 0,
-                     sbcTope: m40ResultadosInfo.sbcM40Ingresado }, 
-                 m40Resultados: {...m40ResultadosInfo}, 
-                 cobertura: {
-                     aforeProyectada: aforeProyectadaGlobalInfo, mesesPrimerDeposito: mesesPrimerDepositoInput, primerDeposito: primerDeposito, extraAfore: extraAfore,
-                     costoTotalContrato: costoTotalContrato, prestamoRealUtilizado: prestamoRealUtilizado, descuentoMensualPrestamoFijo: descuentoMensualRealDelPrestamo,
-                     resultadoAnalisis: resultadoAnalisis, 
-                     etiquetaSaldoFinal: etiquetaSaldoFinal, 
-                     montoSaldoFinal: montoSaldoFinal,
-                     // For cost breakdown page
-                     costoM40P1: costoM40P1,
-                     factorMultiplicador: factorMultiplicador,
-                     comision: comision,
-                     sumaFijaAdicional: costoFijoAdicional,
-                     comisionExcedente: comisionExcedente,
-                     ajusteManual: -35000
-                  },
-                 ventajas: {
-                     incrementoNetoGlobalAnio1: incrementoNetoGlobalAnio1, valorInmuebleEquivalenteAnio1: valorInmuebleAnio1, proyeccionAnualPensionNeta: proyeccionAnualData
-                  }
-             };
-        }
-        
-        async function exportarPropuestaPDFInfografia() {
-            const exportButton = document.getElementById('exportPdfButton');
-            exportButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i>Generando...`;
-            exportButton.disabled = true;
-
-            await new Promise(resolve => setTimeout(resolve, 50));
-            
-            const d = datosCompletosParaPDFInfo;
-            if (!d || !d.m40Resultados || d.m40Resultados.pensionMensualInicial <= 0) {
-                 showCustomAlert("Por favor, calcula una proyección completa antes de exportar.", "Datos incompletos");
-                 exportButton.innerHTML = `<i class="fas fa-download"></i>Exportar a PDF`;
-                 exportButton.disabled = false;
-                 return;
-            }
-
-            try {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'pt', 'letter');
-                
-                // --- PDF Styling ---
-                const RGC_BLUE = [0, 51, 102], RGC_GOLD = [212, 175, 55];
-                const TEXT_DARK = [26, 32, 44], TEXT_MEDIUM = [74, 85, 104];
-                const WHITE = [255, 255, 255], BG_LIGHT_BLUE = [240, 248, 255];
-                const GREEN = [22, 163, 74], RED = [220, 38, 38];
-                const MARGIN = 40;
-                const PAGE_WIDTH = pdf.internal.pageSize.getWidth();
-                let yPos = 0;
-
-                const addHeader = (title) => {
-                    pdf.setFillColor(RGC_BLUE[0], RGC_BLUE[1], RGC_BLUE[2]);
-                    pdf.rect(0, 0, PAGE_WIDTH, 70, 'F');
-                    pdf.setFont('helvetica', 'bold');
-                    pdf.setFontSize(18);
-                    // Shadow
-                    pdf.setTextColor(0, 0, 0);
-                    pdf.text("RGC PENSIONES Y SEGUROS", MARGIN + 1, 43);
-                    // Main Text
-                    pdf.setTextColor(RGC_GOLD[0], RGC_GOLD[1], RGC_GOLD[2]);
-                    pdf.text("RGC PENSIONES Y SEGUROS", MARGIN, 42);
-
-                    pdf.setFontSize(10);
-                    pdf.setFont('helvetica', 'normal');
-                    pdf.setTextColor(WHITE[0], WHITE[1], WHITE[2]);
-                    pdf.text(new Date().toLocaleDateString('es-MX'), PAGE_WIDTH - MARGIN, 42, { align: 'right' });
-                    yPos = 100;
-                    pdf.setFontSize(16);
-                    pdf.setFont('helvetica', 'bold');
-                    pdf.setTextColor(RGC_BLUE[0], RGC_BLUE[1], RGC_BLUE[2]);
-                    pdf.text(title, PAGE_WIDTH / 2, yPos, { align: 'center' });
-                    yPos += 25;
-                };
-
-                const addFooter = (pageNumber, totalPages) => {
-                    pdf.setFontSize(8);
-                    pdf.setTextColor(TEXT_MEDIUM[0], TEXT_MEDIUM[1], TEXT_MEDIUM[2]);
-                    pdf.text(`Página ${pageNumber} de ${totalPages}`, PAGE_WIDTH / 2, pdf.internal.pageSize.getHeight() - 30, { align: 'center' });
-                    pdf.text(`Propuesta preparada por: ${d.asesor}`, MARGIN, pdf.internal.pageSize.getHeight() - 30);
-                };
-
-                const addSectionTitle = (text) => {
-                    pdf.setFontSize(12);
-                    pdf.setFont('helvetica', 'bold');
-                    pdf.setTextColor(RGC_GOLD[0], RGC_GOLD[1], RGC_GOLD[2]);
-                    pdf.text(text, MARGIN, yPos);
-                    yPos += 8;
-                    pdf.setDrawColor(RGC_GOLD[0], RGC_GOLD[1], RGC_GOLD[2]);
-                    pdf.setLineWidth(0.5);
-                    pdf.line(MARGIN, yPos, PAGE_WIDTH - MARGIN, yPos);
-                    yPos += 20;
-                };
-
-                const addDataRow = (label, value, valueColor = TEXT_DARK) => {
-                    pdf.setFontSize(10);
-                    pdf.setFont('helvetica', 'normal');
-                    pdf.setTextColor(TEXT_MEDIUM[0], TEXT_MEDIUM[1], TEXT_MEDIUM[2]);
-                    pdf.text(label, MARGIN, yPos);
-                    pdf.setFont('helvetica', 'bold');
-                    pdf.setTextColor(valueColor[0], valueColor[1], valueColor[2]);
-                    pdf.text(String(value), PAGE_WIDTH - MARGIN, yPos, { align: 'right' });
-                    yPos += 18;
-                };
-                
-                // --- PDF Page 1: Detailed Proposal ---
-                addHeader("Proyección de Pensión Personalizada");
-                pdf.setFontSize(11);
-                pdf.setFont('helvetica', 'normal');
-                pdf.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
-                pdf.text(`Para: ${d.cliente.nombre}`, MARGIN, yPos);
-                yPos += 30;
-
-                addSectionTitle("Resumen de Proyección");
-                addDataRow("Pensión Mensual Base (Estimada):", `$${formatNumber(d.pensionBase.PENSION_MENSUAL_ESTIMADA)}`, RGC_BLUE);
-                addDataRow("Pensión Mensual con M40 (Año 1):", `$${formatNumber(d.m40Resultados.pensionMensualInicial)}`, GREEN);
-                yPos += 5;
-                pdf.setFontSize(14);
-                pdf.setFont('helvetica', 'bold');
-                pdf.setTextColor(GREEN[0], GREEN[1], GREEN[2]);
-                pdf.text(`Incremento Mensual: $${formatNumber(d.ventajas.incrementoNetoGlobalAnio1)}`, PAGE_WIDTH / 2, yPos, { align: 'center' });
-                yPos += 30;
-
-                addSectionTitle("Detalles de la Estrategia");
-                addDataRow("Meses de Inversión en M40:", `${d.m40Periodo.meses}`);
-                addDataRow("SBC Diario Aplicado en M40:", `$${formatNumber(d.m40Periodo.sbcTope)}`);
-                addDataRow("SBC Promedio Final (para cálculo):", `$${formatNumber(d.m40Resultados.sbcPromedioParaCalculoPensionM40)}`);
-                addDataRow("Semanas Cotizadas Totales:", `${formatNumber(d.m40Resultados.nuevasSemanas, 0)}`);
-                yPos += 10;
-                
-                addSectionTitle("Análisis Financiero del Proyecto");
-                addDataRow("Costo Total del Proyecto (Estimado):", `$${formatNumber(d.cobertura.costoTotalContrato)}`, RED);
-                yPos += 5;
-                addDataRow("Cobertura con Saldo AFORE:", `(+) $${formatNumber(d.cobertura.aforeProyectada)}`, GREEN);
-                addDataRow(`Cobertura con Primeros ${d.cobertura.mesesPrimerDeposito} Meses de Pensión:`, `(+) $${formatNumber(d.cobertura.primerDeposito)}`, GREEN);
-                addDataRow("Cobertura con Extra AFORE (SAR):", `(+) $${formatNumber(d.cobertura.extraAfore)}`, GREEN);
-                if(d.cobertura.prestamoRealUtilizado > 0) {
-                    addDataRow("Préstamo Necesario:", `(+) $${formatNumber(d.cobertura.prestamoRealUtilizado)}`, RGC_GOLD);
-                }
-                yPos += 10;
-                pdf.setFillColor(BG_LIGHT_BLUE[0], BG_LIGHT_BLUE[1], BG_LIGHT_BLUE[2]);
-                pdf.rect(MARGIN, yPos, PAGE_WIDTH - MARGIN*2, 40, 'F');
-                pdf.setFontSize(12);
-                pdf.setFont('helvetica', 'bold');
-                pdf.setTextColor(RGC_BLUE[0], RGC_BLUE[1], RGC_BLUE[2]);
-                pdf.text(d.cobertura.resultadoAnalisis, MARGIN + 10, yPos + 25);
-                let finalBalanceText = d.cobertura.etiquetaSaldoFinal;
-                if (d.cobertura.etiquetaSaldoFinal !== "CRÉDITO AUTORIZADO") {
-                    finalBalanceText += ` $${formatNumber(d.cobertura.montoSaldoFinal)}`;
-                }
-                pdf.text(finalBalanceText, PAGE_WIDTH - MARGIN - 10, yPos + 25, { align: 'right' });
-                yPos += 60;
-                
-                addFooter(1, 5);
-                
-                // --- PDF Page 2: Annual Projection ---
-                pdf.addPage();
-                addHeader("Proyección Anual y Beneficios");
-                
-                pdf.autoTable({
-                    startY: yPos,
-                    head: [['Año', 'Pensión Bruta Mensual', 'Descuento Préstamo', 'Pensión Neta Mensual']],
-                    body: d.ventajas.proyeccionAnualPensionNeta.map(p => [
-                        p.anio,
-                        `$${formatNumber(p.pensionBruta)}`,
-                        p.descuento > 0 ? `$${formatNumber(p.descuento)}` : '-',
-                        `$${formatNumber(p.pensionNeta)}`
-                    ]),
-                    theme: 'grid',
-                    headStyles: { fillColor: RGC_BLUE, textColor: WHITE, fontStyle: 'bold' },
-                    alternateRowStyles: { fillColor: BG_LIGHT_BLUE },
-                    didParseCell: (data) => {
-                        if (data.section === 'body' && data.column.index === 3) {
-                            data.cell.styles.fontStyle = 'bold';
-                            data.cell.styles.textColor = data.cell.raw.includes('-') ? TEXT_DARK : GREEN;
-                        }
-                    }
-                });
-                yPos = pdf.lastAutoTable.finalY + 25;
-
-                pdf.setFontSize(9);
-                pdf.setTextColor(TEXT_MEDIUM[0], TEXT_MEDIUM[1], TEXT_MEDIUM[2]);
-                pdf.text(`Nota: La pensión bruta se proyecta con un incremento anual del ${averageAnnualINPCGrowth*100}%. El descuento de préstamo (si aplica) es fijo por 5 años.`, MARGIN, yPos);
-                yPos += 30;
-
-                pdf.setFillColor(BG_LIGHT_BLUE[0], BG_LIGHT_BLUE[1], BG_LIGHT_BLUE[2]);
-                pdf.rect(MARGIN, yPos, PAGE_WIDTH - MARGIN*2, 70, 'F');
-                pdf.setFontSize(11);
-                pdf.setFont('helvetica', 'normal');
-                pdf.setTextColor(RGC_BLUE[0], RGC_BLUE[1], RGC_BLUE[2]);
-                pdf.text("Tu pensión M40 (Año 1) podría equivaler a tener un inmueble de:", PAGE_WIDTH / 2, yPos + 25, { align: 'center' });
-                pdf.setFontSize(18);
-                pdf.setFont('helvetica', 'bold');
-                pdf.setTextColor(RGC_GOLD[0], RGC_GOLD[1], RGC_GOLD[2]);
-                pdf.text(`$${formatNumber(d.ventajas.valorInmuebleEquivalenteAnio1)} MXN`, PAGE_WIDTH / 2, yPos + 50, { align: 'center' });
-                
-                addFooter(2, 5);
-
-                // --- PDF Page 3: Client Summary (With Strategy) ---
-                pdf.addPage();
-                addHeader("Estudio de Pensión (Con Estrategia M40)");
-                pdf.text(`Cliente: ${d.cliente.nombre}`, MARGIN, yPos);
-                yPos += 30;
-
-                addSectionTitle("Datos Clave de Proyección");
-                addDataRow("Número de Semanas Cotizadas:", formatNumber(d.m40Resultados.nuevasSemanas, 0));
-                addDataRow("Salario Diario Promedio:", `$ ${formatNumber(d.m40Resultados.sbcPromedioParaCalculoPensionM40)}`);
-                addDataRow("Edad de Pensión:", `${d.m40Resultados.nuevaEdad} años`);
-                addDataRow("SBC M40 Retroactiva:", `$ ${formatNumber(d.m40Periodo.sbcTope)}`);
-                yPos += 10;
-
-                addSectionTitle("Resultados de Pensión");
-                addDataRow("Pensión Mensual por Cesantía:", `$ ${formatNumber(d.m40Resultados.pensionMensualInicial)}`, GREEN);
-                addDataRow("Pensión Anual (12 mensualidades):", `$ ${formatNumber(d.m40Resultados.pensionMensualInicial * 12)}`);
-                addDataRow("Pensión Anual más Aguinaldo:", `$ ${formatNumber((d.m40Resultados.pensionMensualInicial * 12) + d.m40Resultados.aguinaldo)}`);
-                yPos += 10;
-                
-                addSectionTitle("Resumen Financiero");
-                const financialData = d.cobertura;
-                addDataRow("Costo Total del Proyecto:", `$ ${formatNumber(financialData.costoTotalContrato)}`, RED);
-                addDataRow("1er Depósito (Aportación Cliente):", `(-) $ ${formatNumber(financialData.primerDeposito)}`);
-                addDataRow("AFORE:", `(-) $ ${formatNumber(financialData.aforeProyectada)}`);
-                addDataRow("Extra (SAR/INFONAVIT):", `(-) $ ${formatNumber(financialData.extraAfore)}`);
-                addDataRow("Préstamo (Déficit):", `(-) $ ${formatNumber(financialData.prestamoRealUtilizado)}`);
-                pdf.setDrawColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
-                pdf.line(PAGE_WIDTH - MARGIN - 150, yPos, PAGE_WIDTH - MARGIN, yPos);
-                yPos += 5;
-                addDataRow(financialData.etiquetaSaldoFinal, `$ ${formatNumber(financialData.montoSaldoFinal)}`, GREEN);
-                
-                addFooter(3, 5);
-
-                // --- PDF Page 4: Client Summary (Without Strategy) ---
-                pdf.addPage();
-                addHeader("Estudio de Pensión (Situación Actual)");
-                pdf.text(`Cliente: ${d.cliente.nombre}`, MARGIN, yPos);
-                yPos += 30;
-
-                addSectionTitle("Datos Clave Actuales");
-                addDataRow("Número de Semanas Cotizadas:", formatNumber(d.cliente.semanasCotizadasBase, 0));
-                addDataRow("Salario Diario Promedio:", `$ ${formatNumber(d.cliente.sbcPromedioBase)}`);
-                addDataRow("Edad de Pensión:", `${d.cliente.edadBase} años`);
-                yPos += 10;
-
-                addSectionTitle("Resultados de Pensión Sin Estrategia");
-                addDataRow("Pensión Mensual por Cesantía:", `$ ${formatNumber(d.pensionBase.PENSION_MENSUAL_ESTIMADA)}`, RGC_BLUE);
-                addDataRow("Pensión Anual (12 mensualidades):", `$ ${formatNumber(d.pensionBase.PENSION_MENSUAL_ESTIMADA * 12)}`);
-                addDataRow("Pensión Anual más Aguinaldo:", `$ ${formatNumber((d.pensionBase.PENSION_MENSUAL_ESTIMADA * 12) + d.pensionBase.AGUINALDO_ESTIMADO)}`);
-                
-                addFooter(4, 5);
-
-                // --- PDF Page 5: Technical Cost Breakdown ---
-                pdf.addPage();
-                addHeader("Desglose Técnico de Costos");
-                const costData = d.cobertura;
-                const subtotal = costData.costoM40P1 + costData.factorMultiplicador + costData.comision + costData.sumaFijaAdicional + costData.comisionExcedente;
-                pdf.autoTable({
-                    startY: yPos,
-                    head: [['Concepto', 'Monto']],
-                    body: [
-                        ['Costo M40 (c/Act+Rec)', `$ ${formatNumber(costData.costoM40P1)}`],
-                        ['Factor Multiplicador (50% s/M40)', `$ ${formatNumber(costData.factorMultiplicador)}`],
-                        ['Comisión (16% s/M40)', `$ ${formatNumber(costData.comision)}`],
-                        ['Suma Fija Adicional', `$ ${formatNumber(costData.sumaFijaAdicional)}`],
-                        ['Comisión por Excedente', `$ ${formatNumber(costData.comisionExcedente)}`],
-                        ['Subtotal', `$ ${formatNumber(subtotal)}`],
-                        ['Ajuste Manual', `(-) $ ${formatNumber(Math.abs(costData.ajusteManual))}`],
-                        ['Costo Total Final del Contrato', `$ ${formatNumber(costData.costoTotalContrato)}`]
-                    ],
-                    theme: 'grid',
-                    headStyles: { fillColor: RGC_BLUE, textColor: WHITE, fontStyle: 'bold' },
-                    bodyStyles: { fontStyle: 'bold', fontSize: 10 },
-                    columnStyles: { 1: { halign: 'right' } },
-                    didParseCell: (data) => {
-                        if (data.row.index >= 5) { // Subtotal, Ajuste, Total
-                            data.cell.styles.fillColor = BG_LIGHT_BLUE;
-                            data.cell.styles.fontStyle = 'bold';
-                        }
-                        if (data.row.index === 7) { // Total
-                            data.cell.styles.textColor = RGC_BLUE;
-                            data.cell.styles.fontSize = 12;
-                        }
-                    }
-                });
-
-                addFooter(5, 5);
-
-                pdf.save(`Propuesta_RGC_${d.cliente.nombre.replace(/\s/g, '_')}.pdf`);
-
-            } catch(e) {
-                console.error("Error generating PDF:", e);
-                showCustomAlert("Ocurrió un error al generar el PDF. Por favor, intenta de nuevo.", "Error de Exportación");
-            } finally {
-                exportButton.innerHTML = `<i class="fas fa-download"></i>Exportar a PDF`;
-                exportButton.disabled = false;
+            // Store data for PDF
+            scenarioData[scenarioNum] = {
+                mesesM40: meses,
+                semanasFinales: semanas,
+                edadFinal: `${edadFinM40.anos}a, ${edadFinM40.meses}m`,
+                sbcPromedioFinal: sbcPromedio,
+                pensionMensual,
+                aguinaldo,
+                costoTotalContrato,
+                coberturaAfore: aforeActual,
+                coberturaDeposito: primerDeposito,
+                coberturaExtra: extraAfore,
+                prestamoRequerido: prestamoReal,
+                resultadoFinal: resultadoFinalTexto,
+                costoM40,
+                totalActualizacion,
+                totalRecargos,
+                factorMultiplicador,
+                comision,
+                comisionExcedente,
+                costoFijoAdicional,
+                proyeccion: []
+            };
+            for (let i = 1; i <= 10; i++) {
+                const pensionBruta = pensionMensual * Math.pow(1 + averageAnnualINPCGrowth, i - 1);
+                const descuentoAplicado = (i <= 5 && deficit > 0) ? descuentoMensual : 0;
+                const pensionNeta = pensionBruta - descuentoAplicado;
+                scenarioData[scenarioNum].proyeccion.push([i, `$${formatNumber(pensionBruta)}`, `-$${formatNumber(descuentoAplicado)}`, `$${formatNumber(pensionNeta)}`]);
             }
         }
+
 
         document.addEventListener('DOMContentLoaded', () => {
+            initializeMainAppDisplay();
             document.getElementById('agreementCheckbox').addEventListener('change', (e) => {
                 document.getElementById('acceptAgreementButton').disabled = !e.target.checked;
             });
@@ -1668,59 +1849,10 @@
             
             document.getElementById('agreementDate').textContent = new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
 
-            // --- Real-time Validation Setup ---
-            const setValidationState = (element, isValid, message = "") => {
-                const errorElement = document.getElementById(`${element.id}_error`);
-                element.classList.remove('input-valid', 'input-invalid');
-                if (!errorElement) return;
-
-                errorElement.textContent = "";
-                
-                if (element.value.length === 0) return;
-
-                if (isValid) {
-                    element.classList.add('input-valid');
-                } else {
-                    element.classList.add('input-invalid');
-                    errorElement.textContent = message;
-                }
-            };
-
-            const validateField = (element) => {
-                const value = element.value;
-                const numValue = parseFloat(value);
-
-                switch (element.id) {
-                    case 'info_semanasCotizadas':
-                        setValidationState(element, !isNaN(numValue) && numValue >= 500, 'Debe ser un número mayor o igual a 500.');
-                        break;
-                    case 'info_edadCliente':
-                        setValidationState(element, !isNaN(numValue) && numValue >= 60, 'La edad mínima para pensionarse es 60.');
-                        break;
-                    case 'info_sbcPromedio':
-                        setValidationState(element, !isNaN(numValue) && numValue > 0, 'Debe ser un número mayor a 0.');
-                        break;
-                    case 'info_curpCliente':
-                        setValidationState(element, value.length === 18, 'El CURP debe tener 18 caracteres.');
-                        break;
-                }
-            };
-
-            const fieldsToValidate = ['info_semanasCotizadas', 'info_edadCliente', 'info_sbcPromedio', 'info_curpCliente'];
-            fieldsToValidate.forEach(id => {
-                const field = document.getElementById(id);
-                if (field) {
-                    field.addEventListener('input', () => validateField(field));
-                }
-            });
-
-
-            // Initially show the confidentiality modal
             showElement('confidentialityModal');
         });
 
     </script>
 </body>
 </html>
-
 
