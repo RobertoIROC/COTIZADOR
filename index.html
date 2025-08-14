@@ -1540,7 +1540,7 @@
                 const splitExplanation = pdf.splitTextToSize(explanationText, doc.width - doc.margin * 2);
                 pdf.text(splitExplanation, doc.margin, doc.y);
 
-                // --- PAGE 2: THE INVESTMENT ---
+                // --- PAGE 2: THE INVESTMENT (SIMPLIFIED) ---
                 pdf.addPage();
                 addHeaderAndFooter(2);
                 doc.y = 80;
@@ -1557,23 +1557,14 @@
                 pdf.setFontSize(36);
                 pdf.setTextColor('#B8860B');
                 pdf.text(`$${formatNumber(scenario1.costoTotalContrato)}`, doc.width / 2, doc.y + 65, { align: 'center' });
-                doc.y += 100;
+                doc.y += 120;
 
-                pdf.autoTable({
-                    startY: doc.y,
-                    theme: 'grid',
-                    headStyles: { fillColor: [74, 85, 104] },
-                    body: [
-                        ['Pagos al IMSS (Modalidad 40)', `$${formatNumber(scenario1.costoM40)}`],
-                        ['Honorarios por Estrategia y Gestión RGC', `$${formatNumber(scenario1.factorMultiplicador + scenario1.comision)}`],
-                        [`Comisión Adicional: ${scenario1.comisionExcedenteConcepto || 'N/A'}`, `$${formatNumber(scenario1.comisionExcedente)}`],
-                        ['Gastos Administrativos y de Trámites', `$${formatNumber(scenario1.costoFijoAdicional)}`],
-                        ['Ajuste a favor del cliente', `-$${formatNumber(35000)}`]
-                    ],
-                    foot: [[{content: 'INVERSIÓN TOTAL', styles: {fontStyle: 'bold'}}, {content: `$${formatNumber(scenario1.costoTotalContrato)}`, styles: {fontStyle: 'bold'}}]],
-                    columnStyles: { 1: { halign: 'right' } }
-                });
-                doc.y = pdf.autoTable.previous.finalY + 20;
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(11);
+                pdf.setTextColor(80);
+                const investmentExplanation = `Este es el monto total que se invertirá para asegurar tu futuro. Incluye todos los pagos al IMSS, gestiones y nuestra asesoría para el éxito del plan. En la siguiente página te mostraremos cómo este monto se cubre utilizando tus propios fondos de retiro, sin necesidad de que desembolses dinero de tu bolsillo.`;
+                const splitInvestmentText = pdf.splitTextToSize(investmentExplanation, doc.width - doc.margin * 2);
+                pdf.text(splitInvestmentText, doc.margin, doc.y);
 
                 // --- PAGE 3: HOW IT'S PAID ---
                 pdf.addPage();
