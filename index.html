@@ -7,14 +7,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --dark-blue: #003366; /* Azul marino profundo */
@@ -30,7 +29,7 @@
         }
 
         body { 
-            font-family: 'Montserrat', sans-serif; 
+            font-family: 'Lato', sans-serif; 
             background-color: var(--bg-light);
             color: var(--text-medium);
         }
@@ -45,18 +44,23 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
             margin-bottom: 3rem;
         }
-        .main-header .logo-text {
-            font-size: 1.75rem;
-            font-weight: 800;
+        .logo-text-elegant {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 2.5rem;
             color: var(--gold);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
             letter-spacing: 1px;
         }
+        .main-header .logo-text-elegant {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
         .main-header h1 {
-            font-weight: 800;
+            font-family: 'Lato', sans-serif;
+            font-weight: 900;
             font-size: 2.25rem; /* 36px */
             letter-spacing: -0.5px;
-            margin-top: 1rem;
         }
         .main-header p {
             font-size: 1.125rem; /* 18px */
@@ -75,8 +79,9 @@
             border-top: 6px solid var(--dark-blue);
         }
         .infographic-section h2 {
+            font-family: 'Lato', sans-serif;
+            font-weight: 900;
             font-size: 1.75rem; /* 28px */
-            font-weight: 700;
             margin-bottom: 2rem;
             color: var(--dark-blue);
             display: flex;
@@ -90,8 +95,9 @@
             color: var(--gold);
         }
         .infographic-section h3.subsection-title {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
             font-size: 1.25rem; /* 20px */
-            font-weight: 600;
             color: var(--dark-blue);
             margin-top: 2rem;
             margin-bottom: 1.5rem;
@@ -99,7 +105,7 @@
         
         /* Formularios y Entradas */
         .input-group label {
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 0.75rem;
             color: var(--text-medium); 
             font-size: 0.875rem; /* 14px */
@@ -127,11 +133,12 @@
         }
         .input-group input[readonly] {
             background-color: #E9ECEF;
+            cursor: not-allowed;
         }
         
         /* Botones */
         .btn {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Lato', sans-serif;
             font-weight: 700;
             padding: 0.8rem 2rem;
             border-radius: 0.5rem;
@@ -236,9 +243,9 @@
             border-top: 6px solid var(--gold);
         }
         .login-box h2 {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Lato', sans-serif;
+            font-weight: 900;
             font-size: 2rem;
-            font-weight: 800;
             color: var(--dark-blue);
             text-align: center;
             margin-bottom: 2.5rem;
@@ -283,7 +290,7 @@
         }
         
         .modal-content h2 {
-             font-family: 'Montserrat', sans-serif;
+             font-family: 'Lato', sans-serif;
              color: var(--dark-blue);
              font-size: 1.5rem;
              font-weight: 700;
@@ -319,6 +326,7 @@
             border-radius: 40px 40px 0 0;
         }
         .app-footer .logo-text-footer {
+            font-family: 'Playfair Display', serif;
             color: var(--gold);
             font-weight: 700;
             font-size: 1.25rem;
@@ -336,8 +344,8 @@
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
             color: var(--text-dark);
             z-index: 100;
             transition: color 0.3s;
@@ -381,7 +389,7 @@
     </style>
 </head>
 <body>
-    <!-- Confidentiality Agreement Modal -->
+    
     <div id="confidentialityModal" class="modal-overlay">
         <div class="modal-content">
             <h2>CARTA COMPROMISO DE CONFIDENCIALIDAD</h2>
@@ -420,10 +428,10 @@
         <i class="fas fa-clock mr-2"></i>Tiempo restante: <span id="sessionCountdown">15:00</span>
     </div>
 
-    <!-- Login Section -->
+    
     <div id="loginContainer">
         <div class="login-box">
-             <div class="logo-text text-center text-2xl mb-8" style="color: var(--dark-blue); text-shadow: none;">RGC PENSIONES Y SEGUROS</div>
+            <div class="logo-text-elegant text-center mb-8">RGC Pensiones y Seguros</div>
             <h2>Acceso de Asesor</h2>
             <div class="input-group mb-4">
                 <label for="login_asesor"><i class="fas fa-user-tie mr-2 opacity-70"></i>Nombre del Asesor</label>
@@ -442,13 +450,13 @@
         </div>
     </div>
 
-    <!-- Main Application Container -->
+    
     <div id="appContainer" class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl" style="display: none;">
         
-        <!-- Main Menu Section -->
+        
         <div id="mainMenuSection">
             <header class="main-header">
-                <div class="logo-text">RGC PENSIONES Y SEGUROS</div>
+                <div class="logo-text-elegant">RGC Pensiones y Seguros</div>
                 <h1>Panel de Asesor</h1>
                 <p>Selecciona una herramienta para comenzar.</p>
             </header>
@@ -481,7 +489,7 @@
             </div>
         </div>
 
-        <!-- Calculator Section -->
+        
         <div id="calculatorSection" style="display: none;">
             <button onclick="showSection('mainMenuSection')" class="btn btn-secondary mb-6"><i class="fas fa-arrow-left mr-2"></i>Volver al Menú</button>
             <section id="infoSection1" class="infographic-section">
@@ -503,7 +511,6 @@
 
                 <h3 class="subsection-title">Historial de Empleos</h3>
                 <div id="employmentCardsContainer">
-                    <!-- Employment cards will be added here by JS -->
                 </div>
                 <button onclick="addEmploymentCard()" class="btn btn-secondary mt-4"><i class="fas fa-plus mr-2"></i>Agregar Empleo</button>
                 
@@ -542,9 +549,11 @@
                                 </tr>
                             </thead>
                             <tbody id="sbcAnalysisTableBody">
-                                <!-- Rows will be added here by JS -->
                             </tbody>
+                            <tfoot id="sbcAnalysisTableFooter" class="font-bold bg-gray-100">
+                            </tfoot>
                         </table>
+                        <div id="sbcDaysWarning" class="mt-4 p-3 rounded-lg text-sm" style="display: none;"></div>
                     </div>
                 </div>
 
@@ -598,7 +607,6 @@
 
             <section id="infoSection3" class="infographic-section">
                 <h2><i class="fas fa-hand-holding-usd"></i>Paso 3: Análisis Financiero</h2>
-                <h3 class="subsection-title">Fuentes de Cobertura y Comisiones</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <div class="input-group">
                         <label for="info_aforeActual">AFORE Actual ($):</label>
@@ -609,8 +617,11 @@
                         <input type="number" id="info_mesesPrimerDeposito" value="6" min="6" max="12" onchange="handleMesesDepositoChange(this)" data-last-valid="6">
                     </div>
                      <div class="input-group md:col-span-2">
-                        <label for="info_comisionExcedente">Comisión por Excedente ($):</label>
-                        <input type="number" id="info_comisionExcedente" placeholder="0.00" oninput="recalculateScenario(1); recalculateScenario(2);">
+                        <label for="info_comisionExcedente">Comisión por Excedente ($) y Concepto:</label>
+                        <div class="flex gap-4">
+                            <input type="number" id="info_comisionExcedente" placeholder="0.00" oninput="recalculateScenario(1); recalculateScenario(2);" class="w-1/2">
+                            <input type="text" id="info_comisionExcedente_concepto" placeholder="Concepto para reporte" class="w-1/2">
+                        </div>
                     </div>
                 </div>
             </section>
@@ -618,7 +629,7 @@
             <section id="infoSection4" class="infographic-section">
                 <h2><i class="fas fa-balance-scale-right"></i>Paso 4: Comparador de Escenarios</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Scenario 1 Card -->
+                    
                     <div class="bg-gray-50 p-6 rounded-xl border">
                         <h3 class="text-lg font-bold text-blue-800 mb-4 text-center">Escenario 1</h3>
                         <div class="grid grid-cols-2 gap-4">
@@ -632,28 +643,28 @@
                             </div>
                         </div>
                         <div id="scenario_1_results" class="mt-4 pt-4 border-t text-sm space-y-2">
-                             <!-- Key Data -->
+                             
                             <div class="bg-white p-3 rounded-md shadow-sm mb-3">
                                 <p><strong>Edad Final:</strong> <span id="scenario_1_edad_final" class="font-semibold float-right"></span></p>
                                 <p><strong>SBC Promedio Final:</strong> <span id="scenario_1_sbc_final" class="font-semibold float-right"></span></p>
                                 <p><strong>Semanas Finales:</strong> <span id="scenario_1_semanas_finales" class="font-semibold float-right"></span></p>
                             </div>
-                            <!-- Pension -->
+                            
                             <p class="font-semibold text-base">Pensión Mensual: <span id="scenario_1_pension" class="float-right font-bold text-green-600">$0.00</span></p>
                             <p class="font-semibold">Aguinaldo: <span id="scenario_1_aguinaldo" class="float-right font-bold text-green-600">$0.00</span></p>
                             <hr class="my-2">
-                            <!-- Financials -->
+                            
                             <p>Costo Total Proyecto: <span id="scenario_1_costo_total" class="float-right font-bold text-red-600">$0.00</span></p>
                             <p>Cobertura AFORE: <span id="scenario_1_cobertura_afore" class="float-right text-gray-700">$0.00</span></p>
                             <p>Cobertura 1er Depósito: <span id="scenario_1_cobertura_deposito" class="float-right text-gray-700">$0.00</span></p>
                             <p>Cobertura Extra AFORE: <span id="scenario_1_cobertura_extra" class="float-right text-gray-700">$0.00</span></p>
                             <p>Préstamo Requerido: <span id="scenario_1_prestamo" class="float-right font-bold text-blue-600">$0.00</span></p>
                             <p class="font-semibold text-base mt-1">Resultado: <span id="scenario_1_resultado_final" class="float-right font-bold">$0.00</span></p>
-                            <!-- Projection Table -->
+                            
                             <div id="scenario_1_proyeccion" class="mt-3 overflow-x-auto"></div>
                         </div>
                     </div>
-                    <!-- Scenario 2 Card -->
+                    
                     <div class="bg-gray-50 p-6 rounded-xl border">
                         <h3 class="text-lg font-bold text-blue-800 mb-4 text-center">Escenario 2</h3>
                          <div class="grid grid-cols-2 gap-4">
@@ -667,24 +678,24 @@
                             </div>
                         </div>
                         <div id="scenario_2_results" class="mt-4 pt-4 border-t text-sm space-y-2">
-                            <!-- Key Data -->
+                            
                             <div class="bg-white p-3 rounded-md shadow-sm mb-3">
                                 <p><strong>Edad Final:</strong> <span id="scenario_2_edad_final" class="font-semibold float-right"></span></p>
                                 <p><strong>SBC Promedio Final:</strong> <span id="scenario_2_sbc_final" class="font-semibold float-right"></span></p>
                                 <p><strong>Semanas Finales:</strong> <span id="scenario_2_semanas_finales" class="font-semibold float-right"></span></p>
                             </div>
-                            <!-- Pension -->
+                            
                             <p class="font-semibold text-base">Pensión Mensual: <span id="scenario_2_pension" class="float-right font-bold text-green-600">$0.00</span></p>
                             <p class="font-semibold">Aguinaldo: <span id="scenario_2_aguinaldo" class="float-right font-bold text-green-600">$0.00</span></p>
                             <hr class="my-2">
-                             <!-- Financials -->
+                             
                             <p>Costo Total Proyecto: <span id="scenario_2_costo_total" class="float-right font-bold text-red-600">$0.00</span></p>
                             <p>Cobertura AFORE: <span id="scenario_2_cobertura_afore" class="float-right text-gray-700">$0.00</span></p>
                             <p>Cobertura 1er Depósito: <span id="scenario_2_cobertura_deposito" class="float-right text-gray-700">$0.00</span></p>
                             <p>Cobertura Extra AFORE: <span id="scenario_2_cobertura_extra" class="float-right text-gray-700">$0.00</span></p>
                             <p>Préstamo Requerido: <span id="scenario_2_prestamo" class="float-right font-bold text-blue-600">$0.00</span></p>
                             <p class="font-semibold text-base mt-1">Resultado: <span id="scenario_2_resultado_final" class="float-right font-bold">$0.00</span></p>
-                             <!-- Projection Table -->
+                             
                             <div id="scenario_2_proyeccion" class="mt-3 overflow-x-auto"></div>
                         </div>
                     </div>
@@ -692,20 +703,17 @@
             </section>
 
             <section id="infoSection5" class="infographic-section text-center">
-                <h2><i class="fas fa-file-pdf"></i>Paso 5: Exportar Reportes</h2>
-                <p class="mb-8 text-gray-600 text-lg max-w-2xl mx-auto">Genera los reportes en PDF con la información de los escenarios analizados en el Paso 4.</p>
+                <h2><i class="fas fa-file-pdf"></i>Paso 5: Exportar Reporte</h2>
+                 <p class="mb-8 text-gray-600 text-lg max-w-2xl mx-auto">Genera un reporte completo en PDF con toda la información de la simulación.</p>
                 <div class="flex justify-center gap-6">
-                    <button onclick="generateClientPDF()" class="btn btn-blue text-lg">
-                        <i class="fas fa-user"></i>Comparativa para Cliente
-                    </button>
-                    <button onclick="promptForPassword()" class="btn btn-gold text-lg">
-                        <i class="fas fa-lock"></i>Reporte Técnico Completo
+                    <button onclick="generateFullReportPDF()" class="btn btn-blue text-lg">
+                        <i class="fas fa-file-download"></i>Descargar Reporte Completo
                     </button>
                 </div>
             </section>
         </div>
 
-        <!-- Contract Section -->
+        
         <div id="contractSection" style="display: none;">
             <button onclick="showSection('mainMenuSection')" class="btn btn-secondary mb-6"><i class="fas fa-arrow-left mr-2"></i>Volver al Menú</button>
             <section class="infographic-section">
@@ -770,7 +778,7 @@
         </footer>
     </div>
 
-    <!-- Custom Alert Modal -->
+    
     <div id="customAlertModal" class="modal-overlay">
         <div class="modal-content modal-content-alert">
             <h2 id="customAlertTitle" class="text-xl">Alerta</h2>
@@ -873,12 +881,10 @@
         }
         
         function showSection(sectionId) {
-            // Hide all main sections
             document.getElementById('mainMenuSection').style.display = 'none';
             document.getElementById('calculatorSection').style.display = 'none';
             document.getElementById('contractSection').style.display = 'none';
             
-            // Show the requested section
             const sectionToShow = document.getElementById(sectionId);
             if (sectionToShow) {
                 sectionToShow.style.display = 'block';
@@ -897,7 +903,6 @@
             const passwordInput = document.getElementById('login_password');
             const password = passwordInput.value.trim();
             
-            // --- Asesor Name Validation ---
             let asesorName = asesorInput.value.trim().replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').toUpperCase();
             const nameParts = asesorName.split(' ');
             if (nameParts.length < 2 || nameParts[0].length === 0 || nameParts[1].length === 0) {
@@ -955,7 +960,7 @@
              if (!economicData.smgv_diario[y]) economicData.smgv_diario[y] = parseFloat((economicData.smgv_diario[y-1] * 1.10).toFixed(2));
         }
 
-        const averageAnnualINPCGrowth = 0.06; // UPDATED INFLATION
+        const averageAnnualINPCGrowth = 0.06;
         const SMGV_DF_Global = 88.36; 
         const FACTOR_FOX_Global = 1.11;
         const tablaCuantiasGlobal = [ 
@@ -999,7 +1004,6 @@
             if (economicData.inpc[key]) {
                 return economicData.inpc[key];
             }
-            // Projection for future values
             const lastKnownKey = Object.keys(economicData.inpc).sort().pop();
             const [lastYear, lastMonth] = lastKnownKey.split('-').map(Number);
             const lastValue = economicData.inpc[lastKnownKey];
@@ -1007,7 +1011,7 @@
             if (monthsDiff > 0) {
                 return lastValue * Math.pow(1 + (averageAnnualINPCGrowth / 12), monthsDiff);
             }
-            return null; // Return null if historical data is missing
+            return null;
         }
 
         function _calcularPensionDetallado(sbcP, semC, edadC, smgv, fFox, tC) {
@@ -1198,7 +1202,7 @@
 
             if (!isValid) return;
             
-            todosLosMovimientos.sort((a, b) => a.fecha - b.fecha); // Oldest first
+            todosLosMovimientos.sort((a, b) => a.fecha - b.fecha);
 
             let periodos = [];
             for(let i = 0; i < todosLosMovimientos.length; i++) {
@@ -1274,8 +1278,27 @@
                 </tr>`;
                 tableBody.innerHTML += row;
             }
+
+            const tableFooter = document.getElementById('sbcAnalysisTableFooter');
+            tableFooter.innerHTML = `
+                <tr>
+                    <td class="p-2" colspan="2">Total Días Usados para Cálculo:</td>
+                    <td class="p-2 text-right">${formatNumber(diasAcumuladosSBC, 0)}</td>
+                    <td class="p-2" colspan="2"></td>
+                </tr>
+            `;
+
+            const daysWarningEl = document.getElementById('sbcDaysWarning');
+            if (diasAcumuladosSBC < DIAS_PROMEDIO_PENSION) {
+                daysWarningEl.innerHTML = `<i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i>Se han usado <strong>${formatNumber(diasAcumuladosSBC, 0)} de ${DIAS_PROMEDIO_PENSION}</strong> días. Considere agregar más historial laboral para un cálculo más preciso del SBC.`;
+                daysWarningEl.className = 'mt-4 p-3 rounded-lg text-sm bg-yellow-50 border border-yellow-200 text-yellow-800';
+                daysWarningEl.style.display = 'block';
+            } else {
+                daysWarningEl.innerHTML = `<i class="fas fa-check-circle mr-2 text-green-500"></i>Se han recopilado los <strong>${DIAS_PROMEDIO_PENSION}</strong> días necesarios para el cálculo del SBC.`;
+                daysWarningEl.className = 'mt-4 p-3 rounded-lg text-sm bg-green-50 border border-green-200 text-green-800';
+                daysWarningEl.style.display = 'block';
+            }
             
-            // Vigencia de Derechos Calculation
             const movimientosDeBaja = todosLosMovimientos.filter(m => m.tipo.includes('BAJA')).sort((a,b) => b.fecha - a.fecha);
             let ultimaFechaBaja = null;
             if(movimientosDeBaja.length > 0) {
@@ -1283,7 +1306,7 @@
             } else if (periodos.length > 0) {
                 const ultimoMovimiento = todosLosMovimientos[todosLosMovimientos.length - 1];
                 if (!ultimoMovimiento.tipo.includes('BAJA')) {
-                    ultimaFechaBaja = new Date(); // Assume currently employed
+                    ultimaFechaBaja = new Date(); 
                 }
             }
 
@@ -1377,7 +1400,249 @@
             showCustomAlert("Proyección calculada. Revisa los resultados en el Comparador de Escenarios (Paso 4).", "Éxito");
         }
         
-        // --- CONTRACT GENERATION LOGIC ---
+        // --- PDF Generation & Watermarking ---
+        function addWatermark(pdf, text) {
+            const totalPages = pdf.internal.getNumberOfPages();
+            const width = pdf.internal.pageSize.getWidth();
+            const height = pdf.internal.pageSize.getHeight();
+            
+            for (let i = 1; i <= totalPages; i++) {
+                pdf.setPage(i);
+                
+                pdf.saveGraphicsState();
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(50);
+                pdf.setTextColor(230, 230, 230);
+                
+                pdf.text(text, width / 2, height / 2, { 
+                    angle: -45, 
+                    align: 'center' 
+                });
+                
+                pdf.restoreGraphicsState();
+            }
+            pdf.setTextColor(0, 0, 0);
+        }
+
+        function generateFullReportPDF() {
+            // --- VALIDATION ---
+            if (Object.keys(scenarioData[1]).length === 0) {
+                showCustomAlert("Primero debe calcular al menos un escenario en el Paso 4 (Escenario 1).", "Acción Requerida");
+                return;
+            }
+            if (pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA <= 0) {
+                showCustomAlert("Los datos del análisis inicial (Paso 1) no son válidos. Por favor, vuelva a calcular.", "Datos Faltantes");
+                return;
+            }
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'pt', 'letter');
+                const doc = {
+                    width: pdf.internal.pageSize.getWidth(),
+                    height: pdf.internal.pageSize.getHeight(),
+                    margin: 40,
+                    y: 0
+                };
+                
+                const scenario1 = scenarioData[1];
+                const totalPages = 4;
+
+                // --- PDF HELPER FUNCTIONS ---
+                const addHeaderAndFooter = (pageNumber) => {
+                    // Header
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(16);
+                    pdf.setTextColor('#003366');
+                    pdf.text("RGC Pensiones y Seguros", doc.margin, 40);
+
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setFontSize(9);
+                    pdf.setTextColor(100);
+                    pdf.text("Reporte de Proyección de Pensión", doc.margin, 55);
+                    
+                    // Footer
+                    const footerText = `Página ${pageNumber} de ${totalPages} | Reporte Confidencial para ${datosClienteInfo.nombre || 'Cliente'} | Asesor: ${nombreAsesorGlobal}`;
+                    pdf.setFontSize(8);
+                    pdf.text(footerText, doc.width / 2, doc.height - 20, { align: 'center' });
+                };
+
+                const createTitle = (title, subtitle) => {
+                    doc.y += 20;
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(22);
+                    pdf.setTextColor('#003366');
+                    pdf.text(title, doc.width / 2, doc.y, { align: 'center' });
+                    doc.y += 20;
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setFontSize(11);
+                    pdf.setTextColor(120);
+                    const splitSubtitle = pdf.splitTextToSize(subtitle, doc.width - doc.margin * 2);
+                    pdf.text(splitSubtitle, doc.width / 2, doc.y, { align: 'center' });
+                    doc.y += splitSubtitle.length * 12 + 20;
+                };
+                
+                const createInfoBox = (x, y, width, height, title, value, valueColor, titleColor = 100, boxColor = '#F8F9FA', borderColor = '#E2E8F0') => {
+                    pdf.setFillColor(boxColor);
+                    pdf.setDrawColor(borderColor);
+                    pdf.roundedRect(x, y, width, height, 10, 10, 'FD');
+                    
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(11);
+                    pdf.setTextColor(titleColor);
+                    pdf.text(title, x + 15, y + 20);
+
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(24);
+                    pdf.setTextColor(valueColor);
+                    pdf.text(value, x + 15, y + 45);
+                };
+
+                // --- PAGE 1: THE BIG PICTURE SUMMARY ---
+                addHeaderAndFooter(1);
+                doc.y = 80;
+                createTitle("Tu Plan de Retiro Personalizado", `Hola ${datosClienteInfo.nombre.split(' ')[0]}, hemos preparado un plan para que disfrutes de la mejor pensión posible. Aquí tienes un resumen claro y sencillo.`);
+                
+                const currentPension = pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA;
+                createInfoBox(doc.margin, doc.y, (doc.width - doc.margin * 2), 60, "Pensión mensual SIN nuestra ayuda:", `$${formatNumber(currentPension)}`, '#DC2626', '#DC2626');
+                doc.y += 80;
+                
+                pdf.setFontSize(20);
+                pdf.text("vs", doc.width / 2, doc.y - 15, {align: 'center'});
+
+                pdf.setFillColor(230, 245, 235);
+                pdf.setDrawColor('#16A34A');
+                pdf.roundedRect(doc.margin, doc.y, doc.width - doc.margin * 2, 100, 10, 10, 'FD');
+
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(14);
+                pdf.setTextColor('#003366');
+                pdf.text("Tu Futuro con Nuestro Plan (Escenario Recomendado)", doc.margin + 20, doc.y + 25);
+                
+                pdf.setFontSize(36);
+                pdf.setTextColor('#16A34A');
+                pdf.text(`$${formatNumber(scenario1.pensionMensual)}`, doc.margin + 20, doc.y + 65);
+                pdf.setFontSize(12);
+                pdf.text("Pensión Mensual", doc.margin + 20, doc.y + 80);
+
+                pdf.setFontSize(18);
+                pdf.setTextColor('#16A34A');
+                pdf.text(`+ $${formatNumber(scenario1.aguinaldo)}`, doc.width - doc.margin - 20, doc.y + 65, { align: 'right' });
+                pdf.setFontSize(12);
+                pdf.text("de Aguinaldo Anual", doc.width - doc.margin - 20, doc.y + 80, { align: 'right' });
+                doc.y += 120;
+
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(11);
+                pdf.setTextColor(80);
+                const increasePercentage = currentPension > 0 ? formatNumber((scenario1.pensionMensual / currentPension - 1) * 100, 0) : "---";
+                const explanationText = `¡Esto es un aumento de más del ${increasePercentage}% en tu ingreso mensual! En las siguientes páginas te explicamos cómo lo haremos posible sin que gastes de tu bolsa.`;
+                const splitExplanation = pdf.splitTextToSize(explanationText, doc.width - doc.margin * 2);
+                pdf.text(splitExplanation, doc.margin, doc.y);
+
+                // --- PAGE 2: THE INVESTMENT ---
+                pdf.addPage();
+                addHeaderAndFooter(2);
+                doc.y = 80;
+                createTitle("Paso 1: La Inversión en tu Futuro", "Para lograr esta gran pensión, haremos una inversión inteligente en la Modalidad 40 del IMSS. Este es el costo total del proyecto.");
+
+                pdf.setFillColor(255, 250, 230);
+                pdf.setDrawColor('#D4AF37');
+                pdf.roundedRect(doc.margin, doc.y, doc.width - doc.margin * 2, 80, 10, 10, 'FD');
+
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(14);
+                pdf.setTextColor('#003366');
+                pdf.text("Inversión Total del Proyecto", doc.width / 2, doc.y + 30, { align: 'center' });
+                pdf.setFontSize(36);
+                pdf.setTextColor('#B8860B');
+                pdf.text(`$${formatNumber(scenario1.costoTotalContrato)}`, doc.width / 2, doc.y + 65, { align: 'center' });
+                doc.y += 100;
+
+                pdf.autoTable({
+                    startY: doc.y,
+                    theme: 'grid',
+                    headStyles: { fillColor: [74, 85, 104] },
+                    body: [
+                        ['Pagos al IMSS (Modalidad 40)', `$${formatNumber(scenario1.costoM40)}`],
+                        ['Honorarios por Estrategia y Gestión RGC', `$${formatNumber(scenario1.factorMultiplicador + scenario1.comision)}`],
+                        [`Comisión Adicional: ${scenario1.comisionExcedenteConcepto || 'N/A'}`, `$${formatNumber(scenario1.comisionExcedente)}`],
+                        ['Gastos Administrativos y de Trámites', `$${formatNumber(scenario1.costoFijoAdicional)}`],
+                        ['Ajuste a favor del cliente', `-$${formatNumber(35000)}`]
+                    ],
+                    foot: [[{content: 'INVERSIÓN TOTAL', styles: {fontStyle: 'bold'}}, {content: `$${formatNumber(scenario1.costoTotalContrato)}`, styles: {fontStyle: 'bold'}}]],
+                    columnStyles: { 1: { halign: 'right' } }
+                });
+                doc.y = pdf.autoTable.previous.finalY + 20;
+
+                // --- PAGE 3: HOW IT'S PAID ---
+                pdf.addPage();
+                addHeaderAndFooter(3);
+                doc.y = 80;
+                createTitle("Paso 2: El Plan de Pago Inteligente", "La mejor parte: esta inversión se paga sola con el mismo dinero de tu retiro. No tienes que poner dinero de tu bolsillo.");
+
+                pdf.autoTable({
+                    startY: doc.y,
+                    theme: 'grid',
+                    headStyles: { fillColor: [0, 51, 102] },
+                    head: [['Fuente de Pago', 'Descripción', 'Monto']],
+                    body: [
+                        ['1. Tu AFORE', 'Usamos el saldo que ya tienes ahorrado.', `$${formatNumber(scenario1.coberturaAfore)}`],
+                        ['2. Primeros Pagos de Pensión', 'Adelantamos el dinero de tus primeros meses de pensión.', `$${formatNumber(scenario1.coberturaDeposito)}`],
+                        ['3. Préstamo para Pensionado', 'Gestionamos un préstamo que se paga solo con una parte de tu nueva pensión.', `$${formatNumber(scenario1.prestamoRequerido)}`],
+                    ],
+                    foot: [[{content: 'Total Disponible para Pagar', colSpan: 2, styles:{fontStyle:'bold', halign:'right'}}, {content: `$${formatNumber(scenario1.coberturaAfore + scenario1.coberturaDeposito + scenario1.prestamoRequerido)}`, styles:{fontStyle:'bold'}}]],
+                    columnStyles: { 2: { halign: 'right' } }
+                });
+                doc.y = pdf.autoTable.previous.finalY + 30;
+
+                const finalResultValue = scenario1.coberturaAfore + scenario1.coberturaDeposito + scenario1.prestamoRequerido - scenario1.costoTotalContrato;
+                const finalResultText = finalResultValue >= 0 ? `¡Felicidades! Te queda un saldo a tu favor de:` : `Falta por cubrir:`;
+                const finalResultColor = finalResultValue >= 0 ? '#16A34A' : '#DC2626';
+
+                pdf.setFillColor(finalResultValue >= 0 ? 'rgb(240, 255, 240)' : 'rgb(255, 240, 240)');
+                pdf.setDrawColor(finalResultColor);
+                pdf.roundedRect(doc.margin, doc.y, doc.width - doc.margin * 2, 80, 10, 10, 'FD');
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(14);
+                pdf.setTextColor('#003366');
+                pdf.text(finalResultText, doc.width / 2, doc.y + 30, { align: 'center' });
+                pdf.setFontSize(36);
+                pdf.setTextColor(finalResultColor);
+                pdf.text(`$${formatNumber(Math.abs(finalResultValue))}`, doc.width / 2, doc.y + 65, { align: 'center' });
+                
+                // --- PAGE 4: PROJECTIONS ---
+                pdf.addPage();
+                addHeaderAndFooter(4);
+                doc.y = 80;
+                createTitle("Paso 3: Tu Dinero Mes a Mes", "Así se verán tus ingresos mensuales durante los próximos 10 años. Recuerda que el descuento del préstamo es temporal.");
+                
+                pdf.autoTable({
+                    startY: doc.y,
+                    theme: 'striped',
+                    headStyles: { fillColor: [0, 51, 102] },
+                    head: [['Año', 'Tu Pensión Mensual (con inflación)', 'Pago del Préstamo', 'Dinero Libre para Ti (Cada Mes)']],
+                    body: scenario1.proyeccion,
+                    columnStyles: { 0: { halign: 'center' }, 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } },
+                });
+                doc.y = pdf.autoTable.previous.finalY + 20;
+
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(10);
+                pdf.setTextColor(100);
+                const finalText = "Este reporte es una proyección basada en los datos proporcionados y la normativa vigente. Estamos a tu disposición para aclarar cualquier duda. ¡Felicidades por dar este gran paso hacia un retiro digno y tranquilo!";
+                const splitFinalText = pdf.splitTextToSize(finalText, doc.width - doc.margin * 2);
+                pdf.text(splitFinalText, doc.margin, doc.y);
+
+                addWatermark(pdf, 'RGC PENSIONES Y SEGUROS');
+                pdf.save(`Reporte_RGC_${datosClienteInfo.nombre.replace(/\s/g, '_') || 'Cliente'}.pdf`);
+
+            } catch (e) {
+                console.error("Error al generar el PDF del reporte:", e);
+                showCustomAlert("Ocurrió un error al generar el PDF. Revisa la consola.", "Error");
+            }
+        }
+
         function generateContractPDF() {
             const data = {
                 monto: getNumeroInfo('contract_monto'),
@@ -1421,7 +1686,7 @@
 
                 pdf.setFont('helvetica', 'normal');
                 pdf.setFontSize(10);
-                let partiesText = `CONTRATO DE PRESTACIÓN DE SERVICIOS QUE CELEBRAN, POR UNA PARTE, RGC PENSIONES Y SEGUROS, REPRESENTADA EN ESTE ACTO POR LOS CC. ALMA GUADALUPE CANO PEREZ, MIGUEL ANGEL ROSEMBERG SALAZAR Y MARIANO GODINEZ NAVA, A QUIEN EN LO SUCESIVO SE LE DENOMINARÁ "EL PRESTADOR", Y POR LA OTRA PARTE, EL/LA C. ${data.clienteNombre}, A QUIEN EN LO SUCESIVO SE LE DENOMINARÁ "EL CLIENTE". AMBAS PARTES SE SUJETAN AL TENOR DE LAS SIGUIENTES DECLARACIONES Y CLÁUSULAS:`;
+                let partiesText = `CONTRATO DE PRESTACIÓN DE SERVICIOS QUE CELEBRAN, POR UNA PARTE, RGC PENSIONES Y SEGUROS, REPRESENTADA EN ESTE ACTO POR LOS CC. ALMA GUADALUPE CANO PEREZ, MIGUEL ANGEL ROSEMBERG SALAZAR Y MARIANO GODINEZ NAVA, A QUIEN EN LO SUCESIVO SE LE DENOMINARÁ "EL PRESTADOR", Y POR LA OTRA PARTE, EL/LA C. ${data.clienteNombre}, A QUIEN EN LO SUCESIVO SE LE DENOMINARÁ "EL CLIENTE". AMBAS PARTES SE SUJETAN AL TENOR DE LAS SIGGUIENTES DECLARACIONES Y CLÁUSULAS:`;
                 yPos = printText(partiesText, MARGIN, yPos);
                 yPos += 20;
 
@@ -1502,6 +1767,7 @@
                 pdf.text("Firma", MARGIN, yPos);
                 pdf.text("Firma", PAGE_WIDTH - MARGIN, yPos, { align: 'right'});
 
+                addWatermark(pdf, 'RGC PENSIONES Y SEGUROS');
                 pdf.save(`Contrato_RGC_${data.clienteNombre.replace(/\s/g, '_')}.pdf`);
 
             } catch(e) {
@@ -1549,42 +1815,6 @@
         }
 
         // --- PASSWORD & SCENARIO LOGIC ---
-        function showPasswordPrompt(message, title, onConfirm) {
-            document.getElementById('customAlertTitle').textContent = title;
-            document.getElementById('customAlertMessage').textContent = message;
-            
-            const passwordInput = document.getElementById('pdfPasswordInput');
-            passwordInput.value = ''; 
-            document.getElementById('passwordPromptContainer').style.display = 'block';
-
-            const confirmButton = document.getElementById('customAlertButton');
-            confirmButton.textContent = 'Confirmar';
-            confirmButton.onclick = () => {
-                onConfirm(passwordInput.value);
-            };
-            
-            showElement('customAlertModal');
-        }
-
-        function promptForPassword() {
-             if (Object.keys(scenarioData[1]).length === 0) {
-                showCustomAlert("Primero debe calcular al menos un escenario en el Paso 4.", "Acción Requerida");
-                return;
-            }
-            showPasswordPrompt(
-                "Esta acción requiere privilegios de asesor. Por favor, ingresa tu contraseña para generar el reporte técnico completo.",
-                "Acceso Restringido",
-                (password) => {
-                    if (password === "OICI120566010503") {
-                        closeCustomAlert();
-                        generateTechnicalPDF();
-                    } else {
-                        showCustomAlert("Contraseña incorrecta. No se puede generar el reporte.", "Acceso Denegado");
-                    }
-                }
-            );
-        }
-
         function handleMesesDepositoChange(input) {
             let value = parseInt(input.value);
             const lastValidValue = input.getAttribute('data-last-valid');
@@ -1594,35 +1824,10 @@
                 showCustomAlert("El valor debe ser un número entre 6 y 12.", "Valor Inválido");
                 return;
             }
-
-            if (value > 9) {
-                passwordPromptContext = {
-                    inputElement: input,
-                    newValue: value,
-                    oldValue: lastValidValue
-                };
-                showPasswordPrompt(
-                    "Se requiere autorización para plazos mayores a 9 meses.",
-                    "Contraseña de Autorización",
-                    (password) => {
-                        const ctx = passwordPromptContext;
-                        if (password === "OICI120566010503") {
-                            ctx.inputElement.setAttribute('data-last-valid', ctx.newValue);
-                            showCustomAlert("Autorización exitosa. Plazo extendido.", "Éxito");
-                            closeCustomAlert();
-                            recalculateScenario(1);
-                            recalculateScenario(2);
-                        } else {
-                            showCustomAlert("Contraseña incorrecta.", "Error de Autorización");
-                            ctx.inputElement.value = ctx.oldValue;
-                        }
-                    }
-                );
-            } else {
-                input.setAttribute('data-last-valid', value);
-                recalculateScenario(1);
-                recalculateScenario(2);
-            }
+            
+            input.setAttribute('data-last-valid', value);
+            recalculateScenario(1);
+            recalculateScenario(2);
         }
 
         function recalculateScenario(scenarioNum) {
@@ -1805,7 +2010,7 @@
             htmlProyeccion += `</tbody></table>`;
             results.proyeccionContainer.innerHTML = htmlProyeccion;
             
-            // Store data for PDF
+            const comisionExcedenteConcepto = document.getElementById('info_comisionExcedente_concepto').value.trim();
             scenarioData[scenarioNum] = {
                 mesesM40: meses,
                 semanasFinales: semanas,
@@ -1825,6 +2030,7 @@
                 factorMultiplicador,
                 comision,
                 comisionExcedente,
+                comisionExcedenteConcepto,
                 costoFijoAdicional,
                 proyeccion: []
             };
