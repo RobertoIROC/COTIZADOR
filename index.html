@@ -1722,6 +1722,7 @@
             let costoM40 = 0;
             let totalActualizacion = 0;
             let totalRecargos = 0;
+            const desgloseM40 = [];
             const [anioInicio, mesInicio] = inputs.inicioM40Str.split('-').map(Number);
             const fechaSimulacionPago = new Date(pensionData.fechaFinM40Obj);
             const mesActualizacion = new Date(fechaSimulacionPago);
@@ -1737,20 +1738,34 @@
                 
                 let actualizacion = 0;
                 const inpcDenominador = getINPC(anioCuota, mesCuota);
+                let factorActualizacion = 1;
                 if (inpcNumerador && inpcDenominador && inpcNumerador > inpcDenominador) {
-                    actualizacion = costoBaseMensual * ((inpcNumerador / inpcDenominador) - 1);
+                    factorActualizacion = inpcNumerador / inpcDenominador;
+                    actualizacion = costoBaseMensual * (factorActualizacion - 1);
                 }
                 const pagoBaseActualizado = costoBaseMensual + actualizacion;
                 
                 let montoRecargos = 0;
+                let mesesRetraso = 0;
                 const fechaVencimiento = new Date(Date.UTC(anioCuota, mesCuota, 17));
                 if (fechaSimulacionPago > fechaVencimiento) {
-                    const mesesRetraso = (fechaSimulacionPago.getUTCFullYear() - fechaVencimiento.getUTCFullYear()) * 12 + (fechaSimulacionPago.getUTCMonth() - fechaVencimiento.getUTCMonth());
+                    mesesRetraso = (fechaSimulacionPago.getUTCFullYear() - fechaVencimiento.getUTCFullYear()) * 12 + (fechaSimulacionPago.getUTCMonth() - fechaVencimiento.getUTCMonth());
                     if (mesesRetraso > 0) montoRecargos = pagoBaseActualizado * Constants.RECARGO_M40_MENSUAL * mesesRetraso;
                 }
-                costoM40 += pagoBaseActualizado + montoRecargos;
+                
+                const costoTotalMes = pagoBaseActualizado + montoRecargos;
+                costoM40 += costoTotalMes;
                 totalActualizacion += actualizacion;
                 totalRecargos += montoRecargos;
+
+                desgloseM40.push({
+                    mes: fechaCuota.toLocaleDateString('es-MX', { month: 'short', year: 'numeric', timeZone: 'UTC' }),
+                    costoBase: costoBaseMensual,
+                    factorAct: factorActualizacion > 1 ? factorActualizacion.toFixed(4) : 'N/A',
+                    montoAct: actualizacion,
+                    recargos: montoRecargos,
+                    totalMes: costoTotalMes
+                });
             }
 
             const comision = costoM40 * Constants.COMISION_BASE_M40;
@@ -1802,7 +1817,8 @@
                 resultadoFinalTexto,
                 resultadoFinalColor,
                 descuentoMensual,
-                deficit
+                deficit,
+                desgloseM40
             };
         }
         function generatePensionProjection(pensionMensual, descuentoMensual, hasDeficit) {
@@ -1876,46 +1892,47 @@
         }
 
         // --- PDF GENERATION ---
-        function promptForPDFPassword() {
-            if (Object.keys(AppState.scenarioData[1]).length === 0) {
-                showCustomAlert("Calcula al menos el Escenario 1 antes de generar el reporte.", "Acción Requerida");
-                return;
-            }
+        function promptForClientPDF() {
             if (AppState.session.pdfDownloadCount >= 2) {
                 showCustomAlert("Ha alcanzado el límite de 2 descargas de PDF por sesión. La sesión se cerrará.", "Límite Alcanzado");
                 setTimeout(logout, 3000);
                 return;
             }
-            
-            // Show the results now that the user wants to download
             updateScenarioUI(1, AppState.scenarioData[1]);
             if (Object.keys(AppState.scenarioData[2]).length > 0) {
                 updateScenarioUI(2, AppState.scenarioData[2]);
             }
-            
-            document.getElementById('customAlertTitle').textContent = "Seleccione Tipo de Reporte";
-            document.getElementById('customAlertMessage').textContent = `Descarga #${AppState.session.pdfDownloadCount + 1} de 2. Para el reporte de Dirección (completo), ingrese la contraseña. Para el reporte de Cliente (resumido), deje el campo vacío.`;
+            generateFullReportPDF(false);
+            AppState.session.pdfDownloadCount++;
+        }
+
+        function promptForDirectorPDF() {
+            if (AppState.session.pdfDownloadCount >= 2) {
+                showCustomAlert("Ha alcanzado el límite de 2 descargas de PDF por sesión. La sesión se cerrará.", "Límite Alcanzado");
+                setTimeout(logout, 3000);
+                return;
+            }
+            updateScenarioUI(1, AppState.scenarioData[1]);
+            if (Object.keys(AppState.scenarioData[2]).length > 0) {
+                updateScenarioUI(2, AppState.scenarioData[2]);
+            }
+            document.getElementById('customAlertTitle').textContent = "Confirmación de Administrador";
+            document.getElementById('customAlertMessage').textContent = `Descarga #${AppState.session.pdfDownloadCount + 1} de 2. Ingrese la contraseña para generar el reporte de Dirección.`;
             document.getElementById('passwordPromptContainer').style.display = 'block';
             document.getElementById('pdfPasswordInput').value = '';
             const btn = document.getElementById('customAlertButton');
             btn.textContent = 'Generar PDF';
-            btn.onclick = generatePDFFromPrompt;
+            btn.onclick = () => {
+                const password = document.getElementById('pdfPasswordInput').value;
+                if (password === 'oici010503120566') {
+                    generateFullReportPDF(true);
+                    AppState.session.pdfDownloadCount++;
+                    closeCustomAlert();
+                } else {
+                    showCustomAlert('Contraseña incorrecta.', 'Error');
+                }
+            };
             showElement('customAlertModal');
-        }
-
-        function generatePDFFromPrompt() {
-            const password = document.getElementById('pdfPasswordInput').value;
-            if (password === 'oici010503120566') {
-                generateFullReportPDF(true);
-                AppState.session.pdfDownloadCount++;
-                closeCustomAlert();
-            } else if (password === '') {
-                generateFullReportPDF(false);
-                AppState.session.pdfDownloadCount++;
-                closeCustomAlert();
-            } else {
-                showCustomAlert('Contraseña incorrecta.', 'Error');
-            }
         }
 
         // --- NEW DETAILED PDF GENERATION FUNCTION ---
@@ -2081,7 +2098,7 @@
 
                 const now = new Date();
                 const firstDepositDate = new Date(sc1.fechaFinM40Obj);
-                firstDepositDate.setUTCMonth(firstDepositDate.getUTCMonth() + 1);
+                firstDepositDate.setUTCMonth(firstDepositDate.getUTCMonth() + sc1.mesesPrimerDeposito);
 
                 const summaryData = [
                     ['Asesor', AppState.nombreAsesorGlobal],
@@ -2213,8 +2230,8 @@
         window.calcularEscenarioM40Infografia = calcularEscenarioM40Infografia;
         window.handleMesesDepositoChange = handleMesesDepositoChange;
         window.recalculateScenario = recalculateScenario;
-        window.promptForPDFPassword = promptForPDFPassword;
-        window.generatePDFFromPrompt = generatePDFFromPrompt;
+        window.promptForClientPDF = promptForClientPDF;
+        window.promptForDirectorPDF = promptForDirectorPDF;
         window.generateFullReportPDF = generateFullReportPDF;
         window.generateContractPDF = generateContractPDF;
         window.closeCustomAlert = closeCustomAlert;
@@ -2428,7 +2445,7 @@
                 querySnapshot.forEach(doc => {
                     const note = doc.data();
                     const date = note.timestamp ? note.timestamp.toDate().toLocaleString('es-MX') : 'Fecha no disponible';
-                    notesHtml += `
+                    rowsHtml += `
                         <div class="bg-white p-2 rounded border">
                             <p class="text-xs text-gray-500">${date} - ${note.asesor}</p>
                             <p class="text-sm">${note.text}</p>
