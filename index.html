@@ -753,8 +753,11 @@
                 <h2><i class="fas fa-file-pdf"></i>Paso 5: Exportar Reporte</h2>
                  <p class="mb-8 text-gray-600 text-lg max-w-2xl mx-auto">Genera un reporte completo en PDF con toda la información de la simulación.</p>
                 <div class="flex justify-center gap-6">
-                    <button onclick="promptForPDFPassword()" class="btn btn-blue text-lg">
-                        <i class="fas fa-file-download"></i>Descargar Reporte
+                    <button onclick="promptForClientPDF()" class="btn btn-blue text-lg">
+                        <i class="fas fa-user"></i> Reporte para Cliente
+                    </button>
+                    <button onclick="promptForDirectorPDF()" class="btn btn-gold text-lg">
+                        <i class="fas fa-user-shield"></i> Reporte para Dirección
                     </button>
                 </div>
             </section>
@@ -1953,12 +1956,12 @@
                     // Line 1: Address and Copyright
                     const address = 'Eje Central Lázaro Cárdenas 555, Narvarte Poniente, Benito Juárez, 03023 Ciudad de México, CDMX';
                     const copyright = `© ${now.getFullYear()} Ivan Roberto Ortiz Cano. Derechos Reservados.`;
-                    doc.text(address, 40, pageHeight - 35);
-                    doc.text(copyright, doc.internal.pageSize.width - 40, pageHeight - 35, { align: 'right' });
+                    doc.text(address, 40, pageHeight - 40);
+                    doc.text(copyright, doc.internal.pageSize.width - 40, pageHeight - 40, { align: 'right' });
 
                     // Line 2: Folio and Page Number
-                    doc.text(`Folio: ${folio}`, 40, pageHeight - 20);
-                    doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width - 40, pageHeight - 20, { align: 'right' });
+                    doc.text(`Folio: ${folio}`, 40, pageHeight - 25);
+                    doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width - 40, pageHeight - 25, { align: 'right' });
                 }
             };
             
