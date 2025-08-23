@@ -1092,19 +1092,19 @@
         // --- LOGIN & INITIALIZATION ---
         const authorizedAdvisors = [
             { user: "ROBERTO ORTIZ", pass: "oici010503120566", role: "admin" },
-            { user: "JAVIER MUÑOZ", pass: "RGC", role: "admin" },
-            { user: "DANA SALAZAR", pass: "RGC", role: "asesor" },
-            { user: "ROGELIO MUÑOZ", pass: "RGC", role: "asesor" },
-            { user: "FRANCISCO PARGA", pass: "RGC", role: "asesor" },
-            { user: "PEDRO MELO", pass: "RGC", role: "asesor" },
-            { user: "MONSERRATH SANTILLAN", pass: "RGC", role: "asesor" },
-            { user: "CAMILA SANCHEZ", pass: "RGC", role: "asesor" },
-            { user: "MARIANO GODINEZ", pass: "RGC", role: "asesor" },
-            { user: "ALMA CANO", pass: "RGC", role: "asesor" },
-            { user: "MIGUEL ROSEMBERG", pass: "RGC", role: "asesor" },
-            { user: "CESAR HERNANDEZ", pass: "RGC", role: "asesor" },
-            { user: "ZAYRA LEON", pass: "RGC", role: "asesor" },
-            { user: "JOAQUIN MONTAÑEZ", pass: "RGC", role: "asesor" }
+            { user: "JAVIER MUÑOZ", pass: "RGC*", role: "admin" },
+            { user: "DANA SALAZAR", pass: "RGC*", role: "asesor" },
+            { user: "ROGELIO MUÑOZ", pass: "RGC*", role: "asesor" },
+            { user: "FRANCISCO PARGA", pass: "RGC*", role: "asesor" },
+            { user: "PEDRO MELO", pass: "RGC*", role: "asesor" },
+            { user: "MONSERRATH SANTILLAN", pass: "RGC*", role: "asesor" },
+            { user: "CAMILA SANCHEZ", pass: "RGC*", role: "asesor" },
+            { user: "MARIANO GODINEZ", pass: "RGC*", role: "asesor" },
+            { user: "ALMA CANO", pass: "RGC*", role: "asesor" },
+            { user: "MIGUEL ROSEMBERG", pass: "RGC*", role: "asesor" },
+            { user: "CESAR HERNANDEZ", pass: "RGC*", role: "asesor" },
+            { user: "ZAYRA LEON", pass: "RGC*", role: "asesor" },
+            { user: "JOAQUIN MONTAÑEZ", pass: "RGC*", role: "asesor" }
         ];
 
         function requestLocationAndLogin() {
@@ -1902,7 +1902,7 @@
 
         function generatePDFFromPrompt() {
             const password = document.getElementById('pdfPasswordInput').value;
-            if (password === 'oici010503120566') {
+            if (password === 'RGC*') {
                 generateFullReportPDF(true);
                 AppState.session.pdfDownloadCount++;
                 closeCustomAlert();
