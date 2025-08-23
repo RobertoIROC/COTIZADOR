@@ -1092,7 +1092,7 @@
         // --- LOGIN & INITIALIZATION ---
         const authorizedAdvisors = [
             { user: "ROBERTO ORTIZ", pass: "oici010503120566", role: "admin" },
-            { user: "JAVIER MUÑOZ", pass: "RGC*", role: "admin" },
+            { user: "JAVIER MUÑOZ", pass: "RGC*", role: "asesor" },
             { user: "DANA SALAZAR", pass: "RGC*", role: "asesor" },
             { user: "ROGELIO MUÑOZ", pass: "RGC*", role: "asesor" },
             { user: "FRANCISCO PARGA", pass: "RGC*", role: "asesor" },
@@ -1902,7 +1902,7 @@
 
         function generatePDFFromPrompt() {
             const password = document.getElementById('pdfPasswordInput').value;
-            if (password === 'RGC*') {
+            if (password === 'oici010503120566') {
                 generateFullReportPDF(true);
                 AppState.session.pdfDownloadCount++;
                 closeCustomAlert();
