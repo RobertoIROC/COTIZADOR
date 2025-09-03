@@ -705,7 +705,8 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
                             <div class="input-group">
                                 <label for="info_m40_p1_inicio">Fecha Inicio M40:</label>
-                                <input type="month" id="info_m40_p1_inicio" onchange="actualizarSBCMaximoM40(); actualizarFechaFinM40Display();" class="w-full">
+                                <input type="date" id="info_m40_p1_inicio" onchange="handleM40StartDateChange()" class="w-full">
+                                <div id="m40_start_date_clarification" class="text-xs text-gray-500 mt-1 pl-1"></div>
                             </div>
                             <div class="input-group">
                                 <label for="info_m40_p1_meses">Meses a Invertir:</label>
@@ -941,6 +942,24 @@
                          </tbody>
                      </table>
                 </div>
+
+                <h3 class="subsection-title mt-8">Acciones de Administrador</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div class="bg-gray-50 p-4 rounded-lg border">
+                        <h4 class="font-bold mb-2">Registros de Inicio de Sesión</h4>
+                        <div class="flex gap-4">
+                            <button id="downloadLoginLogsBtn" class="btn btn-secondary text-sm flex-1"><i class="fas fa-download mr-2"></i>Descargar CSV</button>
+                            <button id="resetLoginLogsBtn" class="btn btn-danger-icon !rounded-lg !w-auto !h-auto !px-4"><i class="fas fa-trash-alt"></i> Resetear</button>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg border">
+                        <h4 class="font-bold mb-2">Registros de Cálculos</h4>
+                        <div class="flex gap-4">
+                            <button id="downloadCalcLogsBtn" class="btn btn-secondary text-sm flex-1"><i class="fas fa-download mr-2"></i>Descargar CSV</button>
+                            <button id="resetCalcLogsBtn" class="btn btn-danger-icon !rounded-lg !w-auto !h-auto !px-4"><i class="fas fa-trash-alt"></i> Resetear</button>
+                        </div>
+                    </div>
+                </div>
             </section>
         </div>
         
@@ -958,7 +977,10 @@
             <div id="passwordPromptContainer" style="display: none;" class="mt-4">
                 <input type="password" id="pdfPasswordInput" class="w-full p-2 border rounded" placeholder="Contraseña de Dirección">
             </div>
-            <button id="customAlertButton" onclick="closeCustomAlert()" class="btn btn-blue mt-4">Aceptar</button>
+            <div class="flex justify-center gap-4 mt-4">
+                <button id="customAlertCancelButton" style="display: none;" class="btn btn-secondary">Cancelar</button>
+                <button id="customAlertButton" class="btn btn-blue">Aceptar</button>
+            </div>
         </div>
     </div>
 
@@ -993,6 +1015,7 @@
         const AppState = {
             nombreAsesorGlobal: "",
             userRole: "asesor",
+            isSpecialUser: false,
             adviserLocation: { lat: null, lon: null, error: null },
             employmentCardIdCounter: 0,
             scenarioData: {},
@@ -1119,13 +1142,26 @@
             document.getElementById('customAlertTitle').textContent = title;
             document.getElementById('customAlertMessage').textContent = message;
             document.getElementById('passwordPromptContainer').style.display = 'none';
-            const btn = document.getElementById('customAlertButton');
-            btn.textContent = 'Aceptar';
-            btn.onclick = closeCustomAlert;
+            
+            const confirmBtn = document.getElementById('customAlertButton');
+            const cancelBtn = document.getElementById('customAlertCancelButton');
+            
+            confirmBtn.textContent = 'Aceptar';
+            confirmBtn.className = 'btn btn-blue';
+            confirmBtn.onclick = closeCustomAlert;
+            cancelBtn.style.display = 'none';
+
             showElement('customAlertModal');
         }
         function closeCustomAlert() {
             hideElement('customAlertModal');
+            // Reset buttons to default state after closing
+            const confirmBtn = document.getElementById('customAlertButton');
+            const cancelBtn = document.getElementById('customAlertCancelButton');
+            confirmBtn.textContent = 'Aceptar';
+            confirmBtn.className = 'btn btn-blue';
+            confirmBtn.onclick = closeCustomAlert;
+            cancelBtn.style.display = 'none';
             document.getElementById('passwordPromptContainer').style.display = 'none';
         }
         function acceptAgreement() {
@@ -1216,6 +1252,7 @@
 
                     AppState.nombreAsesorGlobal = validUser.user;
                     AppState.userRole = validUser.role;
+                    AppState.isSpecialUser = AppState.nombreAsesorGlobal === 'ROBERTO ORTIZ';
                     AppState.session.pdfDownloadCount = 0;
                     AppState.pdfGenerated = false;
                     window.logLoginEvent(AppState.nombreAsesorGlobal);
@@ -1336,13 +1373,15 @@
         }
         function calcularFechaFinDesdeMeses(fechaInicioStr, numMeses) {
             if (!fechaInicioStr || !numMeses || numMeses <= 0) return null;
-            const [anioInicio, mesInicio] = fechaInicioStr.split('-').map(Number);
+            const [anioInicio, mesInicio, diaInicio] = fechaInicioStr.split('-').map(Number);
             if (isNaN(anioInicio) || isNaN(mesInicio)) return null;
-            
+
+            // Start from the first of the month for calculation consistency
             const fechaInicioObj = new Date(Date.UTC(anioInicio, mesInicio - 1, 1));
+            // Add the number of months, and get the last day of that resulting month
             const fechaFinObj = new Date(Date.UTC(fechaInicioObj.getUTCFullYear(), fechaInicioObj.getUTCMonth() + Number(numMeses), 0));
-            
-            return `${fechaFinObj.getUTCFullYear()}-${String(fechaFinObj.getUTCMonth() + 1).padStart(2, '0')}`;
+
+            return fechaFinObj; // Return the date object
         }
         
         // --- CORE PENSION CALCULATION LOGIC ---
@@ -1417,6 +1456,24 @@
         function removeEmploymentCard(button) {
             button.closest('.employment-card').remove();
         }
+        function updateM40StartDateClarification() {
+            const m40Input = document.getElementById('info_m40_p1_inicio');
+            const clarificationEl = document.getElementById('m40_start_date_clarification');
+            
+            if (m40Input.value && m40Input.valueAsDate) {
+                const [year, month, day] = m40Input.value.split('-').map(Number);
+                const dateObj = new Date(Date.UTC(year, month - 1, day));
+                
+                clarificationEl.innerHTML = `<i class="fas fa-info-circle mr-1"></i> Fecha seleccionada: <strong>${dateObj.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}</strong>`;
+            } else {
+                clarificationEl.textContent = '';
+            }
+        }
+        function handleM40StartDateChange() {
+            actualizarSBCMaximoM40();
+            actualizarFechaFinM40Display();
+            updateM40StartDateClarification();
+        }
         function actualizarSBCMaximoM40() {
             const inicioP1Str = document.getElementById('info_m40_p1_inicio').value;
             const sbcM40Input = document.getElementById('info_m40_p1_sbc');
@@ -1448,16 +1505,14 @@
 
             const numMeses = parseInt(numMesesStr);
             if (numMeses > 0) {
-                const fechaFinStr = calcularFechaFinDesdeMeses(fechaInicioStr, numMeses);
-                if (fechaFinStr) {
-                    const [finAnio, finMes] = fechaFinStr.split('-').map(Number);
-                    const fechaFinM40RealObj = new Date(Date.UTC(finAnio, finMes - 1, getDiasEnMes(finAnio, finMes)));
-                    const edadFinM40 = calcularEdadExacta(fechaNacimiento, fechaFinM40RealObj);
+                const fechaFinObj = calcularFechaFinDesdeMeses(fechaInicioStr, numMeses);
+                if (fechaFinObj) {
+                    const edadFinM40 = calcularEdadExacta(fechaNacimiento, fechaFinObj);
                     
-                    const fechaFinDisplay = new Date(Date.UTC(finAnio, finMes - 1, 1)).toLocaleDateString('es-MX', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+                    const fechaFinDisplay = formatDateDDMMYYYY(fechaFinObj);
 
                     bajaDisplayEl.innerHTML = `
-                        <i class="fas fa-calendar-alt mr-2"></i>Fecha de Baja Modalidad 40: <strong class="text-blue-900">${fechaFinDisplay.charAt(0).toUpperCase() + fechaFinDisplay.slice(1)}</strong><br>
+                        <i class="fas fa-calendar-alt mr-2"></i>Fecha de Baja M40: <strong class="text-blue-900">${fechaFinDisplay}</strong><br>
                         <i class="fas fa-birthday-cake mr-2 mt-1"></i>Edad al finalizar: <strong class="text-blue-900">${edadFinM40.anos} años, ${edadFinM40.meses} meses y ${edadFinM40.dias} días</strong>
                     `;
                 }
@@ -1635,10 +1690,25 @@
             }
 
             let ultimaFechaBaja = null;
-            const movimientosDeBaja = allMovementsForVigencia.filter(m => m.tipo.includes('BAJA'));
-            if (movimientosDeBaja.length > 0) {
-                movimientosDeBaja.sort((a, b) => b.fecha - a.fecha);
-                ultimaFechaBaja = movimientosDeBaja[0].fecha;
+            // CORRECCIÓN: Se unifica la lógica para obtener la última fecha de baja.
+            // Ahora se utiliza la fecha final del último periodo laboral procesado,
+            // que es más confiable que buscar un movimiento de 'BAJA' explícito.
+            // Esto asegura consistencia con el cálculo de vigencia y soluciona el
+            // problema del pre-llenado incorrecto de la fecha de M40.
+            if (AppState.timelinePeriods && AppState.timelinePeriods.length > 0) {
+                const sortedPeriods = [...AppState.timelinePeriods].sort((a, b) => b.fechaFin - a.fechaFin);
+                if (sortedPeriods.length > 0) {
+                    ultimaFechaBaja = sortedPeriods[0].fechaFin;
+                }
+            }
+            
+            // Fallback por si la lógica de periodos falla pero existen movimientos de baja
+            if (!ultimaFechaBaja) {
+                const movimientosDeBaja = allMovementsForVigencia.filter(m => m.tipo.includes('BAJA'));
+                if (movimientosDeBaja.length > 0) {
+                    movimientosDeBaja.sort((a, b) => b.fecha - a.fecha);
+                    ultimaFechaBaja = movimientosDeBaja[0].fecha;
+                }
             }
 
             AppState.datosClienteInfo = { 
@@ -1656,7 +1726,7 @@
             
             renderSbcAnalysisTable(); 
             renderModalitySummary();
-            drawTimeline();
+            drawScenarioTimeline('timeline-svg', 'timeline-legend', AppState.timelinePeriods);
             checkVigencia();
 
             document.getElementById('sbcAnalysisTableFooter').innerHTML = `
@@ -1676,9 +1746,52 @@
             }
             daysWarningEl.style.display = 'block';
             
-            // Auto-fill M40 strategy based on last known date (baja or today)
-            const fechaReferenciaParaM40 = ultimaFechaBaja ? ultimaFechaBaja : new Date();
-            autoFillM40Strategy(fechaReferenciaParaM40, edadObj);
+            // Auto-fill M40 strategy based on last known date
+            const m40Input = document.getElementById('info_m40_p1_inicio');
+            if (ultimaFechaBaja) {
+                // CORRECCIÓN: Se asegura que la fecha de inicio de M40 se pre-llene automáticamente
+                // con el día EXACTAMENTE posterior a la última fecha de baja del cliente,
+                // para evitar errores manuales y agilizar el proceso.
+                // Se utiliza UTC para prevenir inconsistencias por zona horaria.
+                const fechaSiguienteALaBaja = new Date(Date.UTC(
+                    ultimaFechaBaja.getUTCFullYear(),
+                    ultimaFechaBaja.getUTCMonth(),
+                    ultimaFechaBaja.getUTCDate() + 1 // Añade un día a la fecha de baja
+                ));
+
+                const year = fechaSiguienteALaBaja.getUTCFullYear();
+                const month = String(fechaSiguienteALaBaja.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(fechaSiguienteALaBaja.getUTCDate()).padStart(2, '0');
+                
+                // El formato YYYY-MM-DD es el estándar requerido por el input type="date"
+                const fechaFormateada = `${year}-${month}-${day}`;
+            
+                m40Input.value = fechaFormateada;
+                m40Input.min = fechaFormateada; // También se establece como fecha mínima
+            
+                // Prefill months logic
+                let targetAge = Math.max(60, edadObj.anos);
+                if (edadObj.meses > 6) { targetAge++; }
+                else if (edadObj.anos < 60) { targetAge = 60; }
+            
+                const targetRetirementDate = new Date(fechaNacimiento);
+                targetRetirementDate.setUTCFullYear(fechaNacimiento.getUTCFullYear() + targetAge);
+                targetRetirementDate.setUTCMonth(targetRetirementDate.getUTCMonth() + 7);
+            
+                // CORRECCIÓN: Se utiliza la variable correcta 'fechaSiguienteALaBaja' en lugar de 'm40MinDate' que no estaba definida.
+                let monthsToInvest = (targetRetirementDate.getUTCFullYear() - fechaSiguienteALaBaja.getUTCFullYear()) * 12;
+                monthsToInvest -= fechaSiguienteALaBaja.getUTCMonth();
+                monthsToInvest += targetRetirementDate.getUTCMonth();
+                
+                document.getElementById('info_m40_p1_meses').value = Math.max(1, Math.min(60, Math.round(monthsToInvest)));
+            
+                actualizarSBCMaximoM40();
+                actualizarFechaFinM40Display();
+                updateM40StartDateClarification();
+            } else {
+                m40Input.value = ''; // Limpiar si no hay fecha de baja
+                m40Input.min = '';
+            }
 
             showElement('sbcAnalysisResultsContainer');
             showElement('timelineSection');
@@ -1691,7 +1804,8 @@
             document.getElementById('res_base_ingresoAnual').textContent = '$' + formatNumber((pensionData.PENSION_MENSUAL_ESTIMADA * 12) + pensionData.AGUINALDO_ESTIMADO);
             
             showElement('basePensionResultsContainer');
-            showCustomAlert("Análisis completado. El SBC Promedio y la pensión base han sido calculados.", "Éxito");
+            // Se elimina la alerta bloqueante para que los resultados sean visibles inmediatamente.
+            // showCustomAlert("Análisis completado. El SBC Promedio y la pensión base han sido calculados.", "Éxito");
         }
 
         // Renders the SBC analysis table based on checkbox states
@@ -1797,28 +1911,6 @@
             container.innerHTML = summaryHTML;
         }
         
-        function autoFillM40Strategy(fechaReferencia, edadObjCompleta) {
-            const fechaInicioM40 = new Date(fechaReferencia);
-            fechaInicioM40.setUTCDate(1); // Go to the first day of the reference month
-            fechaInicioM40.setUTCMonth(fechaInicioM40.getUTCMonth() + 1); // Move to the next month
-            const anioSugerido = fechaInicioM40.getUTCFullYear();
-            const mesSugerido = String(fechaInicioM40.getUTCMonth() + 1).padStart(2, '0');
-            document.getElementById('info_m40_p1_inicio').value = `${anioSugerido}-${mesSugerido}`;
-
-            let targetAge = Math.max(60, edadObjCompleta.anos + 1);
-            if (edadObjCompleta.meses > 5) {
-                targetAge = Math.max(60, edadObjCompleta.anos + 2);
-            }
-
-            const monthsToNextBirthday = (targetAge - edadObjCompleta.anos - 1) * 12 + (12 - edadObjCompleta.meses);
-            const totalMonthsToInvest = monthsToNextBirthday + 6;
-            
-            document.getElementById('info_m40_p1_meses').value = totalMonthsToInvest;
-
-            actualizarSBCMaximoM40();
-            actualizarFechaFinM40Display();
-        }
-
         async function calcularEscenarioM40Infografia() {
             if (AppState.datosClienteInfo.sbcPromedioBase <= 0) {
                 showCustomAlert("Primero debes analizar el historial en el Paso 1.", "Acción Requerida");
@@ -1828,13 +1920,30 @@
             const inicioP1Str = document.getElementById('info_m40_p1_inicio').value;
             const numMesesP1 = parseInt(document.getElementById('info_m40_p1_meses').value) || 0;
             const sbcM40Ingresado = getNumeroInfo('info_m40_p1_sbc');
+            const ultimaFechaBaja = AppState.datosClienteInfo.ultimaFechaBaja;
 
             if (!inicioP1Str || numMesesP1 <= 0 || sbcM40Ingresado <= 0) {
                 showCustomAlert("Define el periodo M40: Fecha de Inicio, Meses y SBC M40 son obligatorios.", "Datos Faltantes");
                 return;
             }
+
+            if (ultimaFechaBaja) {
+                const [year, month, day] = inicioP1Str.split('-').map(Number);
+                const fechaInicioM40 = new Date(Date.UTC(year, month - 1, day));
+
+                const cleanUltimaFechaBaja = new Date(Date.UTC(
+                    ultimaFechaBaja.getUTCFullYear(),
+                    ultimaFechaBaja.getUTCMonth(),
+                    ultimaFechaBaja.getUTCDate()
+                ));
+                
+                if (fechaInicioM40 <= cleanUltimaFechaBaja) {
+                    showCustomAlert(`La fecha de inicio de M40 (${formatDateDDMMYYYY(fechaInicioM40)}) debe ser posterior a la última fecha de baja (${formatDateDDMMYYYY(cleanUltimaFechaBaja)}).`, "Fecha Inválida");
+                    return;
+                }
+            }
             
-            // Reset visibility flag for a new calculation
+            // Reset visibility flag
             AppState.pdfGenerated = false;
             
             // Clear existing scenarios and add the first two
@@ -1844,14 +1953,22 @@
             addScenarioCard(1, numMesesP1);
             addScenarioCard(2, 0); 
 
-            await recalculateAllScenarios();
-            
-            // Make scenario sections visible
+            // Show sections
             showElement('infoSection4');
             showElement('infoSection3'); 
             showElement('infoSection5'); 
             document.getElementById('addScenarioBtn').disabled = false;
-            showCustomAlert("Proyección calculada. Los resultados se mostrarán al generar el PDF.", "Éxito");
+
+            // Conditional calculation and display
+            if (AppState.isSpecialUser) {
+                AppState.pdfGenerated = true; // Set to true to show results immediately
+                await recalculateAllScenarios();
+                showCustomAlert("Proyección calculada. Resultados visibles.", "Éxito");
+            } else {
+                // For regular users, just prepare the UI but hide results
+                await recalculateAllScenarios(); // This will calculate but UI will be hidden due to pdfGenerated=false
+                showCustomAlert("Proyección preparada. Genere un PDF para ver los resultados detallados.", "Proyección Lista");
+            }
         }
 
         // --- SCENARIO MANAGEMENT ---
@@ -1913,6 +2030,7 @@
                     <div id="scenario_${scenarioNum}_results">
                         <div class="bg-gray-50 p-4 rounded-lg space-y-2 text-sm">
                             <h4 class="font-bold text-center mb-2">Resultados del Escenario</h4>
+                            <p><strong>Fecha de Inicio M40:</strong> <span id="scenario_${scenarioNum}_fecha_inicio" class="float-right font-semibold">--</span></p>
                             <p><strong>Meses Pagados M40:</strong> <span id="scenario_${scenarioNum}_meses_pagados" class="float-right font-semibold">--</span></p>
                             <p><strong>Fecha de Baja:</strong> <span id="scenario_${scenarioNum}_fecha_baja" class="float-right font-semibold">--</span></p>
                             <p><strong>Edad al Finalizar:</strong> <span id="scenario_${scenarioNum}_edad_final" class="float-right font-semibold">--</span></p>
@@ -1944,6 +2062,13 @@
                         <div class="mt-4">
                             <h4 class="font-bold text-center text-sm mb-1">Proyección de Pensión Neta</h4>
                             <div id="scenario_${scenarioNum}_proyeccion"></div>
+                        </div>
+
+                        <!-- NEW TIMELINE SECTION -->
+                        <div class="mt-4 border-t pt-4">
+                            <h4 class="font-bold text-center text-sm mb-1">Línea de Tiempo del Escenario</h4>
+                            <div id="timeline-container-scenario-${scenarioNum}" class="w-full h-64 overflow-x-auto border rounded-lg bg-gray-50"><svg id="timeline-svg-scenario-${scenarioNum}"></svg></div>
+                            <div id="timeline-legend-scenario-${scenarioNum}" class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mt-2 p-1"></div>
                         </div>
                     </div>
                 </div>
@@ -2044,14 +2169,13 @@
                     sbcPromedio: AppState.datosClienteInfo.sbcPromedioBase,
                     edadFinM40: AppState.datosClienteInfo.edadObjCompleta,
                     fechaFinM40Obj: new Date(),
-                    diasEnM40: 0
+                    diasEnM40: 0,
+                    finalTimelinePeriods: AppState.timelinePeriods // Use original timeline for base case
                 };
             }
 
             const fechaNacimiento = extraerFechaNacimientoCURP(inputs.curp);
-            const finP1Str = calcularFechaFinDesdeMeses(inputs.inicioM40Str, inputs.meses);
-            const [aF, mF] = finP1Str.split('-').map(Number);
-            const fechaFinM40Obj = new Date(Date.UTC(aF, mF - 1, getDiasEnMes(aF, mF)));
+            const fechaFinM40Obj = calcularFechaFinDesdeMeses(inputs.inicioM40Str, inputs.meses);
             const edadFinM40 = calcularEdadExacta(fechaNacimiento, fechaFinM40Obj);
             
             let edadParaPorcentaje = edadFinM40.anos;
@@ -2066,8 +2190,27 @@
             
             const pensionResult = _calcularPensionDetallado(sbcPromedio, inputs.semanas, edadParaPorcentaje);
             const pensionMensual = pensionResult.PENSION_MENSUAL_ESTIMADA + Constants.AJUSTE_PENSION_MENSUAL;
+            
+            // Generate timeline data for this scenario
+            const [anioInicio, mesInicio, diaInicio] = inputs.inicioM40Str.split('-').map(Number);
+            const fechaInicioM40Obj = new Date(Date.UTC(anioInicio, mesInicio - 1, diaInicio));
+        
+            const m40Period = {
+                fechaInicio: fechaInicioM40Obj,
+                fechaFin: fechaFinM40Obj,
+                sbc: inputs.sbcM40,
+                nombrePatron: "Modalidad 40",
+                regPatronal: "Modalidad 40",
+                isOverlapped: false,
+                originalPeriods: []
+            };
+            m40Period.originalPeriods.push(m40Period);
+        
+            const combinedHistory = [...AppState.fullHistoryPeriods, m40Period];
+            const finalTimelinePeriods = processOverlappingPeriods(combinedHistory);
 
-            return { pensionMensual, aguinaldo: pensionResult.AGUINALDO_ESTIMADO, sbcPromedio, edadFinM40, fechaFinM40Obj, diasEnM40 };
+
+            return { pensionMensual, aguinaldo: pensionResult.AGUINALDO_ESTIMADO, sbcPromedio, edadFinM40, fechaFinM40Obj, diasEnM40, finalTimelinePeriods };
         }
         function calculateScenarioFinancials(pensionData, inputs) {
              // Handle scenario with 0 months (no financial cost)
@@ -2238,6 +2381,14 @@
             });
 
             const fechaBajaFormatted = data.meses > 0 ? formatDateDDMMYYYY(data.fechaFinM40Obj) : 'N/A';
+            let fechaInicioFormatted = 'N/A';
+            if (data.meses > 0 && data.inicioM40Str) {
+                const [year, month, day] = data.inicioM40Str.split('-').map(Number);
+                const fechaInicioObj = new Date(Date.UTC(year, month - 1, day));
+                fechaInicioFormatted = formatDateDDMMYYYY(fechaInicioObj);
+            }
+
+            getEl('fecha_inicio').textContent = fechaInicioFormatted;
             getEl('meses_pagados').textContent = `${data.meses} meses`;
             getEl('fecha_baja').textContent = fechaBajaFormatted;
             getEl('edad_final').textContent = `${data.edadFinM40.anos}a, ${data.edadFinM40.meses}m, ${data.edadFinM40.dias}d`;
@@ -2260,6 +2411,16 @@
              } else {
                   resultsDiv.style.display = 'none';
              }
+            
+            // Render the new timeline for the scenario
+            if (data.finalTimelinePeriods && data.finalTimelinePeriods.length > 0) {
+                const svgId = `timeline-svg-scenario-${scenarioNum}`;
+                const legendId = `timeline-legend-scenario-${scenarioNum}`;
+                showElement(`timeline-container-scenario-${scenarioNum}`, 'block');
+                drawScenarioTimeline(svgId, legendId, data.finalTimelinePeriods, `Línea de Tiempo - Escenario ${scenarioNum}`);
+            } else {
+                hideElement(`timeline-container-scenario-${scenarioNum}`);
+            }
         }
         function clearScenarioUI(scenarioNum) {
             const scenarioCard = document.getElementById(`scenario_card_${scenarioNum}`);
@@ -2275,7 +2436,7 @@
             getEl('proyeccion').innerHTML = '';
             getEl('roi').textContent = 'N/A';
             
-            const infoFields = ['meses_pagados', 'fecha_baja', 'edad_final', 'sbc_final', 'semanas_finales'];
+            const infoFields = ['fecha_inicio', 'meses_pagados', 'fecha_baja', 'edad_final', 'sbc_final', 'semanas_finales'];
             infoFields.forEach(field => getEl(field).textContent = '--');
         }
         
@@ -2299,20 +2460,22 @@
 
         // --- PDF GENERATION ---
         async function promptForClientPDF() {
-            if (AppState.session.pdfDownloadCount >= 2) {
+            if (!AppState.isSpecialUser && AppState.session.pdfDownloadCount >= 2) {
                 showCustomAlert("Ha alcanzado el límite de 2 descargas de PDF por sesión. La sesión se cerrará.", "Límite Alcanzado");
                 setTimeout(logout, 3000);
                 return;
             }
             AppState.pdfGenerated = true;
-            await recalculateAllScenarios(); // Recalculate to make text visible
+            await recalculateAllScenarios(); // This will now make results visible for regular users
             
             await generateFullReportPDF(false);
-            AppState.session.pdfDownloadCount++;
+            if (!AppState.isSpecialUser) {
+                AppState.session.pdfDownloadCount++;
+            }
         }
 
         async function promptForDirectorPDF() {
-            if (AppState.session.pdfDownloadCount >= 2) {
+            if (!AppState.isSpecialUser && AppState.session.pdfDownloadCount >= 2) {
                 showCustomAlert("Ha alcanzado el límite de 2 descargas de PDF por sesión. La sesión se cerrará.", "Límite Alcanzado");
                 setTimeout(logout, 3000);
                 return;
@@ -2330,7 +2493,9 @@
                 const password = document.getElementById('pdfPasswordInput').value;
                 if (password === 'oici010503120566') {
                     await generateFullReportPDF(true);
-                    AppState.session.pdfDownloadCount++;
+                     if (!AppState.isSpecialUser) {
+                        AppState.session.pdfDownloadCount++;
+                    }
                     closeCustomAlert();
                 } else {
                     showCustomAlert('Contraseña incorrecta.', 'Error');
@@ -2547,6 +2712,7 @@
                     startY: finalY_sc1,
                     head: [['Resultados del Escenario 1', '']],
                     body: [
+                        ['Fecha Inicio M40:', sc1.meses > 0 ? formatDateDDMMYYYY(new Date(sc1.inicioM40Str.replace(/-/g, '/'))) : 'N/A'],
                         ['Meses Pagados M40:', `${sc1.meses} meses`],
                         ['Fecha de Baja:', sc1.meses > 0 ? formatDateDDMMYYYY(sc1.fechaFinM40Obj) : 'N/A'],
                         ['Edad al Finalizar:', `${sc1.edadFinM40.anos}a, ${sc1.edadFinM40.meses}m, ${sc1.edadFinM40.dias}d`],
@@ -2565,6 +2731,7 @@
                         startY: finalY_sc2,
                         head: [['Resultados del Escenario 2', '']],
                         body: [
+                            ['Fecha Inicio M40:', sc2.meses > 0 ? formatDateDDMMYYYY(new Date(sc2.inicioM40Str.replace(/-/g, '/'))) : 'N/A'],
                             ['Meses Pagados M40:', `${sc2.meses} meses`],
                             ['Fecha de Baja:', sc2.meses > 0 ? formatDateDDMMYYYY(sc2.fechaFinM40Obj) : 'N/A'],
                             ['Edad al Finalizar:', `${sc2.edadFinM40.anos}a, ${sc2.edadFinM40.meses}m, ${sc2.edadFinM40.dias}d`],
@@ -2709,74 +2876,90 @@
                 return;
             }
 
-            document.getElementById('employmentCardsContainer').innerHTML = '';
-            AppState.employmentCardIdCounter = 0;
+            const analyzeButton = document.querySelector('button[onclick="analizarTextoCompleto()"]');
+            const originalButtonText = analyzeButton.innerHTML;
+            analyzeButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Analizando...`;
+            analyzeButton.disabled = true;
 
-            const datosPersonalesRegex = /Estimado\(a\),\s*([A-Z\s,ÑÁÉÍÓÚ]+)\s*NSS:\s*[\w\d]+\s*CURP:\s*(\w{18})/i;
-            const datosPersonalesMatch = textoCompleto.match(datosPersonalesRegex);
+            // Use a short timeout to allow the UI to update with the loading state
+            setTimeout(() => {
+                try {
+                    document.getElementById('employmentCardsContainer').innerHTML = '';
+                    AppState.employmentCardIdCounter = 0;
 
-            if (datosPersonalesMatch && datosPersonalesMatch[1] && datosPersonalesMatch[2]) {
-                document.getElementById('info_nombreCompleto').value = datosPersonalesMatch[1].trim();
-                document.getElementById('info_curpCliente').value = datosPersonalesMatch[2].trim();
-            } else {
-                showCustomAlert("No se pudo encontrar el Nombre y CURP en el formato esperado. Por favor, verifique el texto.", "Datos Faltantes");
-                return;
-            }
+                    const datosPersonalesRegex = /Estimado\(a\),\s*([A-Z\s,ÑÁÉÍÓÚ]+)\s*NSS:\s*[\w\d]+\s*CURP:\s*(\w{18})/i;
+                    const datosPersonalesMatch = textoCompleto.match(datosPersonalesRegex);
 
-            const semanasCompuestasRegex = /Semanas\s+Reintegradas\s*\(\+\)[\s\S]*?(\d+)\s+(\d+)\s+(\d+)/i;
-            const semanasCompuestasMatch = textoCompleto.match(semanasCompuestasRegex);
-
-            if (semanasCompuestasMatch && semanasCompuestasMatch.length === 4) {
-                const imss = parseInt(semanasCompuestasMatch[1], 10);
-                const descontadas = parseInt(semanasCompuestasMatch[2], 10);
-                const reintegradas = parseInt(semanasCompuestasMatch[3], 10);
-                const totalSemanasCalculadas = imss - descontadas + reintegradas;
-                document.getElementById('info_semanasTotalesManual').value = totalSemanasCalculadas;
-            } else {
-                const semanasTotalRegex = /Total de semanas cotizadas\s+(\d+)/i;
-                const semanasTotalMatch = textoCompleto.match(semanasTotalRegex);
-                if (semanasTotalMatch && semanasTotalMatch[1]) {
-                    document.getElementById('info_semanasTotalesManual').value = semanasTotalMatch[1].trim();
-                } else {
-                    showCustomAlert("No se pudieron encontrar las semanas totales en el texto. Por favor, verifique el formato o ingrese el dato manualmente.", "Dato Faltante");
-                    return;
-                }
-            }
-
-            const employerBlocks = textoCompleto.split(/Nombre\s+del\s+patrón/gi).slice(1);
-            if (employerBlocks.length === 0) {
-                 showCustomAlert("No se encontraron bloques de empleadores en el texto. El formato puede ser incorrecto. Asegúrese que el texto contenga 'Nombre del patrón'.", "Error de Formato");
-                 return;
-            }
-
-            employerBlocks.forEach(block => {
-                const lines = block.trim().split('\n').map(l => l.trim()).filter(l => l);
-                const nombrePatron = lines[0] || 'No Encontrado';
-                
-                let regPatronal = 'No Encontrado';
-                const regPatronalMatch = block.match(/Registro\s+Patronal\s+([A-Z0-9]+)/i);
-                if(regPatronalMatch && regPatronalMatch[1]) {
-                    regPatronal = regPatronalMatch[1];
-                }
-
-                const movimientoRegex = /(REINGRESO|MODIFICACION\s*DE\s*SALARIO|BAJA|ALTA)\s+(\d{2}\/\d{2}\/\d{4})(?:\s*\$\s*([\d,]+\.?\d*))?/i;
-                let movimientosEncontrados = [];
-                
-                for (const linea of lines) {
-                    const lineaLimpia = linea.trim().replace(/\s+/g, ' ');
-                    if (movimientoRegex.test(lineaLimpia)) {
-                        movimientosEncontrados.push(lineaLimpia);
+                    if (datosPersonalesMatch && datosPersonalesMatch[1] && datosPersonalesMatch[2]) {
+                        document.getElementById('info_nombreCompleto').value = datosPersonalesMatch[1].trim();
+                        document.getElementById('info_curpCliente').value = datosPersonalesMatch[2].trim();
+                    } else {
+                        // Use throw to be caught by the catch block
+                        throw new Error("No se pudo encontrar el Nombre y CURP en el formato esperado.");
                     }
-                }
-                
-                if (movimientosEncontrados.length > 0) {
-                    addEmploymentCard(nombrePatron, regPatronal, movimientosEncontrados.join('\n'));
-                }
-            });
 
-            showElement('toggleCardsBtn', 'inline-flex');
-            showCustomAlert("Datos extraídos exitosamente. Iniciando análisis...", "Éxito");
-            setTimeout(analizarYCalcularSBC, 500);
+                    const semanasCompuestasRegex = /Semanas\s+Reintegradas\s*\(\+\)[\s\S]*?(\d+)\s+(\d+)\s+(\d+)/i;
+                    const semanasCompuestasMatch = textoCompleto.match(semanasCompuestasRegex);
+
+                    if (semanasCompuestasMatch && semanasCompuestasMatch.length === 4) {
+                        const imss = parseInt(semanasCompuestasMatch[1], 10);
+                        const descontadas = parseInt(semanasCompuestasMatch[2], 10);
+                        const reintegradas = parseInt(semanasCompuestasMatch[3], 10);
+                        const totalSemanasCalculadas = imss - descontadas + reintegradas;
+                        document.getElementById('info_semanasTotalesManual').value = totalSemanasCalculadas;
+                    } else {
+                        const semanasTotalRegex = /Total de semanas cotizadas\s+(\d+)/i;
+                        const semanasTotalMatch = textoCompleto.match(semanasTotalRegex);
+                        if (semanasTotalMatch && semanasTotalMatch[1]) {
+                            document.getElementById('info_semanasTotalesManual').value = semanasTotalMatch[1].trim();
+                        } else {
+                            throw new Error("No se pudieron encontrar las semanas totales en el texto.");
+                        }
+                    }
+
+                    const employerBlocks = textoCompleto.split(/Nombre\s+del\s+patrón/gi).slice(1);
+                    if (employerBlocks.length === 0) {
+                         throw new Error("No se encontraron bloques de empleadores. Verifique que el texto contenga 'Nombre del patrón'.");
+                    }
+
+                    employerBlocks.forEach(block => {
+                        const lines = block.trim().split('\n').map(l => l.trim()).filter(l => l);
+                        const nombrePatron = lines[0] || 'No Encontrado';
+                        
+                        let regPatronal = 'No Encontrado';
+                        const regPatronalMatch = block.match(/Registro\s+Patronal\s+([A-Z0-9]+)/i);
+                        if(regPatronalMatch && regPatronalMatch[1]) {
+                            regPatronal = regPatronalMatch[1];
+                        }
+
+                        const movimientoRegex = /(REINGRESO|MODIFICACION\s*DE\s*SALARIO|BAJA|ALTA)\s+(\d{2}\/\d{2}\/\d{4})(?:\s*\$\s*([\d,]+\.?\d*))?/i;
+                        let movimientosEncontrados = [];
+                        
+                        for (const linea of lines) {
+                            const lineaLimpia = linea.trim().replace(/\s+/g, ' ');
+                            if (movimientoRegex.test(lineaLimpia)) {
+                                movimientosEncontrados.push(lineaLimpia);
+                            }
+                        }
+                        
+                        if (movimientosEncontrados.length > 0) {
+                            addEmploymentCard(nombrePatron, regPatronal, movimientosEncontrados.join('\n'));
+                        }
+                    });
+
+                    showElement('toggleCardsBtn', 'inline-flex');
+                    // Call the main analysis function directly
+                    analizarYCalcularSBC();
+
+                } catch (error) {
+                    console.error("Error durante el análisis del texto:", error);
+                    showCustomAlert(error.message || "Ocurrió un error inesperado al procesar el texto.", "Error de Análisis");
+                } finally {
+                    // Restore button state in all cases
+                    analyzeButton.innerHTML = originalButtonText;
+                    analyzeButton.disabled = false;
+                }
+            }, 100);
         }
 
         function toggleAutoCards() {
@@ -2849,84 +3032,102 @@
             return mergedPeriods;
         }
 
-        function drawTimeline() {
-            const container = d3.select("#timeline-container");
-            if(container.node()){
-                const svg = d3.select("#timeline-svg");
-                svg.selectAll("*").remove(); // Clear previous chart
-                
-                const timelineTooltip = d3.select("#timeline-tooltip");
-    
-                const processedPeriods = AppState.timelinePeriods;
-                if (!processedPeriods || processedPeriods.length === 0) return;
-    
-                const tenYearsAgo = new Date();
-                tenYearsAgo.setFullYear(tenYearsAgo.getFullYear() - 10);
-    
-                const timelineData = processedPeriods.filter(p => p.fechaFin >= tenYearsAgo);
-                if (timelineData.length === 0) return;
-    
-                const containerWidth = container.node().getBoundingClientRect().width;
-                const margin = { top: 20, right: 30, bottom: 40, left: 60 };
-                const width = Math.max(containerWidth, 800) - margin.left - margin.right;
-                const height = 384 - margin.top - margin.bottom;
-    
-                svg.attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom);
-                const chart = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-    
-                const x = d3.scaleTime()
-                    .domain([tenYearsAgo, new Date()])
-                    .range([0, width]);
-    
-                const maxSalary = d3.max(timelineData, d => d.sbc);
-                const y = d3.scaleLinear()
-                    .domain([0, 4000]) // Fixed Y-axis max value
-                    .range([height, 0]).nice();
-    
-                chart.append("g")
-                    .attr("transform", `translate(0,${height})`)
-                    .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)).tickFormat(d3.timeFormat("%Y")));
-    
-                chart.append("g")
-                    .call(d3.axisLeft(y).tickFormat(d => `$${d.toLocaleString('es-MX')}`));
-    
-                const uniqueEmployers = [...new Map(timelineData.flatMap(d => d.originalPeriods).map(p => [p.regPatronal, p])).values()];
-                const color = d3.scaleOrdinal(d3.schemeTableau10).domain(uniqueEmployers.map(e => e.regPatronal));
-    
-                chart.selectAll(".bar")
-                    .data(timelineData)
-                    .enter()
-                    .append("rect")
-                    .attr("class", "bar")
-                    .attr("x", d => x(d.fechaInicio))
-                    .attr("y", d => y(d.sbc))
-                    .attr("width", d => Math.max(1, x(d.fechaFin) - x(d.fechaInicio)))
-                    .attr("height", d => height - y(d.sbc))
-                    .attr("fill", d => d.isOverlapped ? "#A855F7" : color(d.originalPeriods[0].regPatronal))
-                    .style("opacity", 0.8)
-                    .on("mouseover", (event, d) => {
-                        timelineTooltip.style("opacity", 1);
-                        d3.select(event.currentTarget).style('opacity', 1).style('stroke', 'black').style('stroke-width', '1.5px');
-                    })
-                    .on("mousemove", (event, d) => {
-                        const employerList = d.originalPeriods.map(e => e.nombrePatron).join(' + ');
-                        timelineTooltip.html(`<strong>${employerList}</strong><br/>Salario: ${d.sbc.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}<br/>Inicio: ${formatDateDDMMYYYY(d.fechaInicio)}<br/>Fin: ${formatDateDDMMYYYY(d.fechaFin)}`)
-                            .style("left", (event.pageX + 15) + "px")
-                            .style("top", (event.pageY - 28) + "px");
-                    })
-                    .on("mouseout", (event, d) => {
-                        timelineTooltip.style("opacity", 0);
-                        d3.select(event.currentTarget).style('opacity', 0.8).style('stroke', 'none');
-                    });
-                
-                const legendContainer = d3.select("#timeline-legend");
-                legendContainer.html("");
-                const legendData = uniqueEmployers;
-                
-                const legend = legendContainer.selectAll(".legend-item").data(legendData).enter().append("div").attr("class", "legend-item flex items-center");
-                legend.append("div").style("width", "15px").style("height", "15px").style("background-color", d => color(d.regPatronal)).attr("class", "mr-2 rounded-sm flex-shrink-0");
-                legend.append("span").text(d => d.nombrePatron).attr("class", "text-xs text-gray-700");
+        function drawScenarioTimeline(svgId, legendId, timelineData) {
+            const container = d3.select(`#${svgId}`).node() ? d3.select(`#${svgId}`).node().parentNode : null;
+            if (!container) return;
+        
+            const svg = d3.select(`#${svgId}`);
+            svg.selectAll("*").remove();
+        
+            const timelineTooltip = d3.select("#timeline-tooltip");
+        
+            if (!timelineData || timelineData.length === 0) return;
+        
+            const tenYearsAgo = new Date();
+            tenYearsAgo.setFullYear(tenYearsAgo.getFullYear() - 10);
+        
+            const filteredData = timelineData.filter(p => p.fechaFin >= tenYearsAgo);
+            if (filteredData.length === 0) return;
+        
+            const containerWidth = container.getBoundingClientRect().width;
+            const containerHeight = container.getBoundingClientRect().height;
+            const margin = { top: 20, right: 20, bottom: 40, left: 60 };
+            const width = Math.max(containerWidth, 600) - margin.left - margin.right;
+            const height = Math.max(containerHeight, 200) - margin.top - margin.bottom;
+        
+            svg.attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom);
+            const chart = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+        
+            const x = d3.scaleTime()
+                .domain([d3.min(filteredData, d => d.fechaInicio), d3.max(filteredData, d => d.fechaFin)])
+                .range([0, width]);
+        
+            const y = d3.scaleLinear()
+                .domain([0, 4000])
+                .range([height, 0]).nice();
+        
+            chart.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)).tickFormat(d3.timeFormat("%Y")));
+        
+            chart.append("g")
+                .call(d3.axisLeft(y).tickFormat(d => `$${d.toLocaleString('es-MX')}`));
+        
+            const uniqueEmployers = [...new Map(filteredData.flatMap(d => d.originalPeriods || [d]).map(p => [p.regPatronal, p])).values()];
+            const color = d3.scaleOrdinal(d3.schemeTableau10).domain(uniqueEmployers.map(e => e.regPatronal));
+            color("Modalidad 40");
+            color("Traslape");
+        
+            chart.selectAll(".bar")
+                .data(filteredData)
+                .enter()
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(d.fechaInicio))
+                .attr("y", d => y(d.sbc))
+                .attr("width", d => Math.max(1, x(d.fechaFin) - x(d.fechaInicio)))
+                .attr("height", d => height - y(d.sbc))
+                .attr("fill", d => {
+                    if (d.nombrePatron === 'Modalidad 40') return '#f97316';
+                    if (d.isOverlapped) return "#A855F7";
+                    return color((d.originalPeriods || [d])[0].regPatronal);
+                })
+                .style("opacity", 0.8)
+                .on("mouseover", (event, d) => {
+                    timelineTooltip.style("opacity", 1);
+                    d3.select(event.currentTarget).style('opacity', 1).style('stroke', 'black').style('stroke-width', '1.5px');
+                })
+                .on("mousemove", (event, d) => {
+                    const employerList = (d.originalPeriods && d.originalPeriods.length > 0) ? d.originalPeriods.map(e => e.nombrePatron).join(' + ') : d.nombrePatron;
+                    timelineTooltip.html(`<strong>${employerList}</strong><br/>Salario: ${d.sbc.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}<br/>Inicio: ${formatDateDDMMYYYY(d.fechaInicio)}<br/>Fin: ${formatDateDDMMYYYY(d.fechaFin)}`)
+                        .style("left", (event.pageX + 15) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", (event, d) => {
+                    timelineTooltip.style("opacity", 0);
+                    d3.select(event.currentTarget).style('opacity', 0.8).style('stroke', 'none');
+                });
+        
+            const legendContainer = d3.select(`#${legendId}`);
+            legendContainer.html("");
+        
+            let legendSource = [...uniqueEmployers];
+            if (filteredData.some(d => d.nombrePatron === 'Modalidad 40') && !legendSource.some(e => e.regPatronal === 'Modalidad 40')) {
+                legendSource.unshift({ nombrePatron: 'Modalidad 40', regPatronal: 'Modalidad 40' });
             }
+            if (filteredData.some(d => d.isOverlapped) && !legendSource.some(e => e.regPatronal === 'Traslape')) {
+                legendSource.unshift({ nombrePatron: 'Traslape de Empleos', regPatronal: 'Traslape' });
+            }
+        
+            const legendData = [...new Map(legendSource.map(item => [item.regPatronal, item])).values()];
+             
+            const legend = legendContainer.selectAll(".legend-item").data(legendData).enter().append("div").attr("class", "legend-item flex items-center");
+            legend.append("div").style("width", "12px").style("height", "12px").style("background-color", d => {
+                    if (d.regPatronal === 'Modalidad 40') return '#f97316';
+                    if (d.regPatronal === 'Traslape') return '#A855F7';
+                    return color(d.regPatronal);
+                }).attr("class", "mr-1 rounded-sm flex-shrink-0");
+            legend.append("span").text(d => d.nombrePatron).attr("class", "text-xs text-gray-700");
         }
 
         // --- NEW VIGENCIA LOGIC ---
@@ -3000,6 +3201,13 @@
                 if (e.key === 'Enter') handleLogin();
             });
             document.getElementById('agreementDate').textContent = new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+            
+            // Admin button listeners
+            document.getElementById('downloadLoginLogsBtn').addEventListener('click', () => window.downloadLogs('login_logs'));
+            document.getElementById('resetLoginLogsBtn').addEventListener('click', () => window.resetLogs('login_logs', 'de inicio de sesión'));
+            document.getElementById('downloadCalcLogsBtn').addEventListener('click', () => window.downloadLogs('calculation_logs'));
+            document.getElementById('resetCalcLogsBtn').addEventListener('click', () => window.resetLogs('calculation_logs', 'de cálculos'));
+
             showElement('confidentialityModal');
         });
 
@@ -3012,6 +3220,7 @@
         window.analizarYCalcularSBC = analizarYCalcularSBC;
         window.actualizarSBCMaximoM40 = actualizarSBCMaximoM40;
         window.actualizarFechaFinM40Display = actualizarFechaFinM40Display;
+        window.handleM40StartDateChange = handleM40StartDateChange;
         window.calcularEscenarioM40Infografia = calcularEscenarioM40Infografia;
         window.handleMesesDepositoChange = handleMesesDepositoChange;
         window.recalculateScenario = recalculateScenario;
@@ -3037,7 +3246,7 @@
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy, setDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy, setDoc, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- THIS IS YOUR PERSONAL FIREBASE CONFIGURATION ---
         const firebaseConfig = {
@@ -3107,13 +3316,14 @@
         window.logCalculationEvent = async (scenarioNumber, data) => {
             if (!db || !data || Object.keys(data).length === 0) {
                  console.error("Firestore DB not initialized or no data to log. Cannot log calculation.");
-                return null;
+               return null;
             }
             try {
                 // Remove large/unnecessary data before logging
                 const logData = { ...data };
                 delete logData.proyeccion; 
                 delete logData.desgloseM40;
+                delete logData.finalTimelinePeriods;
 
                 const calcLogsCollection = collection(db, `artifacts/${appId}/public/data/calculation_logs`);
                 const docRef = await addDoc(calcLogsCollection, {
@@ -3440,7 +3650,141 @@
                 showCustomAlert("No se pudo actualizar el estado del asesor.", "Error");
             }
         };
+        
+        function flattenObject(ob) {
+            var toReturn = {};
+            for (var i in ob) {
+                if (!ob.hasOwnProperty(i)) continue;
+
+                if ((typeof ob[i]) == 'object' && ob[i] !== null && !Array.isArray(ob[i])) {
+                    var flatObject = flattenObject(ob[i]);
+                    for (var x in flatObject) {
+                        if (!flatObject.hasOwnProperty(x)) continue;
+                        toReturn[i + '.' + x] = flatObject[x];
+                    }
+                } else {
+                    toReturn[i] = ob[i];
+                }
+            }
+            return toReturn;
+        }
+
+        window.downloadLogs = async (logType) => {
+            if (!db) {
+                showCustomAlert("La base de datos no está disponible.", "Error");
+                return;
+            }
+            const logsCollection = collection(db, `artifacts/${appId}/public/data/${logType}`);
+            const querySnapshot = await getDocs(logsCollection);
+
+            if (querySnapshot.empty) {
+                showCustomAlert("No hay registros para descargar.", "Información");
+                return;
+            }
+
+            let csvContent = "";
+            const headers = new Set();
+            const dataRows = [];
+
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                let rowData = {};
+
+                if (logType === 'login_logs') {
+                    rowData = {
+                        asesor: data.asesor,
+                        timestamp: data.timestamp ? data.timestamp.toDate().toISOString() : '',
+                        'location.lat': data.location?.lat,
+                        'location.lon': data.location?.lon,
+                        'location.error': data.location?.error
+                    };
+                } else if (logType === 'calculation_logs') {
+                    const calcData = JSON.parse(data.calculationData || '{}');
+                    const flatCalcData = flattenObject(calcData);
+                    rowData = {
+                        asesor: data.asesor,
+                        cliente: data.cliente,
+                        curp: data.curp,
+                        telefono: data.telefono,
+                        timestamp: data.timestamp ? data.timestamp.toDate().toISOString() : '',
+                        scenarioNumber: data.scenarioNumber,
+                        ...flatCalcData
+                    };
+                }
+                
+                Object.keys(rowData).forEach(key => headers.add(key));
+                dataRows.push(rowData);
+            });
+
+            const headerArray = Array.from(headers);
+            csvContent += headerArray.join(',') + '\r\n';
+
+            dataRows.forEach(row => {
+                const rowValues = headerArray.map(header => {
+                    let val = row[header];
+                    if (val === null || val === undefined) val = '';
+                    let stringVal = String(val);
+                    if (stringVal.includes(',')) stringVal = `"${stringVal}"`;
+                    return stringVal;
+                });
+                csvContent += rowValues.join(',') + '\r\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `${logType}_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        window.resetLogs = (logType, logTypeName) => {
+            document.getElementById('customAlertTitle').textContent = `Confirmar Reseteo`;
+            document.getElementById('customAlertMessage').textContent = `¿Estás seguro de que quieres borrar TODOS los registros ${logTypeName}? Esta acción no se puede deshacer. Se recomienda descargar los datos primero.`;
+            
+            const confirmBtn = document.getElementById('customAlertButton');
+            const cancelBtn = document.getElementById('customAlertCancelButton');
+            
+            confirmBtn.textContent = 'Sí, Borrar';
+            confirmBtn.className = 'btn !bg-red-600 hover:!bg-red-700 !text-white';
+            cancelBtn.style.display = 'inline-flex';
+
+            cancelBtn.onclick = closeCustomAlert;
+
+            confirmBtn.onclick = async () => {
+                if (!db) {
+                    showCustomAlert("La base de datos no está disponible.", "Error");
+                    return;
+                }
+                try {
+                    const logsCollection = collection(db, `artifacts/${appId}/public/data/${logType}`);
+                    const querySnapshot = await getDocs(logsCollection);
+                    const deletePromises = [];
+                    querySnapshot.forEach(doc => {
+                        deletePromises.push(deleteDoc(doc.ref));
+                    });
+                    await Promise.all(deletePromises);
+                    showCustomAlert(`Se han borrado todos los registros ${logTypeName}.`, 'Éxito');
+                    loadAdminPanelData(); // Refresh panel
+                } catch(error) {
+                    console.error(`Error reseting ${logType}:`, error);
+                    showCustomAlert(`Ocurrió un error al borrar los registros.`, 'Error');
+                } finally {
+                    closeCustomAlert();
+                }
+            };
+            showElement('customAlertModal');
+        };
 
     </script>
 </body>
 </html>
+
+
+
+
+
+
