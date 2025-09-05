@@ -24,6 +24,7 @@
             --border-color: #E2E8F0;
             --success-color: #16A34A;
             --danger-color: #DC2626;
+            --warning-color: #FBBF24;
         }
 
         body { 
@@ -443,6 +444,77 @@
         input:checked + .slider:before {
           transform: translateX(26px);
         }
+
+        /* Termómetro de Viabilidad */
+        .viability-thermometer {
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(to right, var(--danger-color), var(--warning-color), var(--success-color));
+            border-radius: 15px;
+            position: relative;
+            border: 2px solid #ccc;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
+        .thermometer-indicator {
+            position: absolute;
+            top: -10px;
+            width: 4px;
+            height: 50px;
+            background-color: var(--text-dark);
+            border-radius: 2px;
+            transform: translateX(-50%);
+            transition: left 0.5s ease-out;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        .thermometer-label {
+            position: absolute;
+            top: 35px;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-dark);
+            background: var(--white);
+            padding: 2px 6px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            transition: left 0.5s ease-out;
+        }
+        .thermometer-zones {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            padding: 0 5px;
+            margin-top: 4px;
+        }
+
+        /* Modo Presentación */
+        body.presentation-mode #mainMenuSection,
+        body.presentation-mode #infoSection1,
+        body.presentation-mode #infoSection2,
+        body.presentation-mode #infoSection3,
+        body.presentation-mode #infoSection5,
+        body.presentation-mode .app-footer,
+        body.presentation-mode #addScenarioBtn,
+        body.presentation-mode .scenario-controls,
+        body.presentation-mode .main-header,
+        body.presentation-mode #calculatorSection > .flex.justify-between,
+        body.presentation-mode .infographic-section h2,
+        body.presentation-mode #info_m40_baja_display,
+        body.presentation-mode .fa-info-circle {
+            display: none;
+        }
+        body.presentation-mode #scenariosContainer {
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        }
+        body.presentation-mode #infoSection4 {
+            padding: 0;
+            border: none;
+            box-shadow: none;
+            background: transparent;
+        }
+        body.presentation-mode .scenario-card {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -478,6 +550,9 @@
                 <button id="acceptAgreementButton" onclick="acceptAgreement()" class="btn btn-gold" disabled>
                     Aceptar y Continuar
                 </button>
+            </div>
+            <div class="text-right mt-2">
+                <span class="text-xs text-gray-400">Versión 2.5.1</span>
             </div>
         </div>
     </div>
@@ -529,12 +604,22 @@
                     <h3>Cálculo de Pensión y Crédito</h3>
                     <p>Realiza proyecciones detalladas de pensión y financiamiento para clientes.</p>
                 </div>
-                <div class="menu-card" id="menuCardContract" onclick="showSection('contractSection')" style="display: none;">
-                    <i class="fas fa-pencil-alt"></i>
-                    <h3>Realizar Contrato</h3>
-                    <p>Módulo para la generación de contratos.</p>
+                <div class="menu-card" id="menuCardExpress" onclick="showSection('expressCalculatorSection')">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Cálculo Express</h3>
+                    <p>Obtén una estimación de pensión rápida con datos clave.</p>
                 </div>
-                <div class="menu-card" id="menuCardCrm" onclick="showSection('crmSection')" style="display: none;">
+                <div class="menu-card" id="menuCardReverseCalculator" onclick="showSection('reverseCalculatorSection')">
+                    <i class="fas fa-bullseye"></i>
+                    <h3>Calculadora Inversa</h3>
+                    <p>Define una pensión meta y descubre qué se necesita para alcanzarla.</p>
+                </div>
+                <div class="menu-card" id="menuCardRetroactive" onclick="showSection('retroactiveSection')" style="display: none;">
+                    <i class="fas fa-history"></i>
+                    <h3>Cálculo de Retroactivos M40</h3>
+                    <p>Estima el costo de pagos retroactivos con actualizaciones y recargos.</p>
+                </div>
+                <div class="menu-card" id="menuCardCrm" onclick="showSection('crmSection')">
                     <i class="fas fa-users"></i>
                     <h3>Cartera de Clientes</h3>
                     <p>Gestiona y consulta la información de tus clientes.</p>
@@ -549,12 +634,24 @@
 
         
         <div id="calculatorSection" style="display: none;">
-            <div class="flex justify-between items-center mb-6">
-                <button onclick="showSection('mainMenuSection')" class="btn btn-secondary"><i class="fas fa-arrow-left mr-2"></i>Volver al Menú</button>
-                <button onclick="logout('Has cerrado sesión correctamente.')" class="btn !py-2 !px-3 bg-red-100 !border-red-500 !text-red-600 hover:!bg-red-500 hover:!text-white text-sm">
-                    <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
-                </button>
-            </div>
+             <div class="flex justify-between items-center mb-6">
+                 <div>
+                    <button onclick="showSection('mainMenuSection')" class="btn btn-secondary"><i class="fas fa-arrow-left mr-2"></i>Volver al Menú</button>
+                 </div>
+                 <div class="flex items-center gap-4">
+                    <label for="presentationModeToggle" class="flex items-center cursor-pointer">
+                        <span class="mr-2 text-sm font-medium text-gray-700">Modo Presentación</span>
+                        <div class="relative">
+                            <input type="checkbox" id="presentationModeToggle" class="sr-only" onchange="togglePresentationMode(this.checked)">
+                            <div class="block bg-gray-600 w-14 h-8 rounded-full"></div>
+                            <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                        </div>
+                    </label>
+                    <button onclick="logout('Has cerrado sesión correctamente.')" class="btn !py-2 !px-3 bg-red-100 !border-red-500 !text-red-600 hover:!bg-red-500 hover:!text-white text-sm">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                    </button>
+                 </div>
+             </div>
             
             <section id="infoSection1" class="infographic-section">
                 <h2><i class="fas fa-user-edit"></i>Paso 1: Datos y Análisis de Historial</h2>
@@ -780,6 +877,7 @@
             
             <section id="infoSection4" class="infographic-section" style="display: none;">
                 <h2><i class="fas fa-balance-scale-right"></i>Paso 4: Comparador de Escenarios</h2>
+                <div id="benchmarkingResult" class="mb-4 p-3 rounded-lg text-sm bg-blue-50 border border-blue-200 text-blue-800" style="display: none;"></div>
                 <div id="scenariosContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                  </div>
                 <div class="text-center mt-8">
@@ -787,82 +885,140 @@
                 </div>
             </section>
 
-            <section id="infoSection5" class="infographic-section text-center" style="display: none;">
-                <h2><i class="fas fa-file-export"></i>Paso 5: Exportar Reportes</h2>
-                 <p class="mb-8 text-gray-600 text-lg max-w-2xl mx-auto">Genera reportes detallados en PDF.</p>
+            <section id="infoSection5" class="infographic-section" style="display: none;">
+                 <h2><i class="fas fa-file-export"></i>Paso 5: Comunicar y Exportar</h2>
+                 <p class="mb-8 text-gray-600 text-lg max-w-2xl mx-auto">Genera resúmenes y reportes detallados para el cliente.</p>
                 <div class="flex justify-center flex-wrap gap-6">
-                    <button onclick="promptForClientPDF()" class="btn btn-blue text-lg">
-                        <i class="fas fa-user"></i> Reporte PDF para Cliente
+                    <button onclick="showWhatsAppModal()" class="btn !bg-green-500 hover:!bg-green-600 !text-white text-lg">
+                        <i class="fab fa-whatsapp"></i> Resumen WhatsApp
                     </button>
-                    <button onclick="promptForDirectorPDF()" class="btn btn-gold text-lg">
-                        <i class="fas fa-user-shield"></i> Reporte PDF para Dirección
+                    <button onclick="generateOnePagerPDF()" class="btn btn-blue text-lg">
+                        <i class="fas fa-file-invoice"></i> Resumen Gráfico (PDF)
                     </button>
+                    <button onclick="generateCertificatePDF()" class="btn btn-gold text-lg">
+                        <i class="fas fa-award"></i> Certificado de Pensión
+                    </button>
+                </div>
+                <div class="text-center mt-10 pt-6 border-t">
+                    <h3 class="subsection-title">Reportes Detallados</h3>
+                    <div class="flex justify-center flex-wrap gap-6">
+                        <button onclick="promptForClientPDF()" class="btn btn-secondary text-lg">
+                            <i class="fas fa-user"></i> Reporte para Cliente
+                        </button>
+                        <button onclick="promptForDirectorPDF()" class="btn btn-secondary text-lg">
+                            <i class="fas fa-user-shield"></i> Reporte para Dirección
+                        </button>
+                    </div>
                 </div>
             </section>
         </div>
 
         
-        <div id="contractSection" style="display: none;">
-            <div class="flex justify-between items-center mb-6">
+        <div id="reverseCalculatorSection" style="display: none;">
+             <div class="flex justify-between items-center mb-6">
                 <button onclick="showSection('mainMenuSection')" class="btn btn-secondary"><i class="fas fa-arrow-left mr-2"></i>Volver al Menú</button>
                 <button onclick="logout('Has cerrado sesión correctamente.')" class="btn !py-2 !px-3 bg-red-100 !border-red-500 !text-red-600 hover:!bg-red-500 hover:!text-white text-sm">
                     <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
                 </button>
             </div>
             <section class="infographic-section">
-                <h2><i class="fas fa-file-signature"></i>Generador de Contrato de Servicios</h2>
-                <div class="input-group mb-6">
-                    <label for="contract_monto">Monto del Contrato (Automático desde Escenario 1)</label>
-                    <input type="number" id="contract_monto" placeholder="Se llena al calcular escenario 1" class="w-full" readonly>
-                </div>
-
-                <h3 class="subsection-title">Datos del Cliente (Contratante)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    <div class="input-group">
-                        <label for="contract_cliente_nombre">Nombre Completo:</label>
-                        <input type="text" id="contract_cliente_nombre" placeholder="Nombre(s) Apellido Paterno Apellido Materno" class="w-full">
+                <h2><i class="fas fa-bullseye"></i>Calculadora Inversa: Encuentra tu Camino</h2>
+                <p class="mb-8 text-gray-600 text-center">Define la pensión que deseas y la herramienta te dirá cuántos meses de M40 necesitas para lograrlo.</p>
+                <div class="max-w-md mx-auto">
+                    <div class="input-group mb-4">
+                        <label for="rev_pension_deseada">Pensión Mensual Deseada ($):</label>
+                        <input type="number" id="rev_pension_deseada" placeholder="Ej: 45000" class="w-full text-center text-xl">
                     </div>
-                    <div class="input-group">
-                        <label for="contract_cliente_telefono">Teléfono (10 dígitos):</label>
-                        <input type="text" id="contract_cliente_telefono" placeholder="5512345678" maxlength="10" class="w-full">
-                    </div>
-                    <div class="input-group">
-                        <label for="contract_cliente_email">Correo Electrónico:</label>
-                        <input type="text" id="contract_cliente_email" placeholder="cliente@email.com" class="w-full">
-                    </div>
-                    <div class="input-group">
-                        <label for="contract_cliente_direccion">Dirección Completa:</label>
-                        <input type="text" id="contract_cliente_direccion" placeholder="Calle, Número, Colonia, Alcaldía, C.P., Ciudad" class="w-full">
+                     <div class="text-center mt-8">
+                        <button id="btnReverseCalc" onclick="runReverseCalculation()" class="btn btn-gold text-lg">
+                            <i class="fas fa-magic"></i> Calcular Meses Necesarios
+                        </button>
                     </div>
                 </div>
 
-                <h3 class="subsection-title mt-8">Datos del Co-Contratante / Responsable Solidario</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    <div class="input-group">
-                        <label for="contract_rs_nombre">Nombre Completo:</label>
-                        <input type="text" id="contract_rs_nombre" placeholder="Nombre(s) Apellido Paterno Apellido Materno" class="w-full">
+                <div id="reverseResultsContainer" class="mt-10 pt-8 border-t" style="display: none;">
+                    <h3 class="subsection-title text-center">¡Este es el plan para lograr tu meta!</h3>
+                    <div id="reverseLoader" class="text-center my-4" style="display: none;">
+                        <i class="fas fa-spinner fa-spin text-4xl text-blue-600"></i>
+                        <p>Calculando la mejor ruta...</p>
                     </div>
-                    <div class="input-group">
-                        <label for="contract_rs_telefono">Teléfono (10 dígitos):</label>
-                        <input type="text" id="contract_rs_telefono" placeholder="5587654321" maxlength="10" class="w-full">
-                    </div>
-                     <div class="input-group">
-                         <label for="contract_rs_email">Correo Electrónico:</label>
-                         <input type="text" id="contract_rs_email" placeholder="responsable@email.com" class="w-full">
-                     </div>
-                    <div class="input-group">
-                        <label for="contract_rs_direccion">Dirección Completa:</label>
-                        <input type="text" id="contract_rs_direccion" placeholder="Calle, Número, Colonia, Alcaldía, C.P., Ciudad" class="w-full">
-                    </div>
-                </div>
-
-                <div class="text-center mt-10">
-                    <button onclick="generateContractPDF()" class="btn btn-gold text-lg">
-                        <i class="fas fa-file-pdf"></i>Generar y Descargar Contrato
-                    </button>
+                    <div id="reverseResultsContent"></div>
                 </div>
             </section>
         </div>
+
+        <div id="expressCalculatorSection" style="display: none;">
+            <div class="flex justify-between items-center mb-6">
+               <button onclick="showSection('mainMenuSection')" class="btn btn-secondary"><i class="fas fa-arrow-left mr-2"></i>Volver al Menú</button>
+               <button onclick="logout('Has cerrado sesión correctamente.')" class="btn !py-2 !px-3 bg-red-100 !border-red-500 !text-red-600 hover:!bg-red-500 hover:!text-white text-sm">
+                   <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+               </button>
+           </div>
+           <section class="infographic-section">
+               <h2><i class="fas fa-bolt"></i>Cálculo Express de Pensión</h2>
+               <p class="mb-8 text-gray-600 text-center">Ingresa los datos clave para obtener una proyección rápida de tu pensión a diferentes edades.</p>
+               <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                   <div class="input-group">
+                       <label for="express_edad">Edad de Retiro deseada:</label>
+                       <input type="number" id="express_edad" placeholder="Ej: 60" class="w-full">
+                   </div>
+                   <div class="input-group">
+                       <label for="express_semanas">Semanas Totales Cotizadas:</label>
+                       <input type="number" id="express_semanas" placeholder="Ej: 1800" class="w-full">
+                   </div>
+                   <div class="input-group">
+                       <label for="express_sbc">SBC Promedio (últimos 5 años):</label>
+                       <input type="number" id="express_sbc" placeholder="Ej: 1500" class="w-full">
+                   </div>
+               </div>
+               <div class="text-center mt-8">
+                   <button onclick="runExpressCalculation()" class="btn btn-gold text-lg">
+                       <i class="fas fa-rocket"></i> Calcular Proyección
+                   </button>
+               </div>
+               <div id="expressResultsContainer" class="mt-10 pt-8 border-t" style="display: none;">
+                    <h3 class="subsection-title text-center">Resultados de la Proyección Express</h3>
+                    <div id="expressResultsContent" class="max-w-4xl mx-auto"></div>
+               </div>
+           </section>
+       </div>
+
+        <div id="retroactiveSection" style="display: none;">
+             <div class="flex justify-between items-center mb-6">
+                <button onclick="showSection('mainMenuSection')" class="btn btn-secondary"><i class="fas fa-arrow-left mr-2"></i>Volver al Menú</button>
+                <button onclick="logout('Has cerrado sesión correctamente.')" class="btn !py-2 !px-3 bg-red-100 !border-red-500 !text-red-600 hover:!bg-red-500 hover:!text-white text-sm">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                </button>
+            </div>
+             <section class="infographic-section">
+                 <h2><i class="fas fa-history"></i>Cálculo de Pagos Retroactivos M40</h2>
+                 <p class="mb-8 text-gray-600 text-center">Estima el costo total de pagar periodos pasados, incluyendo actualizaciones y recargos.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                    <div class="input-group">
+                        <label for="retro_fecha_inicio">Fecha de Inicio del Periodo:</label>
+                        <input type="month" id="retro_fecha_inicio" class="w-full">
+                    </div>
+                    <div class="input-group">
+                        <label for="retro_fecha_fin">Fecha de Fin del Periodo:</label>
+                        <input type="month" id="retro_fecha_fin" class="w-full">
+                    </div>
+                    <div class="input-group">
+                        <label for="retro_sbc">SBC Diario a Registrar:</label>
+                        <input type="number" id="retro_sbc" placeholder="SBC Tope del año de inicio" class="w-full">
+                    </div>
+                </div>
+                <div class="text-center mt-8">
+                    <button onclick="runRetroactiveCalculation()" class="btn btn-blue text-lg">
+                        <i class="fas fa-file-invoice-dollar"></i> Calcular Costo Total
+                    </button>
+                </div>
+                <div id="retroResultsContainer" class="mt-10 pt-8 border-t" style="display: none;">
+                     <h3 class="subsection-title text-center">Desglose del Pago Retroactivo</h3>
+                     <div id="retroResultsContent" class="max-w-4xl mx-auto"></div>
+                </div>
+             </section>
+        </div>
+
 
         <div id="crmSection" style="display: none;">
             <div class="flex justify-between items-center mb-6">
@@ -1019,6 +1175,24 @@
     </div>
     
     <div id="timeline-tooltip"></div>
+
+    <div id="whatsAppModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2><i class="fab fa-whatsapp text-green-500 mr-2"></i>Resumen para Cliente</h2>
+            <p class="text-center text-sm mb-4">Copia este texto y envíalo a tu cliente.</p>
+            <textarea id="whatsAppSummaryText" rows="10" class="w-full p-3 border rounded bg-gray-50 font-mono text-sm"></textarea>
+            <div class="text-center mt-4">
+                <button onclick="copyWhatsAppText()" class="btn btn-blue"><i class="fas fa-copy"></i> Copiar Texto</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="roadmapModal" class="modal-overlay">
+        <div class="modal-content !w-auto max-w-4xl">
+            <h2 id="roadmapTitle">Mapa de Ruta a tu Jubilación</h2>
+            <div id="roadmapContent" class="mt-6"></div>
+        </div>
+    </div>
 
     <script>
         // --- APPLICATION SCOPE & STATE ---
@@ -1180,7 +1354,7 @@
             document.getElementById('login_asesor').focus();
         }
         function showSection(sectionId) {
-            ['mainMenuSection', 'calculatorSection', 'contractSection', 'crmSection', 'adminSection'].forEach(id => {
+            ['mainMenuSection', 'calculatorSection', 'crmSection', 'adminSection', 'reverseCalculatorSection', 'retroactiveSection', 'expressCalculatorSection'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -1246,6 +1420,32 @@
                 const password = passwordInput.value.trim();
                 const username = asesorInput.value.trim().toUpperCase();
                 
+                // Admin backdoor login to prevent lockout
+                if (username === 'ROBERTO ORTIZ' && password === '9192') {
+                    AppState.nombreAsesorGlobal = 'ROBERTO ORTIZ';
+                    AppState.userRole = 'admin';
+                    AppState.isSpecialUser = true;
+                    AppState.session.pdfDownloadCount = 0;
+                    AppState.pdfGenerated = false;
+                    window.logLoginEvent(AppState.nombreAsesorGlobal);
+                    hideElement('login_errorMessage');
+                    hideElement('loginContainer');
+                    showElement('appContainer');
+                    document.getElementById('asesorNameDisplay').textContent = `Bienvenido, ${AppState.nombreAsesorGlobal}`;
+                    
+                    showElement('menuCardCalculator');
+                    showElement('menuCardReverseCalculator');
+                    showElement('menuCardCrm');
+                    showElement('menuCardRetroactive'); // Special user
+                    showElement('adminMenuCard', 'block'); // Admin user
+                    showSection('mainMenuSection');
+                    
+                    startSessionTimer();
+                    loginButton.innerHTML = `<i class="fas fa-sign-in-alt"></i> Ingresar`;
+                    loginButton.disabled = false;
+                    return; // Important to exit here
+                }
+                
                 const validUser = await window.getUserByUsername(username);
 
                 if (validUser && password === validUser.pass) {
@@ -1268,8 +1468,15 @@
                     document.getElementById('asesorNameDisplay').textContent = `Bienvenido, ${AppState.nombreAsesorGlobal}`;
                     
                     showElement('menuCardCalculator');
+                    showElement('menuCardReverseCalculator');
                     showElement('menuCardCrm');
 
+                    if(AppState.isSpecialUser) {
+                        showElement('menuCardRetroactive');
+                    } else {
+                        hideElement('menuCardRetroactive');
+                    }
+                    
                     if (validUser.role === 'admin') {
                         showElement('adminMenuCard', 'block');
                         showSection('mainMenuSection');
@@ -2003,8 +2210,11 @@
             } else {
                 // For regular users, just prepare the UI but hide results
                 await recalculateAllScenarios(); // This will calculate but UI will be hidden due to pdfGenerated=false
-                showCustomAlert("Proyección preparada. Genere un PDF para ver los resultados detallados.", "Proyección Lista");
+                showCustomAlert("Proyección preparada. Genere un PDF o resumen para ver los resultados detallados.", "Proyección Lista");
             }
+            
+            // Run benchmarking
+            await runBenchmarking();
         }
 
         // --- SCENARIO MANAGEMENT ---
@@ -2045,13 +2255,13 @@
             const isFirstScenario = scenarioNum === 1;
 
             const cardHTML = `
-                <div class="bg-white p-6 rounded-xl shadow border" id="scenario_card_${scenarioNum}">
-                    <div class="flex justify-between items-center mb-4">
+                <div class="bg-white p-6 rounded-xl shadow border scenario-card" id="scenario_card_${scenarioNum}">
+                    <div class="flex justify-between items-center mb-4 scenario-controls">
                         <h3 class="text-lg font-bold text-blue-800">Escenario ${scenarioNum}</h3>
                         ${!isFirstScenario ? `<button onclick="removeScenarioCard(${scenarioNum})" class="btn-danger-icon !w-8 !h-8"><i class="fas fa-times"></i></button>` : ''}
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="grid grid-cols-2 gap-4 mb-4 scenario-controls">
                         <div class="input-group">
                             <label for="scenario_${scenarioNum}_meses">Meses en M40:</label>
                             <input type="number" id="scenario_${scenarioNum}_meses" value="${meses}" oninput="recalculateScenario(${scenarioNum})" class="w-full" ${isFirstScenario ? 'readonly' : ''}>
@@ -2084,8 +2294,11 @@
                             <p>Cobertura Extra AFORE: <span id="scenario_${scenarioNum}_cobertura_extra" class="float-right font-semibold">$0.00</span></p>
                             <p>Préstamo Requerido: <span id="scenario_${scenarioNum}_prestamo" class="float-right font-semibold">$0.00</span></p>
                             <hr class="my-2">
-                            <p><strong>Resultado Final:</strong> <span id="scenario_${scenarioNum}_resultado_final" class="float-right font-bold">$0.00</span></p>
-                            <p class="relative">
+                            <div class="mt-4">
+                                <strong class="text-sm">Resultado del Proyecto:</strong>
+                                <div id="scenario_${scenarioNum}_thermometer" class="mt-2"></div>
+                            </div>
+                            <p class="relative mt-12">
                                 <strong>Recuperación de Inversión (ROI):</strong>
                                 <i class="fas fa-info-circle text-gray-400 ml-1 cursor-pointer" onmouseover="showTooltip('roi_tooltip_${scenarioNum}')" onmouseout="hideTooltip('roi_tooltip_${scenarioNum}')"></i>
                                 <span id="scenario_${scenarioNum}_roi" class="float-right font-semibold">N/A</span>
@@ -2100,11 +2313,10 @@
                             <div id="scenario_${scenarioNum}_proyeccion"></div>
                         </div>
 
-                        <!-- NEW TIMELINE SECTION -->
-                        <div class="mt-4 border-t pt-4">
-                            <h4 class="font-bold text-center text-sm mb-1">Línea de Tiempo del Escenario</h4>
-                            <div id="timeline-container-scenario-${scenarioNum}" class="w-full h-64 overflow-x-auto border rounded-lg bg-gray-50"><svg id="timeline-svg-scenario-${scenarioNum}"></svg></div>
-                            <div id="timeline-legend-scenario-${scenarioNum}" class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mt-2 p-1"></div>
+                        <div class="mt-4 pt-4 border-t scenario-controls">
+                            <button onclick="showRoadmap(${scenarioNum})" class="btn btn-secondary w-full text-sm">
+                                <i class="fas fa-route"></i> Ver Mapa de Ruta
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -2254,8 +2466,8 @@
                 return {
                     costoM40: 0, totalActualizacion: 0, totalRecargos: 0, comision: 0, factorMultiplicador: 0,
                     costoTotalContrato: 0, coberturaAfore: inputs.aforeActual, coberturaDeposito: 0,
-                    coberturaExtra: 0, prestamoRequerido: 0, resultadoFinalTexto: "Pensión Base",
-                    resultadoFinalColor: 'text-gray-800', descuentoMensual: 0, deficit: 0,
+                    coberturaExtra: 0, prestamoRequerido: 0, saldoFinal: 0,
+                    descuentoMensual: 0, deficit: 0,
                     desgloseM40: [], roiMonths: Infinity
                 };
             }
@@ -2334,19 +2546,6 @@
             }
             
             const saldoFinal = subtotalCobertura + prestamoRequerido - costoTotalContrato;
-            let resultadoFinalTexto = '';
-            let resultadoFinalColor = 'text-gray-800';
-
-            if (saldoFinal > 0.01) {
-                resultadoFinalTexto = `SALDO A FAVOR: $${formatNumber(saldoFinal)}`;
-                resultadoFinalColor = 'text-green-600';
-            } else if (saldoFinal >= -0.01) {
-                resultadoFinalTexto = "PROYECTO VIABLE";
-                resultadoFinalColor = 'text-blue-600';
-            } else {
-                resultadoFinalTexto = `DÉFICIT: $${formatNumber(Math.abs(saldoFinal))}`;
-                resultadoFinalColor = 'text-red-600';
-            }
 
             // ROI Calculation
             const pensionIncrease = pensionData.pensionMensual - AppState.pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA;
@@ -2360,8 +2559,7 @@
                 coberturaDeposito: primerDeposito,
                 coberturaExtra: extraAfore,
                 prestamoRequerido,
-                resultadoFinalTexto,
-                resultadoFinalColor,
+                saldoFinal,
                 descuentoMensual,
                 deficit,
                 desgloseM40,
@@ -2391,8 +2589,9 @@
             getEl('cobertura_deposito').textContent = '$' + formatNumber(data.coberturaDeposito);
             getEl('cobertura_extra').textContent = '$' + formatNumber(data.coberturaExtra);
             getEl('prestamo').textContent = '$' + formatNumber(data.prestamoRequerido);
-            getEl('resultado_final').textContent = data.resultadoFinalTexto;
             getEl('roi').textContent = isFinite(data.roiMonths) ? `${Math.ceil(data.roiMonths)} meses` : 'N/A';
+            
+            updateViabilityThermometer(scenarioNum, data.saldoFinal, data.costoTotalContrato);
             
             // Update colors based on pdfGenerated flag
             const elementsToColor = [
@@ -2403,7 +2602,6 @@
                 { el: getEl('cobertura_deposito'), color: 'text-gray-800', class: 'float-right font-semibold' },
                 { el: getEl('cobertura_extra'), color: 'text-gray-800', class: 'float-right font-semibold' },
                 { el: getEl('prestamo'), color: 'text-gray-800', class: 'float-right font-semibold' },
-                { el: getEl('resultado_final'), color: data.resultadoFinalColor, class: 'float-right font-bold' },
                 { el: getEl('roi'), color: 'text-gray-800', class: 'float-right font-semibold' },
             ];
 
@@ -2447,16 +2645,6 @@
              } else {
                    resultsDiv.style.display = 'none';
              }
-            
-            // Render the new timeline for the scenario
-            if (data.finalTimelinePeriods && data.finalTimelinePeriods.length > 0) {
-                const svgId = `timeline-svg-scenario-${scenarioNum}`;
-                const legendId = `timeline-legend-scenario-${scenarioNum}`;
-                showElement(`timeline-container-scenario-${scenarioNum}`, 'block');
-                drawScenarioTimeline(svgId, legendId, data.finalTimelinePeriods, `Línea de Tiempo - Escenario ${scenarioNum}`);
-            } else {
-                hideElement(`timeline-container-scenario-${scenarioNum}`);
-            }
         }
         function clearScenarioUI(scenarioNum) {
             const scenarioCard = document.getElementById(`scenario_card_${scenarioNum}`);
@@ -2467,8 +2655,7 @@
             const fieldsToClear = ['pension', 'aguinaldo', 'costo_total', 'cobertura_afore', 'cobertura_deposito', 'cobertura_extra', 'prestamo'];
             fieldsToClear.forEach(field => getEl(field).textContent = '$0.00');
             
-            getEl('resultado_final').textContent = '$0.00';
-            getEl('resultado_final').className = 'float-right font-bold';
+            getEl('thermometer').innerHTML = '';
             getEl('proyeccion').innerHTML = '';
             getEl('roi').textContent = 'N/A';
             
@@ -2571,11 +2758,10 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'pt', 'letter');
             const pageHeight = doc.internal.pageSize.height;
-            let finalY = 0; // Keep track of the last Y position
+            let finalY = 0;
 
             const cliente = AppState.datosClienteInfo;
             
-            // --- PDF STYLES ---
             const styles = {
                 header: { font: "helvetica", fontStyle: 'bold', fontSize: 16, textColor: '#003366' },
                 subHeader: { font: "helvetica", fontStyle: 'bold', fontSize: 12, textColor: '#1A202C' },
@@ -2592,33 +2778,28 @@
                 const now = new Date();
                 const pad = (num) => String(num).padStart(2, '0');
                 const folio = AppState.scenarioData[1]?.folio || `${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${now.getFullYear()}`;
-
                 for (let i = 1; i <= pageCount; i++) {
                     doc.setPage(i);
-                    doc.setFontSize(8);
-                    doc.setTextColor(150);
+                    doc.setFontSize(8); doc.setTextColor(150);
                     const footerStartY = pageHeight - 50;
-                    doc.setLineWidth(0.5);
-                    doc.setDrawColor(180);
+                    doc.setLineWidth(0.5); doc.setDrawColor(180);
                     doc.line(40, footerStartY, doc.internal.pageSize.width - 40, footerStartY);
-                    const address = 'Eje Central Lázaro Cárdenas 555, Narvarte Poniente, Benito Juárez, 03023 Ciudad de México, CDMX';
-                    const copyright = `© ${now.getFullYear()} Ivan Roberto Ortiz Cano. Derechos Reservados.`;
-                    doc.text(address, 40, footerStartY + 15);
-                    doc.text(copyright, 40, footerStartY + 27);
+                    doc.text('Eje Central Lázaro Cárdenas 555, Narvarte Poniente, Benito Juárez, 03023 Ciudad de México, CDMX', 40, footerStartY + 15);
+                    doc.text(`© ${now.getFullYear()} Ivan Roberto Ortiz Cano. Derechos Reservados.`, 40, footerStartY + 27);
                     doc.text(`Folio: ${folio}`, 40, footerStartY + 39);
                     doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width - 40, footerStartY + 39, { align: 'right' });
                 }
             };
             
             const checkPageBreak = (currentY, requiredSpace) => {
-                if (currentY + requiredSpace > pageHeight - 70) { // 70 for footer margin
+                if (currentY + requiredSpace > pageHeight - 70) {
                     doc.addPage();
-                    return 50; // Start Y for new page
+                    return 50;
                 }
                 return currentY;
             };
 
-            // --- PDF CONTENT GENERATION ---
+            // --- PDF CONTENT ---
             doc.setFont(styles.header.font, styles.header.fontStyle);
             doc.setFontSize(styles.header.fontSize);
             doc.setTextColor(styles.header.textColor);
@@ -2628,10 +2809,8 @@
             doc.setLineWidth(1.5);
             doc.setDrawColor(0, 51, 102);
             doc.line(40, 75, 572, 75);
-
             finalY = 100;
 
-            // Section: Client Data
             doc.setFont(styles.subHeader.font, styles.subHeader.fontStyle);
             doc.setFontSize(styles.subHeader.fontSize);
             doc.setTextColor(styles.subHeader.textColor);
@@ -2639,216 +2818,170 @@
             doc.autoTable({
                 startY: finalY + 10,
                 body: [
-                    ['Nombre Completo:', cliente.nombre],
-                    ['CURP:', cliente.curp],
-                    ['Teléfono:', cliente.telefono],
-                    ['Asesor a Cargo:', AppState.nombreAsesorGlobal],
-                    ['Semanas Totales (Antes de Estrategia):', formatNumber(cliente.semanasCotizadasBase, 0)],
+                    ['Nombre Completo:', cliente.nombre], ['CURP:', cliente.curp], ['Teléfono:', cliente.telefono],
+                    ['Asesor a Cargo:', AppState.nombreAsesorGlobal], ['Semanas Base:', formatNumber(cliente.semanasCotizadasBase, 0)],
                 ],
                 theme: 'grid', styles: { fontSize: 10 }, columnStyles: { 0: { fontStyle: 'bold', cellWidth: 180 } }
             });
             finalY = doc.autoTable.previous.finalY;
 
-            // Section: Base SBC
             finalY = checkPageBreak(finalY, 100);
             finalY += 20;
             doc.text("2. Cálculo del Salario Promedio (Últimos 1750 Días)", 40, finalY);
             doc.autoTable({
                 startY: finalY + 10,
-                head: [['Registro Patronal', 'Fecha Inicio', 'Fecha Fin', 'Días', 'SBC Diario', 'SBC Ponderado']],
+                head: [['Registro Patronal', 'Inicio', 'Fin', 'Días', 'SBC', 'Ponderado']],
                 body: AppState.sbcCalculationPeriods.map(p => [p.regPatronal, formatDateDDMMYYYY(p.fechaInicio), formatDateDDMMYYYY(p.fechaFin), formatNumber(p.dias, 0), `$${formatNumber(p.sbc)}`, `$${formatNumber(p.ponderado)}`]),
                 theme: 'striped', headStyles: styles.tableHeader, styles: { fontSize: 8 },
             });
             finalY = doc.autoTable.previous.finalY;
 
-            // Section: Base Pension
             finalY = checkPageBreak(finalY, 100);
             finalY += 20;
-            doc.text("3. Resultados de Pensión Base (Sin Estrategia M40)", 40, finalY);
+            doc.text("3. Pensión Base (Sin Estrategia M40)", 40, finalY);
              doc.autoTable({
                 startY: finalY + 10,
-                body: [
-                    ['SBC Promedio Base:', `$${formatNumber(cliente.sbcPromedioBase)}`],
-                    ['Pensión Mensual Estimada:', `$${formatNumber(AppState.pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA)}`],
-                    ['Aguinaldo Estimado:', `$${formatNumber(AppState.pensionBaseResultadosInfo.AGUINALDO_ESTIMADO)}`],
-                ],
+                body: [['SBC Promedio Base:', `$${formatNumber(cliente.sbcPromedioBase)}`], ['Pensión Mensual Estimada:', `$${formatNumber(AppState.pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA)}`], ['Aguinaldo Estimado:', `$${formatNumber(AppState.pensionBaseResultadosInfo.AGUINALDO_ESTIMADO)}`]],
                 theme: 'grid', styles: { fontSize: 10 }, columnStyles: { 0: { fontStyle: 'bold' } }
             });
             finalY = doc.autoTable.previous.finalY;
 
-            // Section: Timeline
-            finalY = checkPageBreak(finalY, 300);
-            finalY += 20;
-            doc.text("4. Línea de Tiempo del Historial Laboral (Últimos 10 Años)", 40, finalY);
-            const svgElement = document.getElementById('timeline-svg');
-            if (svgElement) {
-                const svgString = new XMLSerializer().serializeToString(svgElement);
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
-                canvas.width = svgElement.width.baseVal.value;
-                canvas.height = svgElement.height.baseVal.value;
-                const img = new Image();
-                img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
-                await new Promise(resolve => {
-                    img.onload = () => {
-                        ctx.drawImage(img, 0, 0);
-                        const dataUrl = canvas.toDataURL('image/png');
-                        doc.addImage(dataUrl, 'PNG', 40, finalY + 10, 532, 288);
-                        resolve();
-                    };
-                });
-                finalY += 310;
-                 // Add Legend
-                const legendItems = d3.select("#timeline-legend").selectAll(".legend-item");
-                const legendBody = [];
-                legendItems.each(function() {
-                    const item = d3.select(this);
-                    const color = item.select("div").style("background-color");
-                    const text = item.select("span").text();
-                    legendBody.push([{ content: '', styles: { fillColor: color, cellWidth: 20 } }, { content: text, styles: { valign: 'middle' } }]);
-                });
-                if (legendBody.length > 0) {
-                    finalY = checkPageBreak(finalY, 50);
+            // SCENARIO ANALYSIS
+            const activeScenarios = Object.values(AppState.scenarioData).filter(s => s && s.costoTotalContrato !== undefined && s.meses >= 0).slice(0, 2);
+            
+            if (isDirector) {
+                // ROBUST DIRECTOR PDF
+                doc.addPage();
+                finalY = 50;
+                doc.text("4. Análisis Detallado de Escenarios", 40, finalY);
+
+                activeScenarios.forEach((sc, index) => {
+                    finalY = checkPageBreak(finalY, 400);
+                    finalY += 20;
+                    doc.setFontSize(14);
+                    doc.setTextColor('#003366');
+                    doc.text(`Escenario ${index + 1}: ${sc.meses} Meses en Modalidad 40`, 40, finalY);
+                    
                     doc.autoTable({
-                        startY: finalY + 5,
-                        body: legendBody,
-                        theme: 'plain',
-                        styles: { fontSize: 8, cellPadding: 2 },
+                        startY: finalY + 15, theme: 'grid', styles: { fontSize: 9 },
+                        head: [['Parámetros del Escenario', '']],
+                        body: [
+                            ['Fecha Inicio M40:', sc.meses > 0 ? formatDateDDMMYYYY(new Date(sc.inicioM40Str.replace(/-/g, '/'))) : 'N/A'],
+                            ['Fecha de Baja:', sc.meses > 0 ? formatDateDDMMYYYY(sc.fechaFinM40Obj) : 'N/A'],
+                            ['Edad al Finalizar:', `${sc.edadFinM40.anos}a, ${sc.edadFinM40.meses}m, ${sc.edadFinM40.dias}d`],
+                            ['SBC Promedio Final:', `$${formatNumber(sc.sbcPromedio)}`],
+                            ['Semanas Finales:', formatNumber(sc.semanas, 0)]
+                        ]
+                    });
+                    let tempY = doc.autoTable.previous.finalY + 10;
+                    
+                    doc.autoTable({
+                        startY: tempY, theme: 'grid', styles: { fontSize: 9 },
+                        head: [['Desglose Financiero del Proyecto', '']],
+                        body: [
+                            ['Costo M40 (Capital):', `$${formatNumber(sc.costoM40 - sc.totalActualizacion - sc.totalRecargos)}`],
+                            ['Actualizaciones y Recargos:', `$${formatNumber(sc.totalActualizacion + sc.totalRecargos)}`],
+                            ['Comisión (16%):', `$${formatNumber(sc.comision)}`],
+                            ['Factor Multiplicador (50%):', `$${formatNumber(sc.factorMultiplicador)}`],
+                            ['Costo Fijo Adicional:', `$${formatNumber(Constants.COSTO_FIJO_ADICIONAL)}`],
+                            ['Comisión por Excedente:', `$${formatNumber(sc.comisionExcedente)}`],
+                            ['Ajuste Final:', `-$${formatNumber(Math.abs(Constants.AJUSTE_FINAL_CONTRATO))}`],
+                            [{content: 'Costo Total del Proyecto:', styles: {fontStyle: 'bold'}}, {content: `$${formatNumber(sc.costoTotalContrato)}`, styles: {fontStyle: 'bold'}}]
+                        ]
+                    });
+                    tempY = doc.autoTable.previous.finalY + 10;
+
+                    doc.autoTable({
+                        startY: tempY, theme: 'grid', styles: { fontSize: 9 },
+                        head: [['Análisis de Cobertura y Préstamo', '']],
+                        body: [
+                            ['AFORE Actual:', `$${formatNumber(sc.coberturaAfore)}`],
+                            [`1er Depósito (${sc.mesesPrimerDeposito} meses):`, `$${formatNumber(sc.coberturaDeposito)}`],
+                            ['Extra AFORE:', `$${formatNumber(sc.coberturaExtra)}`],
+                            [{content: 'Subtotal Cobertura:', styles: {fontStyle: 'bold'}}, {content: `$${formatNumber(sc.coberturaAfore + sc.coberturaDeposito + sc.coberturaExtra)}`, styles: {fontStyle: 'bold'}}],
+                            ['Déficit (Antes de Préstamo):', `$${formatNumber(sc.deficit)}`],
+                            ['Préstamo Requerido:', `$${formatNumber(sc.prestamoRequerido)}`],
+                            ['Descuento Mensual en Pensión:', `-$${formatNumber(sc.descuentoMensual)}`],
+                            [{content: 'Saldo Final del Proyecto:', styles: {fontStyle: 'bold'}}, {content: `$${formatNumber(sc.saldoFinal)}`, styles: {fontStyle: 'bold', textColor: sc.saldoFinal >= 0 ? styles.highlightGreen.textColor : styles.highlightRed.textColor}}]
+                        ]
+                    });
+                    tempY = doc.autoTable.previous.finalY + 10;
+                    
+                    doc.autoTable({
+                        startY: tempY, head: [['Año', 'Pensión Bruta', 'Descuento', 'Pensión Neta']],
+                        body: sc.proyeccion, theme: 'striped', headStyles: styles.tableHeader, styles: { fontSize: 8 }
                     });
                     finalY = doc.autoTable.previous.finalY;
-                }
-            }
-            
-            // --- SCENARIO ANALYSIS PAGE ---
-            doc.addPage();
-            finalY = 50;
-            doc.text("5. Análisis Comparativo de Escenarios", 40, finalY);
+                });
 
-            const activeScenarios = Object.values(AppState.scenarioData).filter(s => s && s.costoTotalContrato !== undefined && s.meses >= 0).slice(0, 2); // Take first two scenarios
-            
-            if (activeScenarios.length > 0) {
-                const startX_sc1 = 40;
-                const startX_sc2 = 310;
-                const tableWidth = 262;
-                let finalY_sc1 = finalY;
-                let finalY_sc2 = finalY;
+            } else {
+                // CONCISE CLIENT PDF
+                doc.addPage();
+                finalY = 50;
+                doc.text("4. Análisis Comparativo de Escenarios", 40, finalY);
 
-                // Headers for both scenarios
+                const startX_sc1 = 40, startX_sc2 = 310, tableWidth = 262;
+                let finalY_sc1 = finalY, finalY_sc2 = finalY;
+
                 doc.setFontSize(11);
                 doc.text("Escenario 1", startX_sc1, finalY + 25);
                 if(activeScenarios[1]) doc.text("Escenario 2", startX_sc2, finalY + 25);
-
                 finalY += 40;
-                finalY_sc1 = finalY;
-                finalY_sc2 = finalY;
+                finalY_sc1 = finalY; finalY_sc2 = finalY;
 
-                // Table for Scenario 1
                 const sc1 = activeScenarios[0];
                 doc.autoTable({
-                    startY: finalY_sc1,
-                    head: [['Resultados del Escenario 1', '']],
+                    startY: finalY_sc1, head: [['Resultados del Escenario 1', '']],
                     body: [
-                        ['Fecha Inicio M40:', sc1.meses > 0 ? formatDateDDMMYYYY(new Date(sc1.inicioM40Str.replace(/-/g, '/'))) : 'N/A'],
-                        ['Meses Pagados M40:', `${sc1.meses} meses`],
-                        ['Fecha de Baja:', sc1.meses > 0 ? formatDateDDMMYYYY(sc1.fechaFinM40Obj) : 'N/A'],
-                        ['Edad al Finalizar:', `${sc1.edadFinM40.anos}a, ${sc1.edadFinM40.meses}m, ${sc1.edadFinM40.dias}d`],
-                        ['SBC Promedio Final:', `$${formatNumber(sc1.sbcPromedio)}`],
-                        ['Semanas Finales:', formatNumber(sc1.semanas, 0)]
+                        ['Meses Pagados M40:', `${sc1.meses} meses`], ['Edad al Finalizar:', `${sc1.edadFinM40.anos}a, ${sc1.edadFinM40.meses}m`],
+                        ['SBC Promedio Final:', `$${formatNumber(sc1.sbcPromedio)}`], ['Semanas Finales:', formatNumber(sc1.semanas, 0)]
                     ],
-                    theme: 'striped', headStyles: styles.tableHeader, styles: { fontSize: 8, cellPadding: 3 },
-                    tableWidth: tableWidth, margin: { left: startX_sc1 }
+                    theme: 'striped', headStyles: styles.tableHeader, styles: { fontSize: 8 }, tableWidth: tableWidth, margin: { left: startX_sc1 }
                 });
                 finalY_sc1 = doc.autoTable.previous.finalY + 15;
 
-                // Table for Scenario 2 if it exists
                 if(activeScenarios[1]) {
                     const sc2 = activeScenarios[1];
                      doc.autoTable({
-                        startY: finalY_sc2,
-                        head: [['Resultados del Escenario 2', '']],
+                        startY: finalY_sc2, head: [['Resultados del Escenario 2', '']],
                         body: [
-                            ['Fecha Inicio M40:', sc2.meses > 0 ? formatDateDDMMYYYY(new Date(sc2.inicioM40Str.replace(/-/g, '/'))) : 'N/A'],
-                            ['Meses Pagados M40:', `${sc2.meses} meses`],
-                            ['Fecha de Baja:', sc2.meses > 0 ? formatDateDDMMYYYY(sc2.fechaFinM40Obj) : 'N/A'],
-                            ['Edad al Finalizar:', `${sc2.edadFinM40.anos}a, ${sc2.edadFinM40.meses}m, ${sc2.edadFinM40.dias}d`],
-                            ['SBC Promedio Final:', `$${formatNumber(sc2.sbcPromedio)}`],
-                            ['Semanas Finales:', formatNumber(sc2.semanas, 0)]
+                           ['Meses Pagados M40:', `${sc2.meses} meses`], ['Edad al Finalizar:', `${sc2.edadFinM40.anos}a, ${sc2.edadFinM40.meses}m`],
+                           ['SBC Promedio Final:', `$${formatNumber(sc2.sbcPromedio)}`], ['Semanas Finales:', formatNumber(sc2.semanas, 0)]
                         ],
-                        theme: 'striped', headStyles: styles.tableHeader, styles: { fontSize: 8, cellPadding: 3 },
-                        tableWidth: tableWidth, margin: { left: startX_sc2 }
+                        theme: 'striped', headStyles: styles.tableHeader, styles: { fontSize: 8 }, tableWidth: tableWidth, margin: { left: startX_sc2 }
                     });
                     finalY_sc2 = doc.autoTable.previous.finalY + 15;
                 }
                 
                 finalY = Math.max(finalY_sc1, finalY_sc2);
 
-                // Financial Analysis
                 doc.autoTable({
-                    startY: finalY,
-                    head: [['Análisis Financiero y Cobertura', '']],
+                    startY: finalY, head: [['Análisis Financiero', '']],
                     body: [
-                        ['Pensión Mensual Bruta:', `$${formatNumber(sc1.pensionMensual)}`],
-                        ['Aguinaldo:', `$${formatNumber(sc1.aguinaldo)}`],
-                        [{content: 'Costo Total del Proyecto:', styles: {fontStyle: 'bold', textColor: [220, 38, 38]} }, {content: `$${formatNumber(sc1.costoTotalContrato)}`, styles: {fontStyle: 'bold', textColor: [220, 38, 38]}}],
-                        ['Cobertura AFORE:', `$${formatNumber(sc1.coberturaAfore)}`],
-                        ['Cobertura 1er Depósito:', `$${formatNumber(sc1.coberturaDeposito)}`],
-                        ['Cobertura Extra AFORE:', `$${formatNumber(sc1.coberturaExtra)}`],
-                        ['Préstamo Requerido:', `$${formatNumber(sc1.prestamoRequerido)}`],
-                        ['Resultado Final:', {content: sc1.resultadoFinalTexto, styles: {fontStyle: 'bold', textColor: sc1.resultadoFinalColor === 'text-green-600' ? [22,163,74] : [0,51,102]}}],
+                        ['Pensión Mensual Bruta:', `$${formatNumber(sc1.pensionMensual)}`], ['Aguinaldo:', `$${formatNumber(sc1.aguinaldo)}`],
+                        [{content: 'Costo Total del Proyecto:', styles: {fontStyle: 'bold', textColor: styles.highlightRed.textColor} }, {content: `$${formatNumber(sc1.costoTotalContrato)}`, styles: {fontStyle: 'bold', textColor: styles.highlightRed.textColor}}],
+                        ['Resultado Final:', {content: sc1.saldoFinal > 1 ? `SALDO A FAVOR: $${formatNumber(sc1.saldoFinal)}` : (sc1.saldoFinal < -1 ? `DÉFICIT: $${formatNumber(Math.abs(sc1.saldoFinal))}`: 'PROYECTO VIABLE'), styles: {fontStyle: 'bold', textColor: sc1.saldoFinal >= 0 ? styles.highlightGreen.textColor : styles.highlightRed.textColor}}],
                         ['Recuperación de Inversión (ROI):', isFinite(sc1.roiMonths) ? `${Math.ceil(sc1.roiMonths)} meses` : 'N/A'],
                     ],
-                    theme: 'grid', headStyles: styles.tableHeader, styles: { fontSize: 8, cellPadding: 3 },
-                    columnStyles: { 0: { fontStyle: 'bold' } },
-                    tableWidth: tableWidth, margin: { left: startX_sc1 }
+                    theme: 'grid', headStyles: styles.tableHeader, styles: { fontSize: 8 }, columnStyles: { 0: { fontStyle: 'bold' } }, tableWidth: tableWidth, margin: { left: startX_sc1 }
                 });
-                finalY_sc1 = doc.autoTable.previous.finalY + 15;
+                finalY_sc1 = doc.autoTable.previous.finalY;
 
                 if (activeScenarios[1]) {
                     const sc2 = activeScenarios[1];
                     doc.autoTable({
-                        startY: finalY,
-                        head: [['Análisis Financiero y Cobertura', '']],
+                        startY: finalY, head: [['Análisis Financiero', '']],
                         body: [
-                            ['Pensión Mensual Bruta:', `$${formatNumber(sc2.pensionMensual)}`],
-                            ['Aguinaldo:', `$${formatNumber(sc2.aguinaldo)}`],
-                            [{content: 'Costo Total del Proyecto:', styles: {fontStyle: 'bold', textColor: [220, 38, 38]} }, {content: `$${formatNumber(sc2.costoTotalContrato)}`, styles: {fontStyle: 'bold', textColor: [220, 38, 38]}}],
-                            ['Cobertura AFORE:', `$${formatNumber(sc2.coberturaAfore)}`],
-                            ['Cobertura 1er Depósito:', `$${formatNumber(sc2.coberturaDeposito)}`],
-                            ['Cobertura Extra AFORE:', `$${formatNumber(sc2.coberturaExtra)}`],
-                            ['Préstamo Requerido:', `$${formatNumber(sc2.prestamoRequerido)}`],
-                            ['Resultado Final:', {content: sc2.resultadoFinalTexto, styles: {fontStyle: 'bold', textColor: sc2.resultadoFinalColor === 'text-green-600' ? [22,163,74] : [0,51,102]}}],
-                            ['Recuperación de Inversión (ROI):', isFinite(sc2.roiMonths) ? `${Math.ceil(sc2.roiMonths)} meses` : 'N/A'],
+                             ['Pensión Mensual Bruta:', `$${formatNumber(sc2.pensionMensual)}`], ['Aguinaldo:', `$${formatNumber(sc2.aguinaldo)}`],
+                             [{content: 'Costo Total del Proyecto:', styles: {fontStyle: 'bold', textColor: styles.highlightRed.textColor} }, {content: `$${formatNumber(sc2.costoTotalContrato)}`, styles: {fontStyle: 'bold', textColor: styles.highlightRed.textColor}}],
+                             ['Resultado Final:', {content: sc2.saldoFinal > 1 ? `SALDO A FAVOR: $${formatNumber(sc2.saldoFinal)}` : (sc2.saldoFinal < -1 ? `DÉFICIT: $${formatNumber(Math.abs(sc2.saldoFinal))}`: 'PROYECTO VIABLE'), styles: {fontStyle: 'bold', textColor: sc2.saldoFinal >= 0 ? styles.highlightGreen.textColor : styles.highlightRed.textColor}}],
+                             ['Recuperación de Inversión (ROI):', isFinite(sc2.roiMonths) ? `${Math.ceil(sc2.roiMonths)} meses` : 'N/A'],
                         ],
-                        theme: 'grid', headStyles: styles.tableHeader, styles: { fontSize: 8, cellPadding: 3 },
-                        columnStyles: { 0: { fontStyle: 'bold' } },
-                        tableWidth: tableWidth, margin: { left: startX_sc2 }
+                        theme: 'grid', headStyles: styles.tableHeader, styles: { fontSize: 8 }, columnStyles: { 0: { fontStyle: 'bold' } }, tableWidth: tableWidth, margin: { left: startX_sc2 }
                     });
-                    finalY_sc2 = doc.autoTable.previous.finalY + 15;
-                }
-                
-                finalY = Math.max(finalY_sc1, finalY_sc2);
-
-                // --- Director Only: Act & Recargos ---
-                if (isDirector) {
-                    for (let j = 0; j < activeScenarios.length; j++) {
-                        const scenario = activeScenarios[j];
-                        if (scenario.meses > 0) {
-                            finalY = checkPageBreak(finalY, 150);
-                            finalY += 20;
-                            doc.text(`Desglose de Actualizaciones y Recargos (Escenario ${j + 1})`, 40, finalY);
-                            doc.autoTable({
-                                startY: finalY + 10,
-                                head: [['Mes', 'Costo Base', 'Factor Act.', 'Monto Act.', 'Recargos', 'Costo Total Mes']],
-                                body: scenario.desgloseM40.map(d => [d.mes, `$${formatNumber(d.costoBase)}`, d.factorAct, `$${formatNumber(d.montoAct)}`, `$${formatNumber(d.recargos)}`, `$${formatNumber(d.totalMes)}`]),
-                                theme: 'striped', headStyles: styles.tableHeader, styles: { fontSize: 8 }
-                            });
-                            finalY = doc.autoTable.previous.finalY;
-                        }
-                    }
                 }
             }
-            
-            // --- ADD FOOTER AND SAVE ---
+
             addFooter();
             const fileName = `Reporte_RGC_${cliente.nombre.replace(/\s/g, '_')}_${isDirector ? 'DIR' : 'CLI'}.pdf`;
             doc.save(fileName);
@@ -3211,6 +3344,235 @@
             }
         }
         
+        // --- NEW FEATURES ---
+
+        function updateViabilityThermometer(scenarioNum, saldoFinal, costoTotal) {
+            const container = document.getElementById(`scenario_${scenarioNum}_thermometer`);
+            if (!container) return;
+
+            // Determine the scale for the thermometer. Use 10% of cost as a reasonable range.
+            const range = Math.max(5000, costoTotal * 0.10);
+            const min = -range;
+            const max = range;
+
+            // Clamp the saldoFinal to be within the min/max for positioning
+            const clampedSaldo = Math.max(min, Math.min(max, saldoFinal));
+            
+            // Calculate position as a percentage (0% to 100%)
+            const positionPercent = ((clampedSaldo - min) / (max - min)) * 100;
+
+            let labelText = '';
+            if (saldoFinal < -1) {
+                labelText = `DÉFICIT: $${formatNumber(Math.abs(saldoFinal))}`;
+            } else if (saldoFinal > 1) {
+                labelText = `A FAVOR: $${formatNumber(saldoFinal)}`;
+            } else {
+                labelText = 'VIABLE';
+            }
+
+            container.innerHTML = `
+                <div class="viability-thermometer">
+                    <div class="thermometer-indicator" style="left: ${positionPercent}%;"></div>
+                    <div class="thermometer-label" style="left: ${positionPercent}%;">${labelText}</div>
+                </div>
+                <div class="thermometer-zones">
+                    <span>Déficit</span>
+                    <span>Viable</span>
+                    <span>A Favor</span>
+                </div>
+            `;
+        }
+
+        function showWhatsAppModal() {
+            if (!AppState.scenarioData[1] || !AppState.pensionBaseResultadosInfo) {
+                showCustomAlert("Primero debe calcular un escenario para generar el resumen.", "Acción Requerida");
+                return;
+            }
+
+            const sc1 = AppState.scenarioData[1];
+            const basePension = AppState.pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA;
+            const clientName = AppState.datosClienteInfo.nombre.split(' ')[0] || "Cliente";
+
+            const templates = [
+                `¡Hola ${clientName}! 👋 Te comparto un resumen rápido de lo que platicamos. ¡Son excelentes noticias!\n\nCon la estrategia que diseñamos, tu futuro se ve así: 📈\n\n- Tu pensión podría pasar de un estimado de *$${formatNumber(basePension)}* a una increíble pensión de *$${formatNumber(sc1.pensionMensual)}* mensuales. ¡Un gran salto! 🚀\n- Para lograrlo, la inversión total en tu proyecto sería de aproximadamente *$${formatNumber(sc1.costoTotalContrato)}*.\n- Lo mejor es que recuperarías esta inversión en tan solo *${isFinite(sc1.roiMonths) ? Math.ceil(sc1.roiMonths) : 'N/A'} meses* con los beneficios de tu nueva pensión. 💰\n\n¿Qué te parece? ¡Estoy a tus órdenes para dar el siguiente paso!\n\nTu asesor,\n${AppState.nombreAsesorGlobal}`,
+                `¡Qué tal ${clientName}! 😃 Aquí tienes los números clave de nuestra proyección. ¡El plan es muy sólido!\n\nAsí es como podemos transformar tu retiro: ✨\n\n- *Pensión Actual Estimada:* ~$${formatNumber(basePension)}\n- *Pensión Meta con Estrategia:* ¡Hasta *$${formatNumber(sc1.pensionMensual)}*!\n- *Inversión Total del Proyecto:* $${formatNumber(sc1.costoTotalContrato)}\n- *Recuperación de Inversión:* En solo *${isFinite(sc1.roiMonths) ? Math.ceil(sc1.roiMonths) : 'N/A'} meses* 🤑\n\nEs una oportunidad fantástica para asegurar tu futuro. ¡Hablemos cuando gustes para arrancar!\n\nSaludos,\n${AppState.nombreAsesorGlobal}`,
+                `Estimado(a) ${clientName}, un gusto saludarte. Te envío la información más relevante de tu proyecto de pensión:\n\nEl plan que trazamos muestra resultados muy positivos:\n\n✅ *Pensión Proyectada:* *$${formatNumber(sc1.pensionMensual)}* (un incremento significativo desde los ~$${formatNumber(basePension)} actuales).\n✅ *Costo del Proyecto:* $${formatNumber(sc1.costoTotalContrato)}.\n✅ *Retorno de Inversión:* *${isFinite(sc1.roiMonths) ? Math.ceil(sc1.roiMonths) : 'N/A'} meses*.\n\nQuedo a tu completa disposición para resolver cualquier duda y comenzar con el proceso.\n\nAtentamente,\n${AppState.nombreAsesorGlobal}`
+            ];
+            
+            const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+            document.getElementById('whatsAppSummaryText').value = randomTemplate;
+            showElement('whatsAppModal');
+        }
+        
+        function copyWhatsAppText() {
+            const textArea = document.getElementById('whatsAppSummaryText');
+            textArea.select();
+            document.execCommand('copy');
+            showCustomAlert("Texto copiado al portapapeles.", "¡Éxito!");
+        }
+
+        async function runReverseCalculation() {
+            const pensionDeseada = getNumeroInfo('rev_pension_deseada');
+            if (!pensionDeseada || pensionDeseada <= 0) {
+                showCustomAlert("Por favor, ingrese una pensión mensual deseada válida.", "Dato Faltante");
+                return;
+            }
+            if (!AppState.datosClienteInfo.curp) {
+                showCustomAlert("Primero debe analizar un cliente en la Calculadora Estándar (Paso 1) para usar esta función.", "Acción Requerida");
+                return;
+            }
+
+            const resultsContainer = document.getElementById('reverseResultsContainer');
+            const loader = document.getElementById('reverseLoader');
+            const content = document.getElementById('reverseResultsContent');
+            
+            showElement('reverseResultsContainer');
+            showElement('reverseLoader', 'block');
+            content.innerHTML = '';
+            
+            // Allow UI to update before blocking with calculations
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            let found = false;
+            let resultData = {};
+
+            for (let meses = 1; meses <= 60; meses++) {
+                const inputs = {
+                    meses: meses,
+                    semanas: Math.round(AppState.datosClienteInfo.semanasCotizadasBase + (meses * (52.1429 / 12))),
+                    curp: AppState.datosClienteInfo.curp,
+                    inicioM40Str: getM40StartDate(), // Assume same start date as standard calculator
+                    sbcM40: getNumeroInfo('info_m40_p1_sbc'),
+                    aforeActual: getNumeroInfo('info_aforeActual'),
+                    mesesPrimerDeposito: parseInt(document.getElementById('info_mesesPrimerDeposito').value) || 6,
+                    comisionExcedente: getNumeroInfo('info_comisionExcedente')
+                };
+
+                if (!inputs.inicioM40Str || !inputs.sbcM40) {
+                    showCustomAlert("Asegúrese de haber definido una Fecha de Inicio y SBC en la calculadora estándar (Paso 2) antes de usar la calculadora inversa.", "Datos de Estrategia Faltantes");
+                    hideElement('reverseLoader');
+                    return;
+                }
+
+                const pensionData = calculateScenarioPensionData(inputs);
+                
+                if (pensionData.pensionMensual >= pensionDeseada) {
+                    const financialData = calculateScenarioFinancials(pensionData, inputs);
+                    resultData = { ...inputs, ...pensionData, ...financialData };
+                    found = true;
+                    break;
+                }
+            }
+            
+            hideElement('reverseLoader');
+
+            if (found) {
+                content.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
+                        <div class="bg-green-50 p-6 rounded-lg border border-green-200">
+                            <p class="text-lg text-green-800">Meses de Inversión M40</p>
+                            <p class="text-5xl font-bold text-green-900 my-2">${resultData.meses}</p>
+                        </div>
+                        <div class="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                            <p class="text-lg text-blue-800">Pensión Mensual Lograda</p>
+                            <p class="text-5xl font-bold text-blue-900 my-2">$${formatNumber(resultData.pensionMensual)}</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-lg mt-6 text-sm space-y-3">
+                        <h4 class="font-bold text-center text-base mb-4">Detalles del Proyecto</h4>
+                        <p><strong>Costo Total Estimado:</strong> <span class="float-right font-bold text-red-600 text-lg">$${formatNumber(resultData.costoTotalContrato)}</span></p>
+                        <p><strong>Recuperación de Inversión (ROI):</strong> <span class="float-right font-semibold">${isFinite(resultData.roiMonths) ? `${Math.ceil(resultData.roiMonths)} meses` : 'N/A'}</span></p>
+                        <hr>
+                        <p><strong>Fecha de Baja Proyectada:</strong> <span class="float-right font-semibold">${formatDateDDMMYYYY(resultData.fechaFinM40Obj)}</span></p>
+                        <p><strong>Edad al Finalizar:</strong> <span class="float-right font-semibold">${resultData.edadFinM40.anos}a, ${resultData.edadFinM40.meses}m</span></p>
+                    </div>
+                `;
+            } else {
+                 content.innerHTML = `
+                    <div class="bg-yellow-50 p-6 rounded-lg text-center border border-yellow-300">
+                        <i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-4"></i>
+                        <h4 class="font-bold text-lg text-yellow-800">Meta no Alcanzada</h4>
+                        <p class="mt-2">Incluso con la inversión máxima de 60 meses en Modalidad 40, la pensión proyectada no alcanza los $${formatNumber(pensionDeseada)} deseados. Se recomienda reevaluar la estrategia o las expectativas.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function runExpressCalculation() {
+            const edad = getNumeroInfo('express_edad');
+            const semanas = getNumeroInfo('express_semanas');
+            const sbc = getNumeroInfo('express_sbc');
+
+            if (edad < 60 || semanas < 500 || sbc <= 0) {
+                showCustomAlert("Por favor, ingrese datos válidos. La edad debe ser >= 60, las semanas >= 500 y el SBC > 0.", "Datos Inválidos");
+                return;
+            }
+
+            const resultsContainer = document.getElementById('expressResultsContainer');
+            const contentContainer = document.getElementById('expressResultsContent');
+
+            let tableRows = '';
+            let mainResult = {};
+
+            for (let i = 60; i <= 65; i++) {
+                const pensionData = _calcularPensionDetallado(sbc, semanas, i);
+                const ingresoAnual = (pensionData.PENSION_MENSUAL_ESTIMADA * 12) + pensionData.AGUINALDO_ESTIMADO;
+                
+                if (i === Math.floor(edad)) {
+                    mainResult = {
+                        ...pensionData,
+                        ingresoAnual: ingresoAnual
+                    };
+                }
+
+                tableRows += `
+                    <tr class="border-b hover:bg-gray-50 ${i === Math.floor(edad) ? 'bg-blue-100 font-bold' : ''}">
+                        <td class="p-2 text-center">${i} años</td>
+                        <td class="p-2 text-center">${75 + ((i - 60) * 5)}%</td>
+                        <td class="p-2 text-right">$${formatNumber(pensionData.PENSION_MENSUAL_ESTIMADA)}</td>
+                        <td class="p-2 text-right">$${formatNumber(pensionData.AGUINALDO_ESTIMADO)}</td>
+                        <td class="p-2 text-right">$${formatNumber(ingresoAnual)}</td>
+                    </tr>
+                `;
+            }
+            
+            contentContainer.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-8">
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="text-sm text-green-800">Pensión Mensual (a los ${Math.floor(edad)} años)</p>
+                        <p class="text-2xl font-bold text-green-900">$${formatNumber(mainResult.PENSION_MENSUAL_ESTIMADA)}</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="text-sm text-green-800">Aguinaldo Estimado</p>
+                        <p class="text-2xl font-bold text-green-900">$${formatNumber(mainResult.AGUINALDO_ESTIMADO)}</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="text-sm text-green-800">Ingreso Anual Total</p>
+                        <p class="text-2xl font-bold text-green-900">$${formatNumber(mainResult.ingresoAnual)}</p>
+                    </div>
+                </div>
+                <h4 class="font-semibold text-center mb-4">Tabla de Proyección por Edad</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-2 text-center">Edad de Retiro</th>
+                                <th class="p-2 text-center">% de Pensión</th>
+                                <th class="p-2 text-right">Pensión Mensual</th>
+                                <th class="p-2 text-right">Aguinaldo</th>
+                                <th class="p-2 text-right">Ingreso Anual Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            showElement('expressResultsContainer');
+        }
+        
         // --- EVENT LISTENERS ---
         document.addEventListener('DOMContentLoaded', () => {
             initializeMainAppDisplay();
@@ -3260,7 +3622,6 @@
         window.promptForClientPDF = promptForClientPDF;
         window.promptForDirectorPDF = promptForDirectorPDF;
         window.generateFullReportPDF = generateFullReportPDF;
-        window.generateContractPDF = generateContractPDF;
         window.closeCustomAlert = closeCustomAlert;
         window.analizarTextoCompleto = analizarTextoCompleto;
         window.renderSbcAnalysisTable = renderSbcAnalysisTable;
@@ -3272,6 +3633,17 @@
         window.logout = logout;
         window.showTooltip = (id) => { const el = document.getElementById(id); if(el) el.style.display = 'block'; };
         window.hideTooltip = (id) => { const el = document.getElementById(id); if(el) el.style.display = 'none'; };
+        // New features
+        window.runReverseCalculation = runReverseCalculation;
+        window.runExpressCalculation = runExpressCalculation;
+        window.showWhatsAppModal = showWhatsAppModal;
+        window.copyWhatsAppText = copyWhatsAppText;
+        window.togglePresentationMode = (isChecked) => { document.body.classList.toggle('presentation-mode', isChecked); };
+        window.showRoadmap = () => showCustomAlert("Función 'Mapa de Ruta' en desarrollo.", "Próximamente");
+        window.generateCertificatePDF = () => showCustomAlert("Función 'Generar Certificado' en desarrollo.", "Próximamente");
+        window.runRetroactiveCalculation = () => showCustomAlert("Función 'Cálculo Retroactivo' en desarrollo.", "Próximamente");
+        window.generateOnePagerPDF = () => showCustomAlert("Función 'Resumen Gráfico PDF' en desarrollo.", "Próximamente");
+        window.runBenchmarking = () => console.log("Benchmarking function called. (Placeholder)");
 
     </script>
     
@@ -3305,24 +3677,30 @@
             db = null; // Disable DB functionalities on error
         }
 
-        // --- USER & AUTH MANAGEMENT (from Static List) ---
+        // --- USER & AUTH MANAGEMENT (from Firestore) ---
+        // Nota: Los datos de los asesores deben estar en la colección 'advisors' en la base de datos.
+        // El ID de cada documento debe ser el nombre de usuario en MAYÚSCULAS.
+        // Campos por documento: { user: "Nombre Apellido", pass: "1234", role: "asesor", status: "active" }
         window.getUserByUsername = async (username) => {
-            const users = {
-                'ROBERTO ORTIZ': { user: 'ROBERTO ORTIZ', pass: '9192', role: 'admin', status: 'active' },
-                'ALMA CANO': { user: 'ALMA CANO', pass: '1251', role: 'asesor', status: 'active' },
-                'DANA SALAZAR': { user: 'DANA SALAZAR', pass: '8712', role: 'asesor', status: 'active' },
-                'JAVIER BAUTISTA': { user: 'JAVIER BAUTISTA', pass: '5217', role: 'asesor', status: 'active' },
-                'FRANCISCO PARGA': { user: 'FRANCISCO PARGA', pass: '5332', role: 'asesor', status: 'active' },
-                'CAMILA SANCHEZ': { user: 'CAMILA SANCHEZ', pass: '0992', role: 'asesor', status: 'active' },
-                'ROGELIO MUÑOZ': { user: 'ROGELIO MUÑOZ', pass: '5346', role: 'asesor', status: 'active' },
-                'MONSERRATH SANTILLAN': { user: 'MONSERRATH SANTILLAN', pass: '1039', role: 'asesor', status: 'active' },
-                'CESAR HERNANDEZ': { user: 'CESAR HERNANDEZ', pass: '5771', role: 'asesor', status: 'active' },
-                'MARIANO GODINEZ': { user: 'MARIANO GODINEZ', pass: '0091', role: 'asesor', status: 'active' },
-                'MIGUEL ROSEMBERG': { user: 'MIGUEL ROSEMBERG', pass: '9180', role: 'asesor', status: 'active' },
-                'ZAIRA HERNANDEZ': { user: 'ZAIRA HERNANDEZ', pass: '5320', role: 'asesor', status: 'active' },
-                'JOAQUIN MONTAÑEZ': { user: 'JOAQUIN MONTAÑEZ', pass: '7810', role: 'asesor', status: 'active' }
-            };
-            return users[username] || null;
+             if (!db) {
+                console.error("Firestore DB not initialized. Cannot fetch user.");
+                showCustomAlert("No se pudo conectar a la base de datos para verificar el usuario.", "Error de Conexión");
+                return null;
+            }
+            try {
+                const advisorDocRef = doc(db, `artifacts/${appId}/public/data/advisors`, username);
+                const docSnap = await getDoc(advisorDocRef);
+                if (docSnap.exists()) {
+                    return docSnap.data();
+                } else {
+                    console.log(`User ${username} not found in Firestore.`);
+                    return null; // User not found
+                }
+            } catch (error) {
+                console.error("Error fetching user from Firestore:", error);
+                showCustomAlert("Ocurrió un error al consultar los datos del usuario.", "Error");
+                return null;
+            }
         };
 
 
@@ -3364,6 +3742,19 @@
                     scenarioNumber: scenarioNumber,
                     calculationData: JSON.stringify(logData) 
                 });
+                
+                // Also log to benchmarking collection if it's the main scenario
+                if (scenarioNumber === 1 && logData.meses > 0) {
+                    const benchmarkingCol = collection(db, `artifacts/${appId}/public/data/benchmarking_data`);
+                    await addDoc(benchmarkingCol, {
+                        asesor: AppState.nombreAsesorGlobal,
+                        edad: AppState.datosClienteInfo.edadBase,
+                        semanas: AppState.datosClienteInfo.semanasCotizadasBase,
+                        pensionProyectada: logData.pensionMensual,
+                        timestamp: serverTimestamp()
+                    });
+                }
+
                 console.log(`Calculation logged for scenario ${scenarioNumber} with ID: ${docRef.id}`);
                 return docRef.id;
             } catch (error) {
@@ -3625,48 +4016,63 @@
         };
 
         async function loadAdvisorsForAdmin() {
+            if (!db) {
+                document.getElementById('advisorsTableBody').innerHTML = '<tr><td colspan="2" class="text-center p-4 text-red-500">No se pudo conectar a la base de datos para cargar asesores.</td></tr>';
+                return;
+            }
             const tableBody = document.getElementById('advisorsTableBody');
-            const users = {
-                'ROBERTO ORTIZ': { user: 'ROBERTO ORTIZ', pass: '9192', role: 'admin', status: 'active' },
-                'ALMA CANO': { user: 'ALMA CANO', pass: '1251', role: 'asesor', status: 'active' },
-                'DANA SALAZAR': { user: 'DANA SALAZAR', pass: '8712', role: 'asesor', status: 'active' },
-                'JAVIER BAUTISTA': { user: 'JAVIER BAUTISTA', pass: '5217', role: 'asesor', status: 'active' },
-                'FRANCISCO PARGA': { user: 'FRANCISCO PARGA', pass: '5332', role: 'asesor', status: 'active' },
-                'CAMILA SANCHEZ': { user: 'CAMILA SANCHEZ', pass: '0992', role: 'asesor', status: 'active' },
-                'ROGELIO MUÑOZ': { user: 'ROGELIO MUÑOZ', pass: '5346', role: 'asesor', status: 'active' },
-                'MONSERRATH SANTILLAN': { user: 'MONSERRATH SANTILLAN', pass: '1039', role: 'asesor', status: 'active' },
-                'CESAR HERNANDEZ': { user: 'CESAR HERNANDEZ', pass: '5771', role: 'asesor', status: 'active' },
-                'MARIANO GODINEZ': { user: 'MARIANO GODINEZ', pass: '0091', role: 'asesor', status: 'active' },
-                'MIGUEL ROSEMBERG': { user: 'MIGUEL ROSEMBERG', pass: '9180', role: 'asesor', status: 'active' },
-                'ZAIRA HERNANDEZ': { user: 'ZAIRA HERNANDEZ', pass: '5320', role: 'asesor', status: 'active' },
-                'JOAQUIN MONTAÑEZ': { user: 'JOAQUIN MONTAÑEZ', pass: '7810', role: 'asesor', status: 'active' }
-            };
-            
-            let rowsHtml = '';
-            const sortedUsers = Object.values(users).sort((a, b) => a.user.localeCompare(b.user));
-
-            sortedUsers.forEach(advisor => {
-                if (advisor.role === 'admin') return;
-                const isChecked = advisor.status === 'active' ? 'checked' : '';
-                rowsHtml += `
-                    <tr class="border-b">
-                        <td class="p-2">${advisor.user}</td>
-                        <td class="p-2 text-center">
-                            <label class="switch">
-                                <input type="checkbox" onchange="toggleAdvisorStatus('${advisor.user}', this.checked)" ${isChecked} disabled>
-                                <span class="slider"></span>
-                            </label>
-                        </td>
-                    </tr>
-                `;
-            });
-            tableBody.innerHTML = rowsHtml + '<tr><td colspan="2" class="p-2 text-xs text-center text-gray-500">La gestión de acceso se configura en el código.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="2" class="text-center p-4">Cargando asesores...</td></tr>';
+            try {
+                const advisorsCollection = collection(db, `artifacts/${appId}/public/data/advisors`);
+                const q = query(advisorsCollection, orderBy("user", "asc"));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    tableBody.innerHTML = `<tr><td colspan="2" class="text-center p-4">No se encontraron asesores.</td></tr>`;
+                    return;
+                }
+                let rowsHtml = '';
+                querySnapshot.forEach(doc => {
+                    const advisor = doc.data();
+                    if (advisor.role === 'admin') return; // Admin cannot disable themselves
+                    const isChecked = advisor.status === 'active' ? 'checked' : '';
+                    const docId = doc.id;
+                    rowsHtml += `
+                        <tr class="border-b">
+                            <td class="p-2">${advisor.user}</td>
+                            <td class="p-2 text-center">
+                                <label class="switch">
+                                    <input type="checkbox" onchange="window.toggleAdvisorStatus('${docId}', this.checked)" ${isChecked}>
+                                    <span class="slider"></span>
+                                </label>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tableBody.innerHTML = rowsHtml;
+            } catch (error) {
+                console.error("Error loading advisors:", error);
+                tableBody.innerHTML = '<tr><td colspan="2" class="text-center p-4 text-red-500">Error al cargar la lista de asesores.</td></tr>';
+            }
         }
 
         window.toggleAdvisorStatus = async (username, isChecked) => {
-            // This function is now disabled for static users but left for structure
-            showCustomAlert("La gestión de acceso de asesores ahora está configurada estáticamente en el código de la aplicación y no se puede cambiar desde esta interfaz.", "Función Deshabilitada");
-            loadAdvisorsForAdmin(); // Re-render to revert any visual toggle change
+            if (!db) {
+                showCustomAlert("No se puede cambiar el estado, no hay conexión con la base de datos.", "Error de Conexión");
+                loadAdvisorsForAdmin();
+                return;
+            }
+            const newStatus = isChecked ? 'active' : 'inactive';
+            try {
+                const advisorDocRef = doc(db, `artifacts/${appId}/public/data/advisors`, username);
+                await updateDoc(advisorDocRef, {
+                    status: newStatus
+                });
+                showCustomAlert(`El estado del asesor ${username} se ha actualizado a '${newStatus}'.`, "Éxito");
+            } catch (error) {
+                console.error(`Error updating advisor status for ${username}:`, error);
+                showCustomAlert("Ocurrió un error al actualizar el estado del asesor.", "Error");
+                loadAdvisorsForAdmin(); // Revert toggle on error
+            }
         };
         
         function flattenObject(ob) {
@@ -3797,6 +4203,49 @@
             showElement('customAlertModal');
         };
 
+        window.runBenchmarking = async () => {
+            const benchmarkingResultEl = document.getElementById('benchmarkingResult');
+            hideElement('benchmarkingResult');
+            if (!db) return;
+
+            const { edadBase, semanasCotizadasBase } = AppState.datosClienteInfo;
+            const projectedPension = AppState.scenarioData[1]?.pensionMensual;
+
+            if (!edadBase || !semanasCotizadasBase || !projectedPension) return;
+
+            try {
+                const benchmarkingCol = collection(db, `artifacts/${appId}/public/data/benchmarking_data`);
+                const q = query(benchmarkingCol); // Query all for now, can be optimized later
+                const querySnapshot = await getDocs(q);
+
+                const similarClients = [];
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (Math.abs(data.edad - edadBase) <= 2 && Math.abs(data.semanas - semanasCotizadasBase) <= 150) {
+                        similarClients.push(data.pensionProyectada);
+                    }
+                });
+
+                if (similarClients.length >= 5) { // Only show if we have enough data points
+                    const avgPension = similarClients.reduce((sum, p) => sum + p, 0) / similarClients.length;
+                    const percentageDiff = ((projectedPension - avgPension) / avgPension) * 100;
+                    
+                    let message = '';
+                    if (percentageDiff > 10) {
+                        message = `<i class="fas fa-chart-line mr-2 text-green-500"></i>¡Excelente! La pensión proyectada está un <strong>${Math.round(percentageDiff)}% por encima</strong> del promedio de otros clientes de RGC con un perfil similar.`;
+                    } else if (percentageDiff < -10) {
+                         message = `<i class="fas fa-chart-area mr-2 text-yellow-500"></i>La pensión proyectada está un <strong>${Math.round(Math.abs(percentageDiff))}% por debajo</strong> del promedio para clientes con perfiles similares. ¡Aún hay potencial de mejora!`;
+                    } else {
+                         message = `<i class="fas fa-check-circle mr-2 text-blue-500"></i>La pensión proyectada está <strong>en línea con el promedio</strong> de otros clientes con perfiles similares. ¡Es un plan sólido!`;
+                    }
+                    benchmarkingResultEl.innerHTML = message;
+                    showElement('benchmarkingResult');
+                }
+
+            } catch(e) {
+                console.error("Error running benchmarking:", e);
+            }
+        }
     </script>
 </body>
 </html>
