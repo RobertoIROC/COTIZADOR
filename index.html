@@ -3696,23 +3696,28 @@
 
         // --- USER & AUTH MANAGEMENT (from Static List) ---
         window.getUserByUsername = async (username) => {
-            const users = {
-                'ROBERTO ORTIZ': { user: 'ROBERTO ORTIZ', pass: '9192', role: 'admin', status: 'active' },
-                'ALMA CANO': { user: 'ALMA CANO', pass: '1251', role: 'asesor', status: 'active' },
-                'DANA SALAZAR': { user: 'DANA SALAZAR', pass: '8712', role: 'asesor', status: 'active' },
-                'JAVIER BAUTISTA': { user: 'JAVIER BAUTISTA', pass: '5217', role: 'asesor', status: 'active' },
-                'FRANCISCO PARGA': { user: 'FRANCISCO PARGA', pass: '5332', role: 'asesor', status: 'active' },
-                'CAMILA SANCHEZ': { user: 'CAMILA SANCHEZ', pass: '0992', role: 'asesor', status: 'active' },
-                'ROGELIO MUÑOZ': { user: 'ROGELIO MUÑOZ', pass: '5346', role: 'asesor', status: 'active' },
-                'MONSERRATH SANTILLAN': { user: 'MONSERRATH SANTILLAN', pass: '1039', role: 'asesor', status: 'active' },
-                'CESAR HERNANDEZ': { user: 'CESAR HERNANDEZ', pass: '5771', role: 'asesor', status: 'active' },
-                'MARIANO GODINEZ': { user: 'MARIANO GODINEZ', pass: '0091', role: 'asesor', status: 'active' },
-                'MIGUEL ROSEMBERG': { user: 'MIGUEL ROSEMBERG', pass: '9180', role: 'asesor', status: 'active' },
-                'ZAIRA HERNANDEZ': { user: 'ZAIRA HERNANDEZ', pass: '5320', role: 'asesor', status: 'active' },
-                'JOAQUIN MONTAÑEZ': { user: 'JOAQUIN MONTAÑEZ', pass: '7810', role: 'asesor', status: 'active' }
-            };
-            return users[username] || null;
-        };
+    if (!db) {
+        console.error("Firestore no disponible.");
+        showCustomAlert("No se puede conectar a la base de datos para verificar el usuario.", "Error de Conexión");
+        return null;
+    }
+    try {
+        const userDocRef = doc(db, `artifacts/${appId}/public/data/asesores`, username);
+        const userSnap = await getDoc(userDocRef);
+
+        if (userSnap.exists()) {
+            console.log("Usuario encontrado en Firestore:", userSnap.data());
+            return userSnap.data();
+        } else {
+            console.log("Usuario no encontrado en Firestore.");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error al obtener usuario de Firestore:", error);
+        showCustomAlert("Ocurrió un error al verificar el usuario.", "Error");
+        return null;
+    }
+};
 
 
         // --- Logging Functions ---
@@ -4027,22 +4032,44 @@
         };
 
         async function loadAdvisorsForAdmin() {
-            const tableBody = document.getElementById('advisorsTableBody');
-            const users = {
-                'ROBERTO ORTIZ': { user: 'ROBERTO ORTIZ', pass: '9192', role: 'admin', status: 'active' },
-                'ALMA CANO': { user: 'ALMA CANO', pass: '1251', role: 'asesor', status: 'active' },
-                'DANA SALAZAR': { user: 'DANA SALAZAR', pass: '8712', role: 'asesor', status: 'active' },
-                'JAVIER BAUTISTA': { user: 'JAVIER BAUTISTA', pass: '5217', role: 'asesor', status: 'active' },
-                'FRANCISCO PARGA': { user: 'FRANCISCO PARGA', pass: '5332', role: 'asesor', status: 'active' },
-                'CAMILA SANCHEZ': { user: 'CAMILA SANCHEZ', pass: '0992', role: 'asesor', status: 'active' },
-                'ROGELIO MUÑOZ': { user: 'ROGELIO MUÑOZ', pass: '5346', role: 'asesor', status: 'active' },
-                'MONSERRATH SANTILLAN': { user: 'MONSERRATH SANTILLAN', pass: '1039', role: 'asesor', status: 'active' },
-                'CESAR HERNANDEZ': { user: 'CESAR HERNANDEZ', pass: '5771', role: 'asesor', status: 'active' },
-                'MARIANO GODINEZ': { user: 'MARIANO GODINEZ', pass: '0091', role: 'asesor', status: 'active' },
-                'MIGUEL ROSEMBERG': { user: 'MIGUEL ROSEMBERG', pass: '9180', role: 'asesor', status: 'active' },
-                'ZAIRA HERNANDEZ': { user: 'ZAIRA HERNANDEZ', pass: '5320', role: 'asesor', status: 'active' },
-                'JOAQUIN MONTAÑEZ': { user: 'JOAQUIN MONTAÑEZ', pass: '7810', role: 'asesor', status: 'active' }
-            };
+    if (!db) return;
+    const tableBody = document.getElementById('advisorsTableBody');
+    tableBody.innerHTML = '<tr><td colspan="2" class="p-2 text-center">Cargando asesores...</td></tr>';
+
+    try {
+        const advisorsCollection = collection(db, `artifacts/${appId}/public/data/asesores`);
+        const q = query(advisorsCollection, orderBy("user", "asc"));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="2" class="p-2 text-center">No se encontraron asesores en la base de datos.</td></tr>';
+            return;
+        }
+
+        let rowsHtml = '';
+        querySnapshot.forEach(doc => {
+            const advisor = doc.data();
+            if (advisor.role === 'admin') return;
+
+            const isChecked = advisor.status === 'active' ? 'checked' : '';
+            rowsHtml += `
+                <tr class="border-b">
+                    <td class="p-2">${advisor.user}</td>
+                    <td class="p-2 text-center">
+                        <label class="switch">
+                            <input type="checkbox" onchange="toggleAdvisorStatus('${doc.id}', this.checked)" ${isChecked}>
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+                </tr>
+            `;
+        });
+        tableBody.innerHTML = rowsHtml;
+    } catch (error) {
+        console.error("Error cargando asesores desde Firestore:", error);
+        tableBody.innerHTML = '<tr><td colspan="2" class="p-2 text-center text-red-500">Error al cargar la lista.</td></tr>';
+    }
+}
             
             let rowsHtml = '';
             const sortedUsers = Object.values(users).sort((a, b) => a.user.localeCompare(b.user));
@@ -4065,11 +4092,26 @@
             tableBody.innerHTML = rowsHtml + '<tr><td colspan="2" class="p-2 text-xs text-center text-gray-500">La gestión de acceso se configura en el código.</td></tr>';
         }
 
-        window.toggleAdvisorStatus = async (username, isChecked) => {
-            // This function is now disabled for static users but left for structure
-            showCustomAlert("La gestión de acceso de asesores ahora está configurada estáticamente en el código de la aplicación y no se puede cambiar desde esta interfaz.", "Función Deshabilitada");
-            loadAdvisorsForAdmin(); // Re-render to revert any visual toggle change
-        };
+       window.toggleAdvisorStatus = async (username, isChecked) => {
+    if (!db) {
+        showCustomAlert("No se puede cambiar el estatus, no hay conexión a la base de datos.", "Error");
+        return;
+    }
+
+    const newStatus = isChecked ? 'active' : 'inactive';
+
+    try {
+        const userDocRef = doc(db, `artifacts/${appId}/public/data/asesores`, username);
+        await updateDoc(userDocRef, {
+            status: newStatus
+        });
+        console.log(`Estatus del asesor ${username} actualizado a ${newStatus}`);
+    } catch (error) {
+        console.error("Error al actualizar el estatus del asesor:", error);
+        showCustomAlert("No se pudo actualizar el estatus. Inténtalo de nuevo.", "Error");
+        loadAdvisorsForAdmin();
+    }
+};
         
         function flattenObject(ob) {
             var toReturn = {};
