@@ -1,1 +1,3237 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RGC Pensiones - Calculadora de Proyección Optimizada</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dark-blue: #003366;
+            /* Azul marino profundo */
+            --gold: #D4AF37;
+            /* Oro metálico */
+            --dark-gold: #B8860B;
+            /* Oro oscuro para hover */
+            --text-dark: #1A202C;
+            /* Casi negro */
+            --text-medium: #4A5568;
+            /* Gris oscuro */
+            --bg-light: #F0F2F5;
+            /* Gris más suave */
+            --white: #FFFFFF;
+            --border-color: #E2E8F0;
+            --success-color: #16A34A;
+            --danger-color: #DC2626;
+            --warning-color: #FBBF24;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 20px, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-medium);
+        }
+
+        /* Encabezado Principal */
+        .main-header {
+            background: linear-gradient(135deg, var(--dark-blue) 0%, #002244 100%);
+            color: var(--white);
+            padding: 3rem 1rem;
+            text-align: center;
+            border-radius: 0 0 50px 50px;
+            box-shadow: 0 10px 30px rgba(0, 34, 68, 0.2);
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            animation: pan-background 45s linear infinite;
+        }
+
+        @keyframes pan-background {
+            from { transform: translate(0, 0); }
+            to { transform: translate(100px, 100px); }
+        }
+
+        .logo-text-elegant {
+            font-family: 'Playfair Display', serif;
+            font-weight: 800;
+            font-size: 2.5rem;
+            color: var(--gold);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 1.5px;
+        }
+
+        .main-header .logo-text-elegant {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .main-header h1 {
+            font-family: 'Lato', sans-serif;
+            font-weight: 900;
+            font-size: 2.5rem;
+            letter-spacing: -0.5px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Estructura de Secciones */
+        .infographic-section {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 2.5rem 3rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0, 51, 102, 0.1);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .infographic-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--dark-blue), var(--gold));
+        }
+
+
+        .infographic-section h2 {
+            font-family: 'Lato', sans-serif;
+            font-weight: 900;
+            font-size: 1.875rem;
+            margin-bottom: 2.5rem;
+            color: var(--dark-blue);
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 1.25rem;
+        }
+
+        .infographic-section h2 i {
+            margin-right: 1.25rem;
+            font-size: 1.75rem;
+            color: var(--gold);
+            background: var(--dark-blue);
+            padding: 0.75rem;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .infographic-section h3.subsection-title {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 1.375rem;
+            color: var(--dark-blue);
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Formularios y Entradas */
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--text-medium);
+            font-size: 0.9rem;
+            display: block;
+        }
+
+        .input-group input[type="text"],
+        .input-group input[type="password"],
+        .input-group input[type="number"],
+        .input-group input[type="month"],
+        .input-group input[type="date"],
+        .input-group select,
+        .input-group textarea {
+            padding: 0.9rem 1.25rem;
+            border: 1px solid #CBD5E0;
+            border-radius: 12px;
+            font-size: 1rem;
+            width: 100%;
+            transition: all 0.2s ease-in-out;
+            background-color: var(--bg-light);
+        }
+        
+        .input-with-icon {
+             padding-left: 3rem !important;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #A0AEC0;
+            pointer-events: none;
+            transition: color 0.2s ease-in-out;
+        }
+        
+        .input-group input:focus ~ .input-icon, .input-group select:focus ~ .input-icon {
+            color: var(--gold);
+        }
+
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.25);
+            outline: none;
+            background-color: var(--white);
+        }
+
+        .input-group input[readonly] {
+            background-color: #E9ECEF;
+            cursor: not-allowed;
+        }
+
+        /* Botones */
+        .btn {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            padding: 1rem 2.25rem;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .btn:disabled {
+            background: #A0AEC0;
+            color: #E2E8F0;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        
+        .btn:hover:not(:disabled) {
+             transform: translateY(-3px) scale(1.02);
+             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .btn:active:not(:disabled) {
+            transform: translateY(0px) scale(1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), var(--dark-gold));
+            color: var(--dark-blue);
+        }
+
+        .btn-blue {
+            background: linear-gradient(135deg, var(--dark-blue), #004488);
+            color: var(--white);
+        }
+
+        .btn-secondary {
+            background-color: var(--white);
+            color: var(--dark-blue);
+            border: 2px solid var(--dark-blue);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--dark-blue);
+            color: var(--white);
+        }
+
+        .btn-danger-icon {
+            background-color: #FFF1F2;
+            color: #E53E3E;
+            border: 1px solid #E53E3E;
+            padding: 0.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+        }
+
+        .btn-danger-icon:hover {
+            background-color: #E53E3E;
+            color: var(--white);
+        }
+
+        /* Employment Card Styles */
+        .employment-card {
+            background-color: #F8F9FA;
+            border: 1px solid #E2E8F0;
+            border-left: 6px solid var(--dark-blue);
+            border-radius: 1rem;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .employment-card:hover {
+             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+             transform: translateY(-2px);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 34, 68, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            padding: 3rem;
+            border-radius: 24px;
+            box-shadow: 0 15px 50px rgba(0, 51, 102, 0.25);
+            max-width: 90%;
+            width: 650px;
+            border-top: 8px solid var(--gold);
+            transform: scale(0.95) translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-content-alert {
+            text-align: center;
+            width: 450px;
+        }
+
+        .modal-content h2 {
+            font-family: 'Lato', sans-serif;
+            color: var(--dark-blue);
+            font-size: 1.75rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .app-footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding: 3rem 1rem;
+            background-color: var(--dark-blue);
+            color: var(--white);
+            border-radius: 50px 50px 0 0;
+        }
+
+        .app-footer .logo-text-footer {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .app-footer p {
+            opacity: 0.8;
+        }
+
+        /* D3 Timeline Tooltip Styles */
+        #timeline-tooltip {
+            position: absolute;
+            text-align: left;
+            padding: 10px 14px;
+            font-size: 13px;
+            background: var(--text-dark);
+            color: white;
+            border: 0px;
+            border-radius: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="appContainer" class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
+        <header class="main-header">
+            <div class="logo-text-elegant">RGC Pensiones y Seguros</div>
+            <h1>Calculadora de Proyección de Pensión</h1>
+        </header>
+        <div id="calculatorSection">
+            <section id="infoSection1" class="infographic-section">
+                <h2><i class="fas fa-user-edit"></i>Paso 1: Datos y Análisis del Historial</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-16 gap-y-8">
+                    <div>
+                        <h3 class="subsection-title !mt-0">Datos del Asegurado</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-8">
+                            <div class="input-group">
+                                <label for="info_nombreCompleto">Nombre Completo (Asegurado):</label>
+                                <input type="text" id="info_nombreCompleto" placeholder="Ingreso automático o manual" class="w-full input-with-icon">
+                                <i class="fas fa-user input-icon top-1/2 left-4 -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                            <div class="input-group">
+                                <label for="info_curpCliente">CURP:</label>
+                                <input type="text" id="info_curpCliente" placeholder="Ingreso automático o manual" maxlength="18" oninput="this.value = this.value.toUpperCase();" class="w-full input-with-icon">
+                                 <i class="fas fa-id-card input-icon top-1/2 left-4 -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                            <div class="input-group">
+                                <label for="info_telefonoCliente">Teléfono de Contacto (10 dígitos):</label>
+                                <input type="text" id="info_telefonoCliente" placeholder="5512345678" maxlength="10" class="w-full input-with-icon">
+                                 <i class="fas fa-phone input-icon top-1/2 left-4 -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                            <div class="input-group">
+                                <label for="info_semanasTotalesManual">Semanas Cotizadas Totales (Previas a M40):</label>
+                                <input type="number" id="info_semanasTotalesManual" placeholder="Ingrese 0 si no hay historial" class="w-full input-with-icon">
+                                 <i class="fas fa-calendar-week input-icon top-1/2 left-4 -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="subsection-title !mt-0">Análisis de Semanas Cotizadas</h3>
+                        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-6">
+                            <div class="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-lg mb-6" role="alert">
+                                <p class="font-bold">Instrucción Importante</p>
+                                <p class="text-sm">Para el análisis automático, convierta la Constancia de Semanas Cotizadas (PDF) a un documento de Word, copie todo el texto y péguelo a continuación.</p>
+                                <a href="https://www.ilovepdf.com/es/pdf_a_word" target="_blank" class="btn btn-gold mt-4 text-sm !py-2">
+                                    <i class="fas fa-file-word"></i> Abrir Conversor PDF a Word
+                                </a>
+                            </div>
+                            <div class="input-group">
+                                <label for="info_textoCompleto">Pegue aquí el texto del documento:</label>
+                                <div class="flex items-center mb-2">
+                                    <input type="checkbox" id="isSisecNoDetallado" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                    <label for="isSisecNoDetallado" class="ml-2 text-sm text-gray-600">Marcar si es una constancia de semanas cotizadas (SISEC no detallado)</label>
+                                </div>
+                                <textarea id="info_textoCompleto" class="w-full font-mono text-sm" rows="8" placeholder="Pegue aquí el contenido completo, desde el nombre del asegurado hasta el último movimiento..."></textarea>
+                            </div>
+                            <div class="text-center mt-6">
+                                <button onclick="analizarTextoCompleto()" class="btn btn-blue">
+                                    <i class="fas fa-magic"></i> Procesar y Analizar Historial
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="subsection-title">O ingrese los periodos laborales manualmente:</h3>
+                            <div id="employmentCardsContainerWrapper">
+                                <button id="toggleCardsBtn" onclick="toggleAutoCards()" class="btn btn-secondary mb-4" style="display: none;">Mostrar/Ocultar Tarjetas Automáticas</button>
+                                <div id="employmentCardsContainer" style="display: none;"></div>
+                            </div>
+                            <button onclick="addEmploymentCard()" class="btn btn-secondary mt-4"><i class="fas fa-plus mr-2"></i>Agregar Periodo Laboral</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-12 pt-8 border-t-2 border-dashed">
+                    <button onclick="analizarYCalcularSBC()" class="btn btn-blue text-lg">
+                        <i class="fas fa-calculator mr-2"></i>Analizar y Calcular Pensión Base
+                    </button>
+                </div>
+                <div id="sbcAnalysisResultsContainer" class="mt-12 pt-8 border-t" style="display: none;">
+                    <h3 class="subsection-title">Resumen del Análisis</h3>
+                    <div id="ageAdjustmentWarning" class="mb-4 p-3 rounded-lg text-sm bg-yellow-50 border border-yellow-200 text-yellow-800" style="display: none;"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                         <div class="bg-gray-50 p-6 rounded-2xl shadow-sm border">
+                             <div class="text-3xl text-blue-500 mb-3"><i class="fas fa-coins"></i></div>
+                            <p class="text-sm text-gray-500">SBC Promedio (Últ. 250 sem.)</p>
+                            <p id="res_sbcPromedio" class="text-3xl font-bold text-blue-900 mt-1">$0.00</p>
+                        </div>
+                         <div class="bg-gray-50 p-6 rounded-2xl shadow-sm border">
+                              <div class="text-3xl text-blue-500 mb-3"><i class="fas fa-birthday-cake"></i></div>
+                            <p class="text-sm text-gray-500">Edad Actual</p>
+                            <p id="res_edadActual" class="text-3xl font-bold text-blue-900 mt-1">0 años</p>
+                        </div>
+                         <div class="bg-gray-50 p-6 rounded-2xl shadow-sm border">
+                             <div class="text-3xl text-blue-500 mb-3"><i class="fas fa-phone-alt"></i></div>
+                            <p class="text-sm text-gray-500">Teléfono</p>
+                            <p id="res_telefonoCliente" class="text-3xl font-bold text-blue-900 mt-1">--</p>
+                        </div>
+                        <div id="vigenciaResultBox" class="p-6 rounded-2xl shadow-sm border md:col-span-3">
+                            <p id="vigenciaResultText" class="text-3xl font-bold">--</p>
+                            <p id="vigenciaResultSubText" class="text-base mt-2">--</p>
+                        </div>
+                    </div>
+                    <div class="mt-10 overflow-x-auto">
+                        <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
+                            <h4 class="font-semibold text-gray-700 text-lg">Historial Laboral Considerado para Cálculo</h4>
+                            <div class="flex items-center space-x-4">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="showFullHistoryCheckbox" onchange="renderSbcAnalysisTable()" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                    <label for="showFullHistoryCheckbox" class="ml-2 text-sm text-gray-600">Mostrar historial completo</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="showSbcBreakdownCheckbox" onchange="renderSbcAnalysisTable()" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                    <label for="showSbcBreakdownCheckbox" class="ml-2 text-sm text-gray-600">Desglosar por empleador</label>
+                                </div>
+                            </div>
+                        </div>
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="p-3 rounded-l-lg">Registro Patronal</th>
+                                    <th class="p-3">Fecha Inicio</th>
+                                    <th class="p-3">Fecha Fin</th>
+                                    <th class="p-3 text-right">Días</th>
+                                    <th class="p-3 text-right">SBC Diario</th>
+                                    <th class="p-3 text-right rounded-r-lg">SBC Ponderado (para cálculo)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sbcAnalysisTableBody">
+                            </tbody>
+                            <tfoot id="sbcAnalysisTableFooter" class="font-bold bg-gray-100">
+                            </tfoot>
+                        </table>
+                        <div id="sbcDaysWarning" class="mt-4 p-3 rounded-lg text-sm" style="display: none;"></div>
+                        <div id="modalitySummaryContainer" class="mt-6"></div>
+                    </div>
+                </div>
+                <div id="timelineSection" class="mt-12 pt-8 border-t" style="display: none;">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 id="timelineTitle" class="subsection-title !mb-0">Línea de Tiempo del Historial Laboral</h3>
+                    </div>
+                    <div id="timeline-container" class="w-full h-96 overflow-x-auto bg-gray-50 p-4 rounded-xl border"><svg id="timeline-svg"></svg></div>
+                    <div id="timeline-legend" class="flex flex-wrap gap-x-4 gap-y-2 mt-4 p-2 border-t"></div>
+                </div>
+                <div id="basePensionResultsContainer" class="mt-8" style="display: none;">
+                    <h3 class="subsection-title">Cálculo de Pensión Base (Sin Modalidad 40)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                        <div class="bg-green-50 p-6 rounded-2xl shadow-sm border border-green-200">
+                            <p class="text-sm text-green-800">Pensión Mensual Estimada</p>
+                            <p id="res_base_pensionMensual" class="text-3xl font-bold text-green-900 mt-1">$0.00</p>
+                        </div>
+                        <div class="bg-green-50 p-6 rounded-2xl shadow-sm border border-green-200">
+                            <p class="text-sm text-green-800">Aguinaldo Estimado</p>
+                            <p id="res_base_aguinaldo" class="text-3xl font-bold text-green-900 mt-1">$0.00</p>
+                        </div>
+                        <div class="bg-green-50 p-6 rounded-2xl shadow-sm border border-green-200">
+                            <p class="text-sm text-green-800">Ingreso Anual Total Estimado</p>
+                            <p id="res_base_ingresoAnual" class="text-3xl font-bold text-green-900 mt-1">$0.00</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="infoSection2" class="infographic-section">
+                <h2><i class="fas fa-chart-line"></i>Paso 2: Proyección con Modalidad 40</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-6">
+                    <div>
+                        <h3 class="subsection-title">Definir Periodo de Inversión</h3>
+                        <div id="lastBajaDateHint" class="text-sm text-gray-600 mb-4 font-semibold"></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                            <div class="input-group sm:col-span-2">
+                                <label>Fecha Inicio M40:</label>
+                                <div class="flex gap-4">
+                                    <select id="m40_day" class="w-full">
+                                        <option value="">Día</option>
+                                    </select>
+                                    <select id="m40_month" class="w-full">
+                                        <option value="">Mes</option>
+                                    </select>
+                                    <select id="m40_year" class="w-full">
+                                        <option value="">Año</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="info_m40_p1_meses">Meses de Inversión en M40:</label>
+                                <input type="number" id="info_m40_p1_meses" placeholder="Ej. 60" max="60" oninput="actualizarFechaFinM40Display()" class="w-full">
+                            </div>
+                            <div class="input-group">
+                                <label for="info_m40_p1_sbc">SBC Diario para M40 (Tope):</label>
+                                <input type="number" id="info_m40_p1_sbc" placeholder="Cálculo automático" class="w-full">
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl text-center">
+                            <div id="info_m40_baja_display" class="text-base font-semibold text-blue-800 leading-relaxed">
+                                -- Ingrese los datos para calcular la edad de retiro --
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="subsection-title">Tabla de Referencia UMA</h3>
+                        <div class="overflow-x-auto max-h-72 border rounded-xl">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-gray-100 sticky top-0">
+                                    <tr>
+                                        <th class="p-3">Año</th>
+                                        <th class="p-3 text-right">Valor UMA Diario</th>
+                                        <th class="p-3 text-right">SBC Tope (25 UMAs)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="umaReferenceTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-12 pt-8 border-t-2 border-dashed">
+                    <button id="btnCalcularEscenarioM40" onclick="calcularEscenarioM40Infografia()" class="btn btn-gold text-lg">
+                        <i class="fas fa-cogs"></i>Calcular Proyección con M40
+                    </button>
+                </div>
+            </section>
+            <section id="infoSection3" class="infographic-section" style="display: none;">
+                <h2><i class="fas fa-hand-holding-usd"></i>Paso 3: Parámetros del Análisis Financiero</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div class="input-group">
+                        <label for="info_aforeActual">Saldo Actual en AFORE ($):</label>
+                        <input type="number" id="info_aforeActual" placeholder="0.00" oninput="recalculateAllScenarios();">
+                    </div>
+                    <div class="input-group">
+                        <label for="info_mesesPrimerDeposito">Meses para Primer Depósito (6-12):</label>
+                        <input type="number" id="info_mesesPrimerDeposito" value="6" min="6" max="12" onchange="handleMesesDepositoChange(this)" data-last-valid="6">
+                    </div>
+                    <div class="input-group md:col-span-2">
+                        <label for="info_comisionExcedente">Comisión Adicional ($) y Concepto:</label>
+                        <div class="flex gap-4">
+                            <input type="number" id="info_comisionExcedente" placeholder="0.00" oninput="recalculateAllScenarios();" class="w-1/2">
+                            <input type="text" id="info_comisionExcedente_concepto" placeholder="Concepto para reporte" class="w-1/2">
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="infoSection4" class="infographic-section" style="display: none;">
+                <h2><i class="fas fa-balance-scale-right"></i>Paso 4: Comparativa de Escenarios</h2>
+                <div id="benchmarkingResult" class="mb-4 p-3 rounded-lg text-sm bg-blue-50 border border-blue-200 text-blue-800" style="display: none;"></div>
+                <div id="scenariosContainer" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                </div>
+                <div class="text-center mt-10">
+                    <button id="addScenarioBtn" onclick="addScenarioCard()" class="btn btn-secondary"><i class="fas fa-plus mr-2"></i>Agregar Escenario</button>
+                </div>
+            </section>
+            <section id="infoSection5" class="infographic-section" style="display: none;">
+                <h2><i class="fas fa-file-export"></i>Paso 5: Reportes y Exportación</h2>
+                <p class="mb-8 text-gray-600 text-lg max-w-2xl mx-auto">Genere resúmenes y reportes detallados para el asegurado.</p>
+                <div class="flex justify-center flex-wrap gap-6">
+                    <button onclick="showWhatsAppModal()" class="btn !bg-green-500 hover:!bg-green-600 !text-white text-lg">
+                        <i class="fab fa-whatsapp"></i> Resumen para WhatsApp
+                    </button>
+                    <button onclick="generateTotalCapturePDF()" class="btn btn-blue text-lg">
+                        <i class="fas fa-file-pdf"></i> Captura Completa a PDF
+                    </button>
+                </div>
+                <div class="text-center mt-12 pt-8 border-t">
+                    <h3 class="subsection-title">Reportes Detallados</h3>
+                    <div class="flex justify-center flex-wrap gap-6">
+                        <button onclick="promptForClientPDF()" class="btn btn-secondary text-lg">
+                            <i class="fas fa-user"></i> Reporte Detallado (Cliente)
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <footer class="app-footer">
+            <div class="logo-text-footer">RGC PENSIONES Y SEGUROS</div>
+            <p>&copy; <span id="currentYear"></span> RGC Pensiones y Seguros. Todos los derechos reservados. | Versión 3.4 Optimizada</p>
+            <p class="text-xs mt-1 opacity-70">Esta es una simulación y los resultados pueden variar. Consulte a un asesor para una evaluación detallada.</p>
+        </footer>
+    </div>
+    <div id="customAlertModal" class="modal-overlay">
+        <div class="modal-content modal-content-alert">
+            <h2 id="customAlertTitle" class="text-xl">Alerta</h2>
+            <p id="customAlertMessage" class="text-base my-6"></p>
+            <div id="passwordPromptContainer" style="display: none;" class="mt-4">
+                <input type="password" id="pdfPasswordInput" class="w-full p-2 border rounded" placeholder="Contraseña de Dirección">
+            </div>
+            <div class="flex justify-center gap-4 mt-8">
+                <button id="customAlertCancelButton" style="display: none;" class="btn btn-secondary">Cancelar</button>
+                <button id="customAlertButton" class="btn btn-blue">Aceptar</button>
+            </div>
+        </div>
+    </div>
+    <div id="timeline-tooltip"></div>
+    <div id="whatsAppModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2><i class="fab fa-whatsapp text-green-500 mr-2"></i>Resumen para Cliente</h2>
+            <p class="text-center text-sm mb-4">Copie este texto y envíelo a su cliente.</p>
+            <textarea id="whatsAppSummaryText" rows="10" class="w-full p-3 border rounded bg-gray-50 font-mono text-sm"></textarea>
+            <div class="text-center mt-6">
+                <button onclick="copyWhatsAppText()" class="btn btn-blue"><i class="fas fa-copy"></i> Copiar Texto</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- APPLICATION SCOPE & STATE ---
+        const AppState = {
+            employmentCardIdCounter: 0,
+            scenarioData: {},
+            activeScenarios: 0,
+            isSisecNoDetallado: false,
+            datosClienteInfo: {
+                nombre: '',
+                curp: '',
+                telefono: '',
+                semanasCotizadasBase: 0,
+                edadBase: 0,
+                sbcPromedioBase: 0,
+                ultimaFechaBaja: null
+            },
+            sbcCalculationPeriods: [],
+            fullHistoryPeriods: [],
+            allParsedPeriodsForDisplay: [], // For table rendering, including QP
+            timelinePeriods: [], // Holds processed periods for the timeline
+            pensionBaseResultadosInfo: {
+                PENSION_MENSUAL_ESTIMADA: 0,
+                AGUINALDO_ESTIMADO: 0
+            },
+            pdfGenerated: false // Flag to control scenario visibility
+        };
+        
+        let employerColorCache = {};
+        const colorPalette = ['#3b82f6', '#16a34a', '#ef4444', '#f97316', '#8b5cf6', '#ec4899', '#14b8a6', '#64748b', '#d946ef', '#06b6d4', '#f59e0b'];
+        let lastColorIndex = 0;
+
+
+        // --- FINANCIAL & ECONOMIC CONSTANTS ---
+        const Constants = {
+            DIAS_PROMEDIO_PENSION: 1750,
+            SMGV_DF_Global: 88.36,
+            FACTOR_FOX_Global: 1.11,
+            PRESTAMO_PUNTO_A_DESCUENTO: 1115.61,
+            PRESTAMO_PUNTO_A_MONTO: 31000,
+            PRESTAMO_PUNTO_B_DESCUENTO: 33450.42,
+            PRESTAMO_PUNTO_B_MONTO: 929500,
+            COSTO_FIJO_ADICIONAL: 140000,
+            COMISION_BASE_M40: 0.16,
+            FACTOR_MULTIPLICADOR_COSTO: 0.5,
+            AJUSTE_FINAL_CONTRATO: -35000,
+            AJUSTE_PENSION_MENSUAL: -250,
+            INPC_GROWTH_ESTIMATE: 0.06,
+            RECARGO_M40_MENSUAL: 0.0147,
+            economicData: {
+                umas: {
+                    2016: 73.04,
+                    2017: 75.49,
+                    2018: 80.60,
+                    2019: 84.49,
+                    2020: 86.88,
+                    2021: 89.62,
+                    2022: 96.22,
+                    2023: 103.74,
+                    2024: 108.57,
+                    2025: 113.14
+                },
+                smgv_diario: {
+                    2018: 88.36,
+                    2019: 102.68,
+                    2020: 123.22,
+                    2021: 141.70,
+                    2022: 172.87,
+                    2023: 207.44,
+                    2024: 248.93
+                },
+                inpc: {
+                    "2018-12": 101.355,
+                    "2019-12": 104.236,
+                    "2020-12": 107.608,
+                    "2021-12": 115.499,
+                    "2022-12": 124.507,
+                    "2023-12": 130.036,
+                    "2024-01": 131.396,
+                    "2024-02": 131.500,
+                    "2024-03": 131.650,
+                    "2024-04": 131.800,
+                    "2024-05": 132.000,
+                    "2024-06": 132.660,
+                    "2024-07": 133.323
+                }
+            },
+            tasasPagoM40: {
+                2022: 0.10075,
+                2023: 0.11166,
+                2024: 0.12256,
+                2025: 0.13347,
+                2026: 0.14438,
+                2027: 0.15528,
+                2028: 0.16619,
+                2029: 0.17709,
+                2030: 0.18800
+            },
+            tablaCuantiasGlobal: [{
+                minRatio: 0,
+                maxRatio: 1.00,
+                pcb: 80.00,
+                pia: 0.563
+            }, {
+                minRatio: 1.01,
+                maxRatio: 1.25,
+                pcb: 77.11,
+                pia: 0.814
+            }, {
+                minRatio: 1.26,
+                maxRatio: 1.50,
+                pcb: 58.18,
+                pia: 1.178
+            }, {
+                minRatio: 1.51,
+                maxRatio: 1.75,
+                pcb: 49.23,
+                pia: 1.430
+            }, {
+                minRatio: 1.76,
+                maxRatio: 2.00,
+                pcb: 42.67,
+                pia: 1.615
+            }, {
+                minRatio: 2.01,
+                maxRatio: 2.25,
+                pcb: 37.65,
+                pia: 1.756
+            }, {
+                minRatio: 2.26,
+                maxRatio: 2.50,
+                pcb: 33.68,
+                pia: 1.868
+            }, {
+                minRatio: 2.51,
+                maxRatio: 2.75,
+                pcb: 30.48,
+                pia: 1.958
+            }, {
+                minRatio: 2.76,
+                maxRatio: 3.00,
+                pcb: 27.83,
+                pia: 2.033
+            }, {
+                minRatio: 3.01,
+                maxRatio: 3.25,
+                pcb: 25.60,
+                pia: 2.096
+            }, {
+                minRatio: 3.26,
+                maxRatio: 3.50,
+                pcb: 23.70,
+                pia: 2.149
+            }, {
+                minRatio: 3.51,
+                maxRatio: 3.75,
+                pcb: 22.07,
+                pia: 2.195
+            }, {
+                minRatio: 3.76,
+                maxRatio: 4.00,
+                pcb: 20.65,
+                pia: 2.235
+            }, {
+                minRatio: 4.01,
+                maxRatio: 4.25,
+                pcb: 19.39,
+                pia: 2.271
+            }, {
+                minRatio: 4.26,
+                maxRatio: 4.50,
+                pcb: 18.29,
+                pia: 2.302
+            }, {
+                minRatio: 4.51,
+                maxRatio: 4.75,
+                pcb: 17.30,
+                pia: 2.330
+            }, {
+                minRatio: 4.76,
+                maxRatio: 5.00,
+                pcb: 16.41,
+                pia: 2.355
+            }, {
+                minRatio: 5.01,
+                maxRatio: 5.25,
+                pcb: 15.61,
+                pia: 2.377
+            }, {
+                minRatio: 5.26,
+                maxRatio: 5.50,
+                pcb: 14.88,
+                pia: 2.398
+            }, {
+                minRatio: 5.51,
+                maxRatio: 5.75,
+                pcb: 14.22,
+                pia: 2.416
+            }, {
+                minRatio: 5.76,
+                maxRatio: 6.00,
+                pcb: 13.62,
+                pia: 2.433
+            }, {
+                minRatio: 6.01,
+                maxRatio: Infinity,
+                pcb: 13.00,
+                pia: 2.450
+            }]
+        };
+
+        // --- UTILITY & HELPER FUNCTIONS ---
+        function formatNumber(num, decimals = 2) {
+            if (typeof num !== 'number' || isNaN(num)) return (0).toFixed(decimals);
+            return num.toLocaleString('es-MX', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+        }
+
+        function formatDateDDMMYYYY(date) {
+            if (!date || !(date instanceof Date)) return '';
+            const day = String(date.getUTCDate()).padStart(2, '0');
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+            const year = date.getUTCFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        function getNumeroInfo(id) {
+            return parseFloat(document.getElementById(id).value.replace(/,/g, '')) || 0;
+        }
+
+        function getDiasEnMes(a, m) {
+            return new Date(a, m, 0).getDate();
+        }
+
+        // --- UI MANAGEMENT ---
+        function showElement(id, displayType = 'block') {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (id.includes('Modal')) {
+                el.classList.add('active');
+            } else {
+                el.style.display = displayType;
+                el.classList.add('fade-in-up');
+            }
+        }
+
+        function hideElement(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (id.includes('Modal')) {
+                el.classList.remove('active');
+            } else {
+                el.style.display = 'none';
+                el.classList.remove('fade-in-up');
+            }
+        }
+
+        function showCustomAlert(message, title = "Atención") {
+            document.getElementById('customAlertTitle').textContent = title;
+            document.getElementById('customAlertMessage').textContent = message;
+            document.getElementById('passwordPromptContainer').style.display = 'none';
+            const confirmBtn = document.getElementById('customAlertButton');
+            const cancelBtn = document.getElementById('customAlertCancelButton');
+            confirmBtn.textContent = 'Aceptar';
+            confirmBtn.className = 'btn btn-blue';
+            confirmBtn.onclick = closeCustomAlert;
+            cancelBtn.style.display = 'none';
+            showElement('customAlertModal');
+        }
+
+        function closeCustomAlert() {
+            hideElement('customAlertModal');
+            // Reset buttons to default state after closing
+            const confirmBtn = document.getElementById('customAlertButton');
+            const cancelBtn = document.getElementById('customAlertCancelButton');
+            confirmBtn.textContent = 'Aceptar';
+            confirmBtn.className = 'btn btn-blue';
+            confirmBtn.onclick = closeCustomAlert;
+            cancelBtn.style.display = 'none';
+            document.getElementById('passwordPromptContainer').style.display = 'none';
+        }
+
+        function initializeMainAppDisplay() {
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            const currentYear = new Date().getFullYear();
+            for (let y = Math.max(...Object.keys(Constants.economicData.umas).map(Number)) + 1; y <= currentYear + 10; y++) {
+                if (!Constants.economicData.umas[y]) Constants.economicData.umas[y] = parseFloat((Constants.economicData.umas[y - 1] * 1.045).toFixed(2));
+            }
+            for (let y = Math.max(...Object.keys(Constants.economicData.smgv_diario).map(Number)) + 1; y <= currentYear + 10; y++) {
+                if (!Constants.economicData.smgv_diario[y]) Constants.economicData.smgv_diario[y] = parseFloat((Constants.economicData.smgv_diario[y - 1] * 1.10).toFixed(2));
+            }
+            populateUmaTable();
+        }
+
+        // --- ECONOMIC DATA & DATE FUNCTIONS ---
+        function getUMA(y, m = new Date().getMonth() + 1) {
+            let useYear = parseInt(y);
+            if (m === 1 && Constants.economicData.umas[useYear - 1]) {
+                useYear = parseInt(y) - 1;
+            }
+            return Constants.economicData.umas[useYear] || Constants.economicData.umas[Object.keys(Constants.economicData.umas).sort((a, b) => b - a)[0]] || 0;
+        }
+        
+        function getEmployerColor(regPatronal) {
+            if (!employerColorCache[regPatronal]) {
+                employerColorCache[regPatronal] = colorPalette[lastColorIndex % colorPalette.length];
+                lastColorIndex++;
+            }
+            return employerColorCache[regPatronal];
+        }
+
+        function getINPC(year, month) {
+            const key = `${year}-${String(month).padStart(2, '0')}`;
+            if (Constants.economicData.inpc[key]) {
+                return Constants.economicData.inpc[key];
+            }
+            const lastKnownKey = Object.keys(Constants.economicData.inpc).sort().pop();
+            const [lastYear, lastMonth] = lastKnownKey.split('-').map(Number);
+            const lastValue = Constants.economicData.inpc[lastKnownKey];
+            const monthsDiff = (year - lastYear) * 12 + (month - lastMonth);
+            if (monthsDiff > 0) {
+                return lastValue * Math.pow(1 + (Constants.INPC_GROWTH_ESTIMATE / 12), monthsDiff);
+            }
+            return null;
+        }
+
+        function extraerFechaNacimientoCURP(curp) {
+            if (typeof curp !== 'string' || curp.length !== 18) return null;
+            const yearStr = curp.substring(4, 6);
+            const monthStr = curp.substring(6, 8);
+            const dayStr = curp.substring(8, 10);
+            let year = parseInt(yearStr);
+            const month = parseInt(monthStr);
+            const day = parseInt(dayStr);
+            if (isNaN(year) || isNaN(month) || isNaN(day) || month < 1 || month > 12 || day < 1 || day > 31) return null;
+            const centuryIndicator = curp.charAt(16);
+            let century = 1900;
+            const currentYearLastTwoDigits = new Date().getFullYear() % 100;
+            if (!isNaN(parseInt(centuryIndicator))) {
+                century = (year > currentYearLastTwoDigits + 10) ? 1900 : 2000;
+            } else if (centuryIndicator >= 'A' && centuryIndicator <= 'Z') {
+                century = 2000;
+            }
+            year = century + year;
+            try {
+                const date = new Date(Date.UTC(year, month - 1, day));
+                if (date.getUTCFullYear() === year && date.getUTCMonth() === (month - 1) && date.getUTCDate() === day) {
+                    return date;
+                }
+                return null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function calcularEdadExacta(startDate, endDate) {
+            if (!startDate || !(startDate instanceof Date) || isNaN(startDate) || !endDate || !(endDate instanceof Date) || isNaN(endDate)) {
+                return {
+                    anos: 0,
+                    meses: 0,
+                    dias: 0
+                };
+            }
+            let years = endDate.getUTCFullYear() - startDate.getUTCFullYear();
+            let months = endDate.getUTCMonth() - startDate.getUTCMonth();
+            let days = endDate.getUTCDate() - startDate.getUTCDate();
+            if (days < 0) {
+                months--;
+                days += new Date(endDate.getUTCFullYear(), endDate.getUTCMonth(), 0).getUTCDate();
+            }
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+            return {
+                anos: years,
+                meses: months,
+                dias: days
+            };
+        }
+
+        function getTasaM40Porcentaje(year) {
+            if (year <= 2022) return Constants.tasasPagoM40[2022];
+            if (year >= 2030) return Constants.tasasPagoM40[2030];
+            return Constants.tasasPagoM40[year] || Constants.tasasPagoM40[Object.keys(Constants.tasasPagoM40).sort((x, y) => y - x)[0]];
+        }
+
+        function calcularFechaFinDesdeMeses(fechaInicioStr, numMeses) {
+            if (!fechaInicioStr || !numMeses || numMeses <= 0) return null;
+            const [anioInicio, mesInicio, diaInicio] = fechaInicioStr.split('-').map(Number);
+            if (isNaN(anioInicio) || isNaN(mesInicio)) return null;
+            // Start from the first of the month for calculation consistency
+            const fechaInicioObj = new Date(Date.UTC(anioInicio, mesInicio - 1, 1));
+            // Add the number of months, and get the last day of that resulting month
+            const fechaFinObj = new Date(Date.UTC(fechaInicioObj.getUTCFullYear(), fechaInicioObj.getUTCMonth() + Number(numMeses), 0));
+            return fechaFinObj; // Return the date object
+        }
+
+        // --- CORE PENSION CALCULATION LOGIC ---
+        function _calcularPensionDetallado(sbcPromedio, semanasCotizadas, edad) {
+            if (sbcPromedio <= 0 || semanasCotizadas < 500 || edad < 60) {
+                return {
+                    PENSION_MENSUAL_ESTIMADA: 0,
+                    AGUINALDO_ESTIMADO: 0
+                };
+            }
+            const ratioSBCvsSMGV = sbcPromedio / Constants.SMGV_DF_Global;
+            let pcb = 0,
+                pia = 0;
+            const cuantias = Constants.tablaCuantiasGlobal.find(rg => ratioSBCvsSMGV >= rg.minRatio && ratioSBCvsSMGV <= rg.maxRatio);
+            if (cuantias) {
+                pcb = cuantias.pcb;
+                pia = cuantias.pia;
+            } else {
+                const lastCuantia = Constants.tablaCuantiasGlobal[Constants.tablaCuantiasGlobal.length - 1];
+                pcb = lastCuantia.pcb;
+                pia = lastCuantia.pia;
+            }
+            const cuantiaBasicaAnual = (sbcPromedio * 365) * (pcb / 100);
+            const cuantiaBasicaFinal = cuantiaBasicaAnual * Constants.FACTOR_FOX_Global;
+            const semanasExcedentes = semanasCotizadas > 500 ? Math.floor((semanasCotizadas - 500) / 52) : 0;
+            const incrementoAnualCuantia = (sbcPromedio * 365) * (pia / 100) * semanasExcedentes;
+            const incrementoAnualFinal = incrementoAnualCuantia * Constants.FACTOR_FOX_Global;
+            const pensionVejezAnualBase = cuantiaBasicaFinal + incrementoAnualFinal;
+            let porcentajeEdad = 0;
+            if (edad >= 65) porcentajeEdad = 1.00;
+            else if (edad === 64) porcentajeEdad = 0.95;
+            else if (edad === 63) porcentajeEdad = 0.90;
+            else if (edad === 62) porcentajeEdad = 0.85;
+            else if (edad === 61) porcentajeEdad = 0.80;
+            else if (edad === 60) porcentajeEdad = 0.75;
+            const pensionVejezAnualAplicadaEdad = pensionVejezAnualBase * porcentajeEdad;
+            const pensionAnualConAsignaciones = pensionVejezAnualAplicadaEdad * 1.15;
+            const pensionMensualEstimada = pensionAnualConAsignaciones / 12;
+            const aguinaldoEstimado = pensionVejezAnualAplicadaEdad / 12;
+            return {
+                PENSION_MENSUAL_ESTIMADA: pensionMensualEstimada,
+                AGUINALDO_ESTIMADO: aguinaldoEstimado
+            };
+        }
+
+        // --- EVENT HANDLERS & DYNAMIC UI ---
+        function getM40StartDate() {
+            const year = document.getElementById('m40_year').value;
+            const month = document.getElementById('m40_month').value;
+            const day = document.getElementById('m40_day').value;
+            if (year && month && day) {
+                return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            }
+            return null;
+        }
+
+        function updateDaySelector() {
+            const daySelect = document.getElementById('m40_day');
+            const month = document.getElementById('m40_month').value;
+            const year = document.getElementById('m40_year').value;
+            const selectedDay = daySelect.value;
+            daySelect.innerHTML = '<option value="">Día</option>';
+            if (month && year) {
+                const daysInMonth = getDiasEnMes(year, month);
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = i;
+                    daySelect.appendChild(option);
+                }
+                if (selectedDay && selectedDay <= daysInMonth) {
+                    daySelect.value = selectedDay;
+                }
+            }
+        }
+
+        function initDateSelectors() {
+            const monthSelect = document.getElementById('m40_month');
+            const yearSelect = document.getElementById('m40_year');
+            const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            monthSelect.innerHTML = '<option value="">Mes</option>';
+            months.forEach((month, index) => {
+                const option = document.createElement('option');
+                option.value = index + 1;
+                option.textContent = month;
+                monthSelect.appendChild(option);
+            });
+            yearSelect.innerHTML = '<option value="">Año</option>';
+            const currentYear = new Date().getFullYear();
+            for (let i = currentYear + 10; i >= currentYear - 10; i--) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                yearSelect.appendChild(option);
+            }
+        }
+
+        function addEmploymentCard(patron = '', regPatronal = '', movimientos = '') {
+            AppState.employmentCardIdCounter++;
+            const container = document.getElementById('employmentCardsContainer');
+            const cardId = AppState.employmentCardIdCounter;
+            const cardHTML = `
+                <div class="employment-card" id="empCard_${cardId}">
+                    <div class="absolute top-4 left-4 flex items-center">
+                        <input type="checkbox" id="emp_qp_${cardId}" class="emp_qp h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500" onchange="toggleQPCardStyle(${cardId})">
+                        <label for="emp_qp_${cardId}" class="ml-2 text-sm font-semibold text-red-700 cursor-pointer">Excluir (QP)</label>
+                    </div>
+                    <button onclick="removeEmploymentCard(this)" class="btn-danger-icon absolute top-4 right-4" title="Eliminar Periodo"><i class="fas fa-times"></i></button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 mt-8">
+                        <div class="input-group">
+                            <label for="emp_name_${cardId}">Nombre o Razón Social del Empleador:</label>
+                            <input type="text" id="emp_name_${cardId}" class="emp_name w-full" placeholder="Nombre del empleador" value="${patron}">
+                        </div>
+                        <div class="input-group">
+                            <label for="emp_reg_${cardId}">Registro Patronal:</label>
+                            <input type="text" id="emp_reg_${cardId}" class="emp_reg w-full" placeholder="Ej: Y6812345108" value="${regPatronal}">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="emp_history_${cardId}">Historial de Movimientos para este Empleador:</label>
+                        <textarea id="emp_history_${cardId}" class="emp_history_text w-full font-mono text-sm" rows="6" placeholder="Pegue aquí los movimientos (REINGRESO, MODIFICACION, BAJA) para este empleador.">${movimientos}</textarea>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', cardHTML);
+            return `emp_history_${cardId}`;
+        }
+
+        function toggleQPCardStyle(cardId) {
+            const card = document.getElementById(`empCard_${cardId}`);
+            const checkbox = document.getElementById(`emp_qp_${cardId}`);
+            if (checkbox.checked) {
+                card.classList.add('opacity-50', 'bg-red-50');
+                card.style.borderLeftColor = 'var(--danger-color)';
+            } else {
+                card.classList.remove('opacity-50', 'bg-red-50');
+                card.style.borderLeftColor = 'var(--dark-blue)';
+            }
+        }
+
+
+        function removeEmploymentCard(button) {
+            button.closest('.employment-card').remove();
+        }
+
+        function actualizarSBCMaximoM40() {
+            const inicioP1Str = getM40StartDate();
+            const sbcM40Input = document.getElementById('info_m40_p1_sbc');
+            if (inicioP1Str) {
+                const [anioInicioP1, mesInicioP1] = inicioP1Str.split('-').map(Number);
+                const umaP1 = getUMA(anioInicioP1, mesInicioP1);
+                const sbcMaxP1 = umaP1 * 25;
+                sbcM40Input.value = sbcMaxP1.toFixed(2);
+            } else {
+                sbcM40Input.value = '';
+            }
+        }
+
+        function actualizarFechaFinM40Display() {
+            const fechaInicioStr = getM40StartDate();
+            const numMesesStr = document.getElementById('info_m40_p1_meses').value;
+            const curp = document.getElementById('info_curpCliente').value;
+            const bajaDisplayEl = document.getElementById('info_m40_baja_display');
+            if (!fechaInicioStr || !numMesesStr || numMesesStr === '0' || curp.length !== 18) {
+                bajaDisplayEl.innerHTML = '-- Ingrese fechas, meses y CURP para calcular la edad de retiro --';
+                return;
+            }
+            const fechaNacimiento = extraerFechaNacimientoCURP(curp);
+            if (!fechaNacimiento) {
+                bajaDisplayEl.innerHTML = '<span class="text-red-600">CURP inválido, no es posible calcular la edad.</span>';
+                return;
+            }
+            const numMeses = parseInt(numMesesStr);
+            if (numMeses > 0) {
+                const fechaFinObj = calcularFechaFinDesdeMeses(fechaInicioStr, numMeses);
+                if (fechaFinObj) {
+                    const edadFinM40 = calcularEdadExacta(fechaNacimiento, fechaFinObj);
+                    const fechaFinDisplay = fechaFinObj.toLocaleDateString('es-MX', {
+                        month: 'long',
+                        year: 'numeric',
+                        timeZone: 'UTC'
+                    });
+                    bajaDisplayEl.innerHTML = `
+                    <i class="fas fa-calendar-alt mr-2"></i>Fecha de Baja Proyectada: <strong class="text-blue-900">${fechaFinDisplay.charAt(0).toUpperCase() + fechaFinDisplay.slice(1)}</strong><br>
+                    <i class="fas fa-birthday-cake mr-2 mt-1"></i>Edad al finalizar M40: <strong class="text-blue-900">${edadFinM40.anos} años, ${edadFinM40.meses} meses y ${edadFinM40.dias} días</strong>
+                    `;
+                }
+            }
+        }
+
+        function handleMesesDepositoChange(input) {
+            let value = parseInt(input.value);
+            const lastValidValue = input.getAttribute('data-last-valid');
+            if (isNaN(value) || value < 6 || value > 12) {
+                input.value = lastValidValue;
+                showCustomAlert("El valor debe ser un número entre 6 y 12.", "Valor Inválido");
+                return;
+            }
+            input.setAttribute('data-last-valid', value);
+            recalculateAllScenarios();
+        }
+
+        // --- VALIDATION & DATA GATHERING ---
+        function validateAndSetClientBaseInfo() {
+            const nombre = document.getElementById('info_nombreCompleto').value.trim();
+            const curp = document.getElementById('info_curpCliente').value.trim();
+            const telefono = document.getElementById('info_telefonoCliente').value.trim();
+            const semanasManuales = getNumeroInfo('info_semanasTotalesManual');
+
+            if (!nombre || !/^[A-ZÑ&]{4}\d{6}[HM][A-Z]{5}[A-Z\d]\d$/.test(curp)) {
+                showCustomAlert("Por favor, complete la información del asegurado (Nombre y CURP válido) en el Paso 1.", "Validación de Datos");
+                return false;
+            }
+            if (semanasManuales < 0) {
+                showCustomAlert("Las semanas cotizadas no pueden ser un número negativo.", "Validación de Datos");
+                return false;
+            }
+
+            const fechaNacimiento = extraerFechaNacimientoCURP(curp);
+            if (!fechaNacimiento) {
+                showCustomAlert("El CURP ingresado no es válido. Por favor, verifíquelo.", "Validación de Datos");
+                return false;
+            }
+            const edadObj = calcularEdadExacta(fechaNacimiento, new Date());
+            const edadActual = edadObj.anos;
+
+            AppState.datosClienteInfo = {
+                ...AppState.datosClienteInfo,
+                nombre,
+                curp,
+                telefono,
+                semanasCotizadasBase: semanasManuales,
+                edadBase: edadActual,
+                edadObjCompleta: edadObj,
+            };
+            return true;
+        }
+
+
+        // --- MAIN CALCULATION WORKFLOW ---
+        function analizarYCalcularSBC() {
+            if (!validateAndSetClientBaseInfo()) return;
+            
+            employerColorCache = {};
+            lastColorIndex = 0;
+
+            const cards = document.querySelectorAll('.employment-card');
+
+            let allParsedPeriods = [];
+            let isValid = true;
+
+            cards.forEach((card, index) => {
+                if (!isValid) return;
+
+                const qpCheckbox = card.querySelector('.emp_qp');
+                const isQP = qpCheckbox && qpCheckbox.checked;
+
+                const nombrePatron = card.querySelector('.emp_name').value.trim();
+                const regPatronal = card.querySelector('.emp_reg').value.trim();
+                const texto = card.querySelector('.emp_history_text').value.trim();
+                if (!nombrePatron || !regPatronal || !texto) {
+                    showCustomAlert(`Por favor, complete todos los campos para el Periodo Laboral #${index + 1}.`, "Datos Faltantes");
+                    isValid = false;
+                    return;
+                }
+                const movementsOnCard = [];
+                const lineas = texto.split('\n').filter(line => line.trim() !== '');
+                const regex = /(.+?)\s+(\d{2}\/\d{2}\/\d{4})\s*(?:\$\s*([\d,]+\.?\d*))?/;
+                lineas.forEach(linea => {
+                    const match = linea.trim().match(regex);
+                    if (match) {
+                        const tipo = match[1].trim().toUpperCase();
+                        const [dia, mes, anio] = match[2].split('/');
+                        const fecha = new Date(Date.UTC(anio, mes - 1, dia));
+                        const sbc = match[3] ? parseFloat(match[3].replace(/,/g, '')) : null;
+                        movementsOnCard.push({
+                            tipo,
+                            fecha,
+                            sbc,
+                            nombrePatron,
+                            regPatronal
+                        });
+                    } else {
+                        showCustomAlert(`En Periodo Laboral #${index + 1}, la línea "${linea}" no tiene un formato válido.`, "Error de Formato");
+                        isValid = false;
+                    }
+                });
+                if (!isValid) return;
+
+                movementsOnCard.sort((a, b) => {
+                    if (a.fecha.getTime() !== b.fecha.getTime()) {
+                        return a.fecha - b.fecha;
+                    }
+                    if (a.tipo.includes('BAJA')) return 1;
+                    if (b.tipo.includes('BAJA')) return -1;
+                    return 0;
+                });
+
+                for (let i = 0; i < movementsOnCard.length; i++) {
+                    const mov = movementsOnCard[i];
+                    if (mov.tipo.includes('BAJA') || mov.sbc === null || mov.sbc <= 0) {
+                        continue;
+                    }
+                    const fechaInicio = mov.fecha;
+                    let fechaFin = null;
+                    for (let j = i + 1; j < movementsOnCard.length; j++) {
+                        const nextMov = movementsOnCard[j];
+                        if (nextMov.tipo.includes('BAJA')) {
+                            fechaFin = nextMov.fecha;
+                            i = j;
+                            break;
+                        } else if (nextMov.sbc !== null && nextMov.sbc > 0) {
+                            fechaFin = new Date(nextMov.fecha);
+                            fechaFin.setUTCDate(fechaFin.getUTCDate() - 1);
+                            break;
+                        }
+                    }
+                    if (fechaFin === null) {
+                        const hoy = new Date();
+                        fechaFin = new Date(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth() + 1, 0));
+                    }
+                    if (fechaFin >= fechaInicio) {
+                        allParsedPeriods.push({
+                            fechaInicio: fechaInicio,
+                            fechaFin: fechaFin,
+                            sbc: mov.sbc,
+                            dias: Math.round((fechaFin - fechaInicio) / (1000 * 60 * 60 * 24)) + 1,
+                            nombrePatron: nombrePatron,
+                            regPatronal: regPatronal,
+                            isQP: isQP
+                        });
+                    }
+                }
+            });
+
+            if (!isValid) return;
+
+            const totalQpDays = allParsedPeriods
+                .filter(p => p.isQP)
+                .reduce((sum, p) => sum + p.dias, 0);
+
+            const weeksToSubtract = totalQpDays / 7.0;
+            const adjustedWeeks = Math.max(0, AppState.datosClienteInfo.semanasCotizadasBase - weeksToSubtract);
+            AppState.datosClienteInfo.semanasCotizadasBase = adjustedWeeks; // Update the state
+
+            AppState.allParsedPeriodsForDisplay = allParsedPeriods;
+            AppState.fullHistoryPeriods = allParsedPeriods.filter(p => !p.isQP);
+
+            AppState.timelinePeriods = processOverlappingPeriods(AppState.fullHistoryPeriods);
+            let periodosParaSBC = [...AppState.timelinePeriods].sort((a, b) => b.fechaFin - a.fechaFin);
+            let diasAcumuladosSBC = 0;
+            let sbcPonderadoTotal = 0;
+            const periodosParaTabla = [];
+            for (const p of periodosParaSBC) {
+                if (diasAcumuladosSBC >= Constants.DIAS_PROMEDIO_PENSION) break;
+                const diasDelPeriodo = Math.round((p.fechaFin - p.fechaInicio) / (1000 * 60 * 60 * 24)) + 1;
+                const diasAUsar = Math.min(diasDelPeriodo, Constants.DIAS_PROMEDIO_PENSION - diasAcumuladosSBC);
+                sbcPonderadoTotal += p.sbc * diasAUsar;
+                diasAcumuladosSBC += diasAUsar;
+                periodosParaTabla.push({ ...p,
+                    dias: diasAUsar,
+                    ponderado: p.sbc * diasAUsar,
+                });
+            }
+            AppState.sbcCalculationPeriods = periodosParaTabla;
+            const sbcPromedioFinal = diasAcumuladosSBC > 0 ? sbcPonderadoTotal / diasAcumuladosSBC : 0;
+
+            let edadParaCalculoBase = AppState.datosClienteInfo.edadBase;
+            const ageWarningEl = document.getElementById('ageAdjustmentWarning');
+            if (AppState.datosClienteInfo.edadBase < 60) {
+                edadParaCalculoBase = 60;
+                ageWarningEl.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>La edad del asegurado es ${AppState.datosClienteInfo.edadBase} años. Para el cálculo de la pensión base, se ha ajustado la edad a 60 años (mínima de retiro).`;
+                ageWarningEl.style.display = 'block';
+            } else {
+                ageWarningEl.style.display = 'none';
+            }
+            let ultimaFechaBaja = null;
+            if (AppState.fullHistoryPeriods.length > 0) {
+                const sortedPeriods = [...AppState.fullHistoryPeriods].sort((a, b) => b.fechaFin - a.fechaFin);
+                ultimaFechaBaja = sortedPeriods[0].fechaFin;
+            }
+            // Update state with calculation results
+            AppState.datosClienteInfo.sbcPromedioBase = sbcPromedioFinal;
+            AppState.datosClienteInfo.ultimaFechaBaja = ultimaFechaBaja;
+
+            // Update UI
+            document.getElementById('res_sbcPromedio').textContent = '$' + formatNumber(sbcPromedioFinal);
+            document.getElementById('res_edadActual').textContent = `${AppState.datosClienteInfo.edadBase} años`;
+            document.getElementById('res_telefonoCliente').textContent = AppState.datosClienteInfo.telefono;
+            renderSbcAnalysisTable();
+            renderModalitySummary();
+            drawScenarioTimeline('timeline-svg', 'timeline-legend', AppState.timelinePeriods);
+            checkVigencia();
+            document.getElementById('sbcAnalysisTableFooter').innerHTML = `
+                <tr>
+                    <td class="p-3" colspan="3">Total Días Usados para Cálculo:</td>
+                    <td class="p-3 text-right">${formatNumber(diasAcumuladosSBC, 0)}</td>
+                    <td class="p-3" colspan="2"></td>
+                </tr>`;
+            const daysWarningEl = document.getElementById('sbcDaysWarning');
+            if (diasAcumuladosSBC < Constants.DIAS_PROMEDIO_PENSION) {
+                daysWarningEl.innerHTML = `<i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i>Se han utilizado <strong>${formatNumber(diasAcumuladosSBC, 0)} de ${Constants.DIAS_PROMEDIO_PENSION}</strong> días para el cálculo. El sistema completará los días faltantes con el último salario registrado para el promedio.`;
+                daysWarningEl.className = 'mt-4 p-3 rounded-lg text-sm bg-yellow-50 border border-yellow-200 text-yellow-800';
+            } else {
+                daysWarningEl.innerHTML = `<i class="fas fa-check-circle mr-2 text-green-500"></i>Se han recopilado los <strong>${Constants.DIAS_PROMEDIO_PENSION}</strong> días necesarios para el cálculo del Salario Promedio.`;
+                daysWarningEl.className = 'mt-4 p-3 rounded-lg text-sm bg-green-50 border border-green-200 text-green-800';
+            }
+            daysWarningEl.style.display = 'block';
+
+            const hintEl = document.getElementById('lastBajaDateHint');
+            const daySelect = document.getElementById('m40_day');
+            const monthSelect = document.getElementById('m40_month');
+            const yearSelect = document.getElementById('m40_year');
+            const mesesInput = document.getElementById('info_m40_p1_meses');
+            const sbcInput = document.getElementById('info_m40_p1_sbc');
+
+            mesesInput.value = '';
+            sbcInput.value = '';
+            if (ultimaFechaBaja) {
+                hintEl.innerHTML = `<i class="fas fa-info-circle mr-2"></i>Última fecha de baja a considerar: <span class="text-blue-700">${formatDateDDMMYYYY(ultimaFechaBaja)}</span>`;
+                const m40StartDate = new Date(ultimaFechaBaja);
+                m40StartDate.setUTCDate(m40StartDate.getUTCDate() + 1);
+                const year = m40StartDate.getUTCFullYear();
+                const month = m40StartDate.getUTCMonth() + 1;
+                const day = m40StartDate.getUTCDate();
+                yearSelect.value = year;
+                monthSelect.value = month;
+                updateDaySelector();
+                daySelect.value = day;
+                let targetAge = Math.max(60, AppState.datosClienteInfo.edadBase);
+                if (AppState.datosClienteInfo.edadObjCompleta.meses > 6) {
+                    targetAge++;
+                } else if (AppState.datosClienteInfo.edadBase < 60) {
+                    targetAge = 60;
+                }
+                const targetRetirementDate = new Date(extraerFechaNacimientoCURP(AppState.datosClienteInfo.curp));
+                targetRetirementDate.setUTCFullYear(targetRetirementDate.getUTCFullYear() + targetAge);
+                targetRetirementDate.setUTCMonth(targetRetirementDate.getUTCMonth() + 7);
+                let monthsToInvest = (targetRetirementDate.getUTCFullYear() - m40StartDate.getUTCFullYear()) * 12;
+                monthsToInvest -= m40StartDate.getUTCMonth();
+                monthsToInvest += targetRetirementDate.getUTCMonth();
+                mesesInput.value = Math.max(1, Math.min(60, Math.round(monthsToInvest)));
+            } else {
+                hintEl.innerHTML = '';
+                daySelect.value = '';
+                monthSelect.value = '';
+                yearSelect.value = '';
+            }
+
+            actualizarSBCMaximoM40();
+            actualizarFechaFinM40Display();
+            showElement('sbcAnalysisResultsContainer');
+            showElement('timelineSection');
+            const pensionData = _calcularPensionDetallado(sbcPromedioFinal, adjustedWeeks, edadParaCalculoBase);
+            AppState.pensionBaseResultadosInfo = pensionData;
+            document.getElementById('res_base_pensionMensual').textContent = '$' + formatNumber(pensionData.PENSION_MENSUAL_ESTIMADA);
+            document.getElementById('res_base_aguinaldo').textContent = '$' + formatNumber(pensionData.AGUINALDO_ESTIMADO);
+            document.getElementById('res_base_ingresoAnual').textContent = '$' + formatNumber((pensionData.PENSION_MENSUAL_ESTIMADA * 12) + pensionData.AGUINALDO_ESTIMADO);
+            showElement('basePensionResultsContainer');
+            showCustomAlert("Análisis completado. El SBC Promedio y la pensión base han sido calculados.", "Análisis Exitoso");
+        }
+
+
+        // Renders the SBC analysis table based on checkbox states
+        function renderSbcAnalysisTable() {
+            const tableBody = document.getElementById('sbcAnalysisTableBody');
+            tableBody.innerHTML = '';
+            const showFullHistory = document.getElementById('showFullHistoryCheckbox').checked;
+            const showBreakdown = document.getElementById('showSbcBreakdownCheckbox').checked;
+            const sourceData = showFullHistory ? AppState.allParsedPeriodsForDisplay.slice().sort((a, b) => b.fechaFin - a.fechaFin) : AppState.sbcCalculationPeriods;
+
+            if (!showBreakdown) {
+                sourceData.forEach(p => {
+                    const color = getEmployerColor(p.regPatronal);
+                    let row;
+                    if (p.isQP) {
+                        row = `<tr class="bg-red-50 text-red-700 italic">
+                            <td class="p-3 border-b"><div class="flex items-center"><span class="w-1.5 h-full min-h-5 rounded-full mr-3" style="background-color: ${color};"></span><div><span>${p.regPatronal}</span> <span class="bg-red-200 text-red-800 text-xs font-semibold px-2 py-0.5 rounded-full">QP</span><span class="block text-xs text-gray-400">${p.nombrePatron}</span></div></div></td>
+                            <td class="p-3 border-b"><del>${formatDateDDMMYYYY(p.fechaInicio)}</del></td>
+                            <td class="p-3 border-b"><del>${formatDateDDMMYYYY(p.fechaFin)}</del></td>
+                            <td class="p-3 border-b text-right"><del>${formatNumber(p.dias, 0)}</del> (0)</td>
+                            <td class="p-3 border-b text-right"><del>$${formatNumber(p.sbc)}</del></td>
+                            <td class="p-3 border-b text-right">$0.00</td>
+                        </tr>`;
+                    } else {
+                        row = `<tr class="border-b">
+                           <td class="p-3"><div class="flex items-center"><span class="w-1.5 h-full min-h-5 rounded-full mr-3" style="background-color: ${color};"></span><div><span>${p.regPatronal}</span><span class="block text-xs text-gray-400 truncate" style="max-width: 150px;" title="${p.nombrePatron}">${p.nombrePatron}</span></div></div></td>
+                            <td class="p-3">${formatDateDDMMYYYY(p.fechaInicio)}</td>
+                            <td class="p-3">${formatDateDDMMYYYY(p.fechaFin)}</td>
+                            <td class="p-3 text-right">${formatNumber(p.dias, 0)}</td>
+                            <td class="p-3 text-right">$${formatNumber(p.sbc)}</td>
+                            <td class="p-3 text-right">$${formatNumber(p.ponderado || 0)}</td>
+                        </tr>`;
+                    }
+                    tableBody.innerHTML += row;
+                });
+            } else {
+                const groupedByPatron = sourceData.reduce((acc, p) => {
+                    const key = `${p.regPatronal} - ${p.nombrePatron}`;
+                    if (!acc[key]) {
+                        acc[key] = { periods: [], color: getEmployerColor(p.regPatronal) };
+                    }
+                    acc[key].periods.push(p);
+                    return acc;
+                }, {});
+
+                for (const patronKey in groupedByPatron) {
+                    const group = groupedByPatron[patronKey];
+                    let subtotalDias = 0;
+                    tableBody.innerHTML += `<tr class="bg-blue-100 font-bold"><td colspan="6" class="p-3" style="border-left: 5px solid ${group.color};">${patronKey}</td></tr>`;
+                    group.periods.forEach(p => {
+                        subtotalDias += p.isQP ? 0 : p.dias;
+                        let row;
+                        if (p.isQP) {
+                            row = `<tr class="bg-red-50 text-red-700 italic">
+                                <td class="p-3 border-b pl-6"></td>
+                                <td class="p-3 border-b"><del>${formatDateDDMMYYYY(p.fechaInicio)}</del></td>
+                                <td class="p-3 border-b"><del>${formatDateDDMMYYYY(p.fechaFin)}</del></td>
+                                <td class="p-3 border-b text-right"><del>${formatNumber(p.dias, 0)}</del> (0)</td>
+                                <td class="p-3 border-b text-right"><del>$${formatNumber(p.sbc)}</del></td>
+                                <td class="p-3 border-b text-right">$0.00</td>
+                            </tr>`;
+                        } else {
+                            row = `<tr class="border-b">
+                                <td class="p-3 pl-6"></td>
+                                <td class="p-3">${formatDateDDMMYYYY(p.fechaInicio)}</td>
+                                <td class="p-3">${formatDateDDMMYYYY(p.fechaFin)}</td>
+                                <td class="p-3 text-right">${formatNumber(p.dias, 0)}</td>
+                                <td class="p-3 text-right">$${formatNumber(p.sbc)}</td>
+                                <td class="p-3 text-right">$${formatNumber(p.ponderado || 0)}</td>
+                            </tr>`;
+                        }
+                        tableBody.innerHTML += row;
+                    });
+                    tableBody.innerHTML += `<tr class="bg-gray-50 font-semibold">
+                        <td colspan="3" class="p-3 text-right">Subtotal Días para ${patronKey.split(' - ')[1]}:</td>
+                        <td class="p-3 text-right">${formatNumber(subtotalDias, 0)}</td>
+                        <td colspan="2" class="p-3"></td>
+                    </tr>`;
+                }
+            }
+        }
+
+
+        // Renders the modality summary table
+        function renderModalitySummary() {
+            const container = document.getElementById('modalitySummaryContainer');
+            container.innerHTML = '';
+            const uniquePatrones = [...new Set(AppState.fullHistoryPeriods.map(p => p.regPatronal))];
+            let mod10Count = 0;
+            let mod40Count = 0;
+            let others = [];
+            uniquePatrones.forEach(reg => {
+                if (reg.endsWith('10')) {
+                    mod10Count++;
+                } else if (reg.endsWith('40')) {
+                    mod40Count++;
+                } else {
+                    others.push(reg);
+                }
+            });
+            let summaryHTML = `
+                <h4 class="font-semibold text-gray-700 mt-4 mb-2">Resumen de Modalidades</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-100 p-3 rounded-lg">
+                        <p class="text-sm">Periodos en Modalidad 10 (R.O.):</p>
+                        <p class="font-bold text-lg">${mod10Count}</p>
+                    </div>
+                    <div class="bg-gray-100 p-3 rounded-lg">
+                        <p class="text-sm">Periodos en Modalidad 40 (C.V.):</p>
+                        <p class="font-bold text-lg">${mod40Count}</p>
+                    </div>
+                </div>
+            `;
+            if (others.length > 0) {
+                summaryHTML += `
+                <div class="mt-4 p-3 rounded-lg text-sm bg-yellow-50 border border-yellow-200 text-yellow-800">
+                    <i class="fas fa-exclamation-triangle mr-2"></i><strong>Atención:</strong> Se encontraron registros patronales con terminaciones diferentes a '10' o '40' (${others.join(', ')}). Se recomienda una revisión detallada del historial laboral (SISEC).
+                </div>
+            `;
+            }
+            container.innerHTML = summaryHTML;
+        }
+        async function calcularEscenarioM40Infografia() {
+            if (!validateAndSetClientBaseInfo()) return;
+
+            const inicioP1Str = getM40StartDate();
+            const numMesesP1 = parseInt(document.getElementById('info_m40_p1_meses').value) || 0;
+            const sbcM40Ingresado = getNumeroInfo('info_m40_p1_sbc');
+            const ultimaFechaBaja = AppState.datosClienteInfo.ultimaFechaBaja;
+
+            if (!inicioP1Str || numMesesP1 <= 0 || sbcM40Ingresado <= 0) {
+                showCustomAlert("Por favor, defina el periodo de Modalidad 40: la Fecha de Inicio, los Meses a invertir y el SBC son obligatorios.", "Datos Faltantes");
+                return;
+            }
+            if (ultimaFechaBaja) {
+                const [year, month, day] = inicioP1Str.split('-').map(Number);
+                const fechaInicioM40 = new Date(Date.UTC(year, month - 1, day));
+                if (fechaInicioM40 <= ultimaFechaBaja) {
+                    showCustomAlert(`La fecha de inicio de M40 (${formatDateDDMMYYYY(fechaInicioM40)}) debe ser posterior a la última fecha de baja (${formatDateDDMMYYYY(ultimaFechaBaja)}).`, "Fecha Inválida");
+                    return;
+                }
+            }
+
+            AppState.pdfGenerated = true;
+            document.getElementById('scenariosContainer').innerHTML = '';
+            AppState.activeScenarios = 0;
+            AppState.scenarioData = {};
+            addScenarioCard(1, numMesesP1);
+
+            // Add base scenario only if there was a history to begin with
+            if (AppState.fullHistoryPeriods.length > 0) {
+                addScenarioCard(2, 0);
+            }
+
+            showElement('infoSection4');
+            showElement('infoSection3');
+            showElement('infoSection5');
+            document.getElementById('addScenarioBtn').disabled = false;
+            await recalculateAllScenarios();
+            showCustomAlert("Proyección calculada exitosamente. Los resultados se muestran a continuación.", "Proyección Lista");
+        }
+
+
+        // --- SCENARIO MANAGEMENT ---
+        function addScenarioCard(scenarioNum, meses = 0) {
+            const isManualAdd = !scenarioNum;
+            if (isManualAdd) {
+                if (AppState.activeScenarios >= 4) {
+                    showCustomAlert("Se ha alcanzado el número máximo de escenarios (4).", "Límite Alcanzado");
+                    return;
+                }
+                addScenarioCardInternal();
+                return;
+            }
+            addScenarioCardInternal(scenarioNum, meses);
+        }
+
+        function addScenarioCardInternal(scenarioNum, meses = 0) {
+            if (!scenarioNum) {
+                AppState.activeScenarios++;
+                scenarioNum = AppState.activeScenarios;
+            } else if (scenarioNum > AppState.activeScenarios) {
+                AppState.activeScenarios = scenarioNum;
+            }
+            const container = document.getElementById('scenariosContainer');
+            const isFirstScenario = scenarioNum === 1;
+            const cardHTML = `
+                <div class="bg-white p-6 rounded-2xl shadow-xl border-l-8 border-blue-800 scenario-card" id="scenario_card_${scenarioNum}">
+                    <!-- CONTROLS -->
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold text-blue-800">Escenario ${scenarioNum}</h3>
+                        ${!isFirstScenario ? `<button onclick="removeScenarioCard(${scenarioNum})" class="btn-danger-icon !w-9 !h-9"><i class="fas fa-times"></i></button>` : ''}
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-6 pb-4 border-b">
+                        <div class="input-group">
+                            <label for="scenario_${scenarioNum}_meses">Meses en M40:</label>
+                            <input type="number" id="scenario_${scenarioNum}_meses" value="${meses}" oninput="recalculateScenario(${scenarioNum})" class="w-full" ${isFirstScenario ? 'readonly' : ''}>
+                        </div>
+                        <div class="input-group">
+                            <label for="scenario_${scenarioNum}_semanas_ajuste">Ajuste de Semanas:</label>
+                            <input type="number" id="scenario_${scenarioNum}_semanas_ajuste" value="0" oninput="recalculateScenario(${scenarioNum})" class="w-full" ${isFirstScenario ? 'readonly' : ''}>
+                        </div>
+                        <input type="hidden" id="scenario_${scenarioNum}_semanas" value="0">
+                    </div>
+                    <div id="scenario_${scenarioNum}_results" class="mt-6 space-y-6">
+                        <!-- PENSION & PARAMS -->
+                        <div class="bg-gray-50 p-5 rounded-xl border">
+                            <h4 class="font-bold text-center text-gray-700 text-lg mb-4">Resultados de Pensión</h4>
+                            <div class="space-y-3 text-base">
+                                <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-chart-bar fa-fw"></i>SBC Promedio:</span><span id="scenario_${scenarioNum}_sbc_final" class="font-semibold text-gray-800">--</span></div>
+                                <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-calendar-check fa-fw"></i>Semanas Finales:</span><span id="scenario_${scenarioNum}_semanas_finales" class="font-semibold text-gray-800">--</span></div>
+                                <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-user-clock fa-fw"></i>Edad al Finalizar:</span><span id="scenario_${scenarioNum}_edad_final" class="font-semibold text-gray-800">--</span></div>
+                                <hr class="my-3">
+                                <div class="flex justify-between text-lg"><span class="font-bold flex items-center gap-2"><i class="fas fa-money-bill-wave fa-fw text-green-500"></i>Pensión Mensual:</span><span id="scenario_${scenarioNum}_pension" class="font-bold text-green-600 text-xl">$0.00</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-gift fa-fw"></i>Aguinaldo:</span><span id="scenario_${scenarioNum}_aguinaldo" class="font-semibold text-gray-800">$0.00</span></div>
+                            </div>
+                             <hr class="my-3">
+                            <h5 class="font-bold text-center text-gray-600 text-base mb-3">Fechas Clave</h5>
+                            <div class="text-sm space-y-2">
+                                 <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-calendar-times fa-fw"></i>Fin de M40:</span><span id="scenario_${scenarioNum}_fecha_fin_m40" class="font-semibold text-gray-800">--</span></div>
+                                 <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-hand-holding-usd fa-fw"></i>Primer Depósito:</span><span id="scenario_${scenarioNum}_fecha_primer_deposito" class="font-semibold text-gray-800">--</span></div>
+                            </div>
+                        </div>
+                        <!-- FINANCIAL ANALYSIS -->
+                        <div class="grid grid-cols-1 gap-6 items-start">
+                            <!-- Balance del Proyecto -->
+                            <div class="border rounded-xl p-5 h-full flex flex-col">
+                                <h4 class="font-bold text-center text-lg mb-4">Balance del Proyecto</h4>
+                                <div id="scenario_${scenarioNum}_financial_summary" class="space-y-4 text-sm flex-grow">
+                                    <!-- Content generated by JS -->
+                                </div>
+                            </div>
+                            <!-- Composición de Cobertura -->
+                            <div class="border rounded-xl p-5 h-full flex flex-col">
+                                <h4 class="font-bold text-center text-lg mb-2">Composición de Cobertura</h4>
+                                <div id="pie-chart-container-${scenarioNum}" class="relative w-full flex-grow h-48"></div>
+                                <div id="pie-chart-controls-${scenarioNum}" class="flex flex-wrap justify-center gap-2 mt-4 h-8"></div>
+                                <div id="special-client-badge-${scenarioNum}" class="text-center mt-4 h-6"></div>
+                            </div>
+                        </div>
+                        <!-- PROJECTIONS -->
+                        <div class="grid grid-cols-1 gap-6 items-start">
+                             <!-- Línea de Tiempo del Escenario -->
+                            <div class="border rounded-xl p-5">
+                                <h4 class="font-bold text-center text-lg mb-2">Línea de Tiempo del Escenario</h4>
+                                <p class="text-xs text-center text-gray-500 mb-2">Periodos del nuevo SBC Promedio.</p>
+                                <div id="timeline-scenario-${scenarioNum}-container" class="w-full h-56 mt-2 overflow-x-auto bg-gray-50 rounded-lg border"><svg id="timeline-scenario-${scenarioNum}-svg"></svg></div>
+                                <div id="timeline-scenario-${scenarioNum}-legend" class="flex flex-wrap gap-x-2 gap-y-1 mt-2 p-1 text-xs justify-center"></div>
+                            </div>
+                            <!-- Proyección de Pensión Neta -->
+                            <div class="border rounded-xl p-5">
+                                <h4 class="font-bold text-center text-lg mb-2">Proyección de Pensión Neta (10 Años)</h4>
+                                <div id="scenario_${scenarioNum}_proyeccion"></div>
+                            </div>
+                        </div>
+                        <!-- Hidden data for other functions -->
+                        <div class="hidden">
+                            <span id="scenario_${scenarioNum}_fecha_inicio"></span>
+                            <span id="scenario_${scenarioNum}_meses_pagados"></span>
+                            <span id="scenario_${scenarioNum}_fecha_baja"></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', cardHTML);
+            if (AppState.activeScenarios >= 4) {
+                document.getElementById('addScenarioBtn').disabled = true;
+            } else {
+                document.getElementById('addScenarioBtn').disabled = false;
+            }
+        }
+
+        function removeScenarioCard(scenarioNum) {
+            const card = document.getElementById(`scenario_card_${scenarioNum}`);
+            if (card) {
+                card.remove();
+            }
+            delete AppState.scenarioData[scenarioNum];
+            // Since a card was removed, we are no longer at the limit
+            document.getElementById('addScenarioBtn').disabled = false;
+        }
+        async function recalculateAllScenarios() {
+            const scenarioCards = document.querySelectorAll('[id^="scenario_card_"]');
+            for (const card of scenarioCards) {
+                const num = card.id.split('_')[2];
+                if (num) {
+                    await recalculateScenario(Number(num));
+                }
+            }
+        }
+        async function recalculateScenario(scenarioNum) {
+            const inputs = getScenarioInputs(scenarioNum);
+            if (inputs.meses < 0 || !inputs.semanas || inputs.semanas < 500) {
+                clearScenarioUI(scenarioNum);
+                AppState.scenarioData[scenarioNum] = {};
+                return;
+            }
+            const pensionData = calculateScenarioPensionData(inputs);
+            const financialData = calculateScenarioFinancials(pensionData, inputs);
+            const completeScenarioData = { ...inputs,
+                ...pensionData,
+                ...financialData,
+                proyeccion: generatePensionProjection(pensionData.pensionMensual, financialData.descuentoMensual, financialData.deficit > 0),
+                pieChartStep: 0 // Initialize step
+            };
+            AppState.scenarioData[scenarioNum] = completeScenarioData;
+            updateScenarioUI(scenarioNum, completeScenarioData);
+            drawCoveragePieChart(scenarioNum); // Draw initial pie chart
+            renderPieControls(scenarioNum); // Render initial controls
+        }
+
+        // --- RECALCULATE SCENARIO HELPER FUNCTIONS ---
+        function getSbcBreakdownForScenario(inputs) {
+            const breakdownPeriods = [];
+            let daysRemaining = Constants.DIAS_PROMEDIO_PENSION;
+            // 1. Add M40 Period if it exists
+            if (inputs.meses > 0 && inputs.inicioM40Str && inputs.sbcM40 > 0) {
+                const [anioInicio, mesInicio, diaInicio] = inputs.inicioM40Str.split('-').map(Number);
+                const fechaInicioM40Obj = new Date(Date.UTC(anioInicio, mesInicio - 1, diaInicio));
+                const fechaFinM40Obj = calcularFechaFinDesdeMeses(inputs.inicioM40Str, inputs.meses);
+                const m40Days = Math.round((fechaFinM40Obj - fechaInicioM40Obj) / (1000 * 60 * 60 * 24)) + 1;
+                const daysToUseFromM40 = Math.min(m40Days, daysRemaining);
+                if (daysToUseFromM40 > 0) {
+                    breakdownPeriods.push({
+                        concepto: 'Modalidad 40',
+                        fechaInicio: fechaInicioM40Obj,
+                        fechaFin: fechaFinM40Obj,
+                        dias: daysToUseFromM40,
+                        sbc: inputs.sbcM40,
+                        interrumpido: daysToUseFromM40 < m40Days,
+                    });
+                    daysRemaining -= daysToUseFromM40;
+                }
+            }
+            // 2. Add Historical Periods
+            if (daysRemaining > 0) {
+                const historicalPeriods = [...AppState.fullHistoryPeriods].sort((a, b) => b.fechaFin - a.fechaFin);
+                for (const p of historicalPeriods) {
+                    if (daysRemaining <= 0) break;
+                    const diasDelPeriodo = Math.round((p.fechaFin - p.fechaInicio) / (1000 * 60 * 60 * 24)) + 1;
+                    const diasAUsar = Math.min(diasDelPeriodo, daysRemaining);
+                    breakdownPeriods.push({
+                        concepto: p.regPatronal,
+                        fechaInicio: p.fechaInicio,
+                        fechaFin: p.fechaFin,
+                        dias: diasAUsar,
+                        sbc: p.sbc,
+                        interrumpido: diasAUsar < diasDelPeriodo
+                    });
+                    daysRemaining -= diasAUsar;
+                }
+            }
+            return breakdownPeriods;
+        }
+
+        function getScenarioInputs(scenarioNum) {
+            const meses = parseInt(document.getElementById(`scenario_${scenarioNum}_meses`).value) || 0;
+            const semanasAjuste = (document.getElementById(`scenario_${scenarioNum}_semanas_ajuste`)) ? (parseInt(document.getElementById(`scenario_${scenarioNum}_semanas_ajuste`).value) || 0) : 0;
+            const semanasBaseAjustadas = AppState.datosClienteInfo.semanasCotizadasBase + semanasAjuste;
+            const semanas = Math.round(semanasBaseAjustadas + (meses * (52.1429 / 12)));
+            // This hidden input is not strictly necessary but can be useful for debugging
+            const semanasHiddenInput = document.getElementById(`scenario_${scenarioNum}_semanas`);
+            if (semanasHiddenInput) semanasHiddenInput.value = semanas;
+            return {
+                meses,
+                semanas,
+                curp: document.getElementById('info_curpCliente').value,
+                inicioM40Str: getM40StartDate(),
+                sbcM40: getNumeroInfo('info_m40_p1_sbc'),
+                aforeActual: getNumeroInfo('info_aforeActual'),
+                mesesPrimerDeposito: parseInt(document.getElementById('info_mesesPrimerDeposito').value) || 6,
+                comisionExcedente: getNumeroInfo('info_comisionExcedente'),
+                comisionExcedenteConcepto: document.getElementById('info_comisionExcedente_concepto').value.trim()
+            };
+        }
+
+        function calculateScenarioPensionData(inputs) {
+             const fechaNacimiento = extraerFechaNacimientoCURP(inputs.curp);
+             let fechaFinM40Obj, edadFinM40, sbcPromedio, pensionResult, pensionMensual, aguinaldo, finalTimelinePeriods, sbcBreakdownPeriods;
+
+            if (inputs.meses === 0) {
+                const edadParaCalculoBase = Math.max(60, AppState.datosClienteInfo.edadBase);
+                pensionResult = _calcularPensionDetallado(AppState.datosClienteInfo.sbcPromedioBase, inputs.semanas, edadParaCalculoBase);
+                pensionMensual = pensionResult.PENSION_MENSUAL_ESTIMADA;
+                aguinaldo = pensionResult.AGUINALDO_ESTIMADO;
+                sbcPromedio = AppState.datosClienteInfo.sbcPromedioBase;
+                edadFinM40 = AppState.datosClienteInfo.edadObjCompleta;
+                fechaFinM40Obj = AppState.datosClienteInfo.ultimaFechaBaja || new Date();
+                finalTimelinePeriods = AppState.timelinePeriods;
+                sbcBreakdownPeriods = getSbcBreakdownForScenario({ meses: 0 });
+            } else {
+                fechaFinM40Obj = calcularFechaFinDesdeMeses(inputs.inicioM40Str, inputs.meses);
+                edadFinM40 = calcularEdadExacta(fechaNacimiento, fechaFinM40Obj);
+                let edadParaPorcentaje = edadFinM40.anos;
+                if (edadFinM40.meses > 6 || (edadFinM40.meses === 6 && edadFinM40.dias >= 1)) {
+                    edadParaPorcentaje++;
+                }
+                sbcBreakdownPeriods = getSbcBreakdownForScenario(inputs);
+                const totalPonderado = sbcBreakdownPeriods.reduce((acc, p) => acc + (p.sbc * p.dias), 0);
+                const totalDias = sbcBreakdownPeriods.reduce((acc, p) => acc + p.dias, 0);
+                sbcPromedio = totalDias > 0 ? totalPonderado / totalDias : 0;
+                pensionResult = _calcularPensionDetallado(sbcPromedio, inputs.semanas, edadParaPorcentaje);
+                pensionMensual = pensionResult.PENSION_MENSUAL_ESTIMADA + Constants.AJUSTE_PENSION_MENSUAL;
+                aguinaldo = pensionResult.AGUINALDO_ESTIMADO;
+                const [anioInicio, mesInicio, diaInicio] = inputs.inicioM40Str.split('-').map(Number);
+                const fechaInicioM40Obj = new Date(Date.UTC(anioInicio, mesInicio - 1, diaInicio));
+                const m40Period = {
+                    fechaInicio: fechaInicioM40Obj,
+                    fechaFin: fechaFinM40Obj,
+                    sbc: inputs.sbcM40,
+                    nombrePatron: "Modalidad 40",
+                    regPatronal: "Modalidad 40",
+                    isOverlapped: false,
+                    originalPeriods: [{...this}]
+                };
+                const combinedHistory = [...AppState.fullHistoryPeriods, m40Period];
+                finalTimelinePeriods = processOverlappingPeriods(combinedHistory);
+            }
+            
+            const fechaPrimerDeposito = new Date(fechaFinM40Obj);
+            fechaPrimerDeposito.setUTCMonth(fechaPrimerDeposito.getUTCMonth() + inputs.mesesPrimerDeposito);
+            
+            return {
+                pensionMensual,
+                aguinaldo,
+                sbcPromedio,
+                edadFinM40,
+                fechaFinM40Obj,
+                fechaPrimerDeposito,
+                diasEnM40: inputs.meses * (365.25 / 12),
+                finalTimelinePeriods,
+                sbcBreakdownPeriods
+            };
+        }
+
+
+        function calculateScenarioFinancials(pensionData, inputs) {
+            // Handle scenario with 0 months (no financial cost)
+            if (inputs.meses === 0) {
+                return {
+                    costoM40: 0,
+                    totalActualizacion: 0,
+                    totalRecargos: 0,
+                    comision: 0,
+                    factorMultiplicador: 0,
+                    costoTotalContrato: 0,
+                    coberturaAfore: inputs.aforeActual,
+                    coberturaDeposito: 0,
+                    coberturaExtra: 0,
+                    prestamoRequerido: 0,
+                    saldoFinal: 0,
+                    descuentoMensual: 0,
+                    deficit: 0,
+                    porcentajeUsoPrestamo: 0,
+                    desgloseM40: []
+                };
+            }
+            let costoM40 = 0;
+            let totalActualizacion = 0;
+            let totalRecargos = 0;
+            const desgloseM40 = [];
+            const [anioInicio, mesInicio] = inputs.inicioM40Str.split('-').map(Number);
+            const fechaSimulacionPago = new Date(pensionData.fechaFinM40Obj);
+            const mesActualizacion = new Date(fechaSimulacionPago);
+            mesActualizacion.setUTCMonth(mesActualizacion.getUTCMonth() - 1);
+            const inpcNumerador = getINPC(mesActualizacion.getUTCFullYear(), mesActualizacion.getUTCMonth() + 1);
+            for (let m = 0; m < inputs.meses; m++) {
+                const fechaCuota = new Date(Date.UTC(anioInicio, mesInicio - 1 + m, 1));
+                const anioCuota = fechaCuota.getUTCFullYear();
+                const mesCuota = fechaCuota.getUTCMonth() + 1;
+                const tasaM40Anual = getTasaM40Porcentaje(anioCuota);
+                const costoBaseMensual = inputs.sbcM40 * tasaM40Anual * getDiasEnMes(anioCuota, mesCuota);
+                let actualizacion = 0;
+                const inpcDenominador = getINPC(anioCuota, mesCuota);
+                let factorActualizacion = 1;
+                if (inpcNumerador && inpcDenominador && inpcNumerador > inpcDenominador) {
+                    factorActualizacion = inpcNumerador / inpcDenominador;
+                    actualizacion = costoBaseMensual * (factorActualizacion - 1);
+                }
+                const pagoBaseActualizado = costoBaseMensual + actualizacion;
+                let montoRecargos = 0;
+                let mesesRetraso = 0;
+                const fechaVencimiento = new Date(Date.UTC(anioCuota, mesCuota, 17));
+                if (fechaSimulacionPago > fechaVencimiento) {
+                    mesesRetraso = (fechaSimulacionPago.getUTCFullYear() - fechaVencimiento.getUTCFullYear()) * 12 + (fechaSimulacionPago.getUTCMonth() - fechaVencimiento.getUTCMonth());
+                    if (mesesRetraso > 0) montoRecargos = pagoBaseActualizado * Constants.RECARGO_M40_MENSUAL * mesesRetraso;
+                }
+                const costoTotalMes = pagoBaseActualizado + montoRecargos;
+                costoM40 += costoTotalMes;
+                totalActualizacion += actualizacion;
+                totalRecargos += montoRecargos;
+                desgloseM40.push({
+                    mes: fechaCuota.toLocaleDateString('es-MX', {
+                        month: 'short',
+                        year: 'numeric',
+                        timeZone: 'UTC'
+                    }),
+                    costoBase: costoBaseMensual,
+                    factorAct: factorActualizacion > 1 ? factorActualizacion.toFixed(4) : 'N/A',
+                    montoAct: actualizacion,
+                    recargos: montoRecargos,
+                    totalMes: costoTotalMes
+                });
+            }
+            const comision = costoM40 * Constants.COMISION_BASE_M40;
+            const factorMultiplicador = costoM40 * Constants.FACTOR_MULTIPLICADOR_COSTO;
+            const costoTotalContrato = (costoM40 + factorMultiplicador + Constants.COSTO_FIJO_ADICIONAL + comision + inputs.comisionExcedente) + Constants.AJUSTE_FINAL_CONTRATO;
+            const primerDeposito = pensionData.pensionMensual * inputs.mesesPrimerDeposito;
+            const extraAfore = pensionData.diasEnM40 * inputs.sbcM40 * 0.02;
+            const subtotalCobertura = inputs.aforeActual + primerDeposito + extraAfore;
+            const deficit = costoTotalContrato - subtotalCobertura;
+            const descuentoMaximoPermitido = pensionData.pensionMensual * 0.30;
+            const slopePrestamo = (Constants.PRESTAMO_PUNTO_B_MONTO - Constants.PRESTAMO_PUNTO_A_MONTO) / (Constants.PRESTAMO_PUNTO_B_DESCUENTO - Constants.PRESTAMO_PUNTO_A_DESCUENTO);
+            let prestamoAlcanzable = slopePrestamo * (descuentoMaximoPermitido - Constants.PRESTAMO_PUNTO_A_DESCUENTO) + Constants.PRESTAMO_PUNTO_A_MONTO;
+            prestamoAlcanzable = Math.max(0, prestamoAlcanzable);
+            let prestamoRequerido = 0;
+            let descuentoMensual = 0;
+            if (deficit > 0) {
+                prestamoRequerido = Math.min(deficit, prestamoAlcanzable);
+                if (prestamoRequerido > 0) {
+                    const slopeDescuento = (Constants.PRESTAMO_PUNTO_B_DESCUENTO - Constants.PRESTAMO_PUNTO_A_DESCUENTO) / (Constants.PRESTAMO_PUNTO_B_MONTO - Constants.PRESTAMO_PUNTO_A_MONTO);
+                    descuentoMensual = slopeDescuento * (prestamoRequerido - Constants.PRESTAMO_PUNTO_A_MONTO) + Constants.PRESTAMO_PUNTO_A_DESCUENTO;
+                }
+            }
+            const saldoFinal = subtotalCobertura + prestamoRequerido - costoTotalContrato;
+            const porcentajeUsoPrestamo = descuentoMaximoPermitido > 0 ? (descuentoMensual / descuentoMaximoPermitido) * 100 : 0;
+            return {
+                costoM40,
+                totalActualizacion,
+                totalRecargos,
+                comision,
+                factorMultiplicador,
+                costoTotalContrato,
+                coberturaAfore: inputs.aforeActual,
+                coberturaDeposito: primerDeposito,
+                coberturaExtra: extraAfore,
+                prestamoRequerido,
+                saldoFinal,
+                descuentoMensual,
+                deficit,
+                desgloseM40,
+                porcentajeUsoPrestamo
+            };
+        }
+
+        function generatePensionProjection(pensionMensual, descuentoMensual, hasDeficit) {
+            const projection = [];
+            for (let i = 1; i <= 10; i++) {
+                const pensionBruta = pensionMensual * Math.pow(1 + Constants.INPC_GROWTH_ESTIMATE, i - 1);
+                const descuentoAplicado = (i <= 5 && hasDeficit) ? descuentoMensual : 0;
+                const pensionNeta = pensionBruta - descuentoAplicado;
+                projection.push([i, `$${formatNumber(pensionBruta)}`, `-$${formatNumber(descuentoAplicado)}`, `$${formatNumber(pensionNeta)}`]);
+            }
+            return projection;
+        }
+
+        function updateScenarioUI(scenarioNum, data) {
+            const getEl = (suffix) => document.getElementById(`scenario_${scenarioNum}_${suffix}`);
+            // Update data content for pension block
+            getEl('pension').textContent = '$' + formatNumber(data.pensionMensual);
+            getEl('aguinaldo').textContent = '$' + formatNumber(data.aguinaldo);
+            getEl('sbc_final').textContent = '$' + formatNumber(data.sbcPromedio);
+            getEl('semanas_finales').textContent = formatNumber(data.semanas, 0);
+            getEl('edad_final').textContent = `${data.edadFinM40.anos}a, ${data.edadFinM40.meses}m`;
+            
+            getEl('fecha_fin_m40').textContent = data.meses > 0 ? formatDateDDMMYYYY(data.fechaFinM40Obj) : 'N/A';
+            getEl('fecha_primer_deposito').textContent = data.meses > 0 ? formatDateDDMMYYYY(data.fechaPrimerDeposito) : 'N/A';
+
+
+            // Update financial summary
+            const summaryContainer = getEl('financial_summary');
+            if (summaryContainer) {
+                const saldoColorClasses = data.saldoFinal >= 0 ? 'bg-green-100 border-green-300 text-green-900' : 'bg-red-100 border-red-300 text-red-900';
+                const saldoLabel = data.saldoFinal >= 0 ? 'SALDO FINAL A FAVOR' : 'DÉFICIT FINAL';
+                summaryContainer.innerHTML = `
+                    <div class="p-4 rounded-lg bg-gray-50 border space-y-2">
+                        <div class="flex justify-between font-semibold text-gray-700"><span>(+) Cobertura Total</span><span>$${formatNumber(data.coberturaAfore + data.coberturaDeposito + data.coberturaExtra + data.prestamoRequerido)}</span></div>
+                        <div class="pl-4 text-xs text-gray-500 space-y-1 border-l-2 ml-1">
+                            <div class="flex justify-between"><span>AFORE Actual:</span><span>$${formatNumber(data.coberturaAfore)}</span></div>
+                            <div class="flex justify-between"><span>1er Depósito:</span><span>$${formatNumber(data.coberturaDeposito)}</span></div>
+                            <div class="flex justify-between"><span>Extra AFORE:</span><span>$${formatNumber(data.coberturaExtra)}</span></div>
+                            <div class="flex justify-between"><span>Préstamo Requerido:</span><span>$${formatNumber(data.prestamoRequerido)}</span></div>
+                        </div>
+                    </div>
+                    <div class="p-4 rounded-lg bg-gray-50 border">
+                        <div class="flex justify-between font-semibold text-gray-700"><span>(-) Costo Total del Proyecto</span><span>$${formatNumber(data.costoTotalContrato)}</span></div>
+                    </div>
+                    <div class="flex justify-between items-center p-4 mt-2 rounded-lg font-bold border text-lg ${saldoColorClasses}">
+                        <span>${saldoLabel}</span>
+                        <span>$${formatNumber(Math.abs(data.saldoFinal))}</span>
+                    </div>
+                    <div class="text-center text-sm text-gray-600 pt-2">
+                        <span>% Límite Préstamo Usado:</span><span class="font-bold text-blue-700 text-base ml-2">${formatNumber(data.porcentajeUsoPrestamo, 1)}%</span>
+                    </div>
+                `;
+            }
+            let fechaBajaFormatted = data.meses > 0 ? formatDateDDMMYYYY(data.fechaFinM40Obj) : 'N/A';
+            let fechaInicioFormatted = 'N/A';
+            if (data.meses > 0 && data.inicioM40Str) {
+                const [year, month, day] = data.inicioM40Str.split('-').map(Number);
+                const fechaInicioObj = new Date(Date.UTC(year, month - 1, day));
+                fechaInicioFormatted = formatDateDDMMYYYY(fechaInicioObj);
+            }
+            // Update hidden fields used by other parts of the app if any
+            if (getEl('fecha_inicio')) getEl('fecha_inicio').textContent = fechaInicioFormatted;
+            if (getEl('meses_pagados')) getEl('meses_pagados').textContent = `${data.meses} meses`;
+            if (getEl('fecha_baja')) getEl('fecha_baja').textContent = fechaBajaFormatted;
+            let projectionHtml = `<table class="w-full text-sm mt-2"><thead class="bg-gray-200"><tr><th class="p-2 text-left">Año</th><th class="p-2 text-right">P. Bruta</th><th class="p-2 text-right">Desc.</th><th class="p-2 text-right font-semibold">P. Neta</th></tr></thead><tbody>`;
+            data.proyeccion.forEach(row => {
+                const netaColorClass = 'text-green-700';
+                const descColorClass = 'text-red-600';
+                projectionHtml += `<tr class="border-b"><td class="p-2 text-left">${row[0]}</td><td class="p-2 text-right">${row[1]}</td><td class="p-2 text-right ${descColorClass}">${row[2]}</td><td class="p-2 text-right font-bold ${netaColorClass}">${row[3]}</td></tr>`;
+            });
+            projectionHtml += `</tbody></table>`;
+            getEl('proyeccion').innerHTML = projectionHtml;
+            const resultsDiv = document.getElementById(`scenario_${scenarioNum}_results`);
+            if (data.meses !== undefined) {
+                resultsDiv.style.display = 'block';
+            } else {
+                resultsDiv.style.display = 'none';
+            }
+            // Draw the timeline for this scenario
+            if (data.finalTimelinePeriods) {
+                drawScenarioTimeline(`timeline-scenario-${scenarioNum}-svg`, `timeline-scenario-${scenarioNum}-legend`, data.finalTimelinePeriods);
+            }
+        }
+
+        function clearScenarioUI(scenarioNum) {
+            const scenarioCard = document.getElementById(`scenario_card_${scenarioNum}`);
+            if (!scenarioCard) return;
+            hideElement(`scenario_${scenarioNum}_results`);
+            const getEl = (suffix) => document.getElementById(`scenario_${scenarioNum}_${suffix}`);
+            getEl('pension').textContent = '$0.00';
+            getEl('aguinaldo').textContent = '$0.00';
+            getEl('sbc_final').textContent = '--';
+            getEl('semanas_finales').textContent = '--';
+            getEl('edad_final').textContent = '--';
+            getEl('financial_summary').innerHTML = '';
+            getEl('proyeccion').innerHTML = '';
+        }
+
+        function populateUmaTable() {
+            const tableBody = document.getElementById('umaReferenceTableBody');
+            tableBody.innerHTML = '';
+            const years = Object.keys(Constants.economicData.umas).sort((a, b) => b - a);
+            years.forEach(year => {
+                const uma = Constants.economicData.umas[year];
+                const sbcTope = uma * 25;
+                const row = `
+                <tr class="border-b last:border-b-0 hover:bg-gray-50">
+                    <td class="p-3 font-semibold">${year}</td>
+                    <td class="p-3 text-right">$${formatNumber(uma)}</td>
+                    <td class="p-3 text-right font-bold text-gray-800">$${formatNumber(sbcTope)}</td>
+                </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // --- PDF GENERATION ---
+        async function promptForClientPDF() {
+            AppState.pdfGenerated = true;
+            await recalculateAllScenarios(); // This will now make results visible
+            await generateFullReportPDF();
+        }
+
+        // --- DETAILED PDF GENERATION FUNCTION ---
+        async function generateFullReportPDF() {
+            const {
+                jsPDF
+            } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'letter');
+            const pageHeight = doc.internal.pageSize.height;
+            let finalY = 0;
+            const cliente = AppState.datosClienteInfo;
+            const styles = {
+                header: {
+                    font: "helvetica",
+                    fontStyle: 'bold',
+                    fontSize: 16,
+                    textColor: '#003366'
+                },
+                subHeader: {
+                    font: "helvetica",
+                    fontStyle: 'bold',
+                    fontSize: 12,
+                    textColor: '#1A202C'
+                },
+                body: {
+                    font: "helvetica",
+                    fontStyle: 'normal',
+                    fontSize: 10,
+                    textColor: '#4A5568'
+                },
+                tableHeader: {
+                    fillColor: '#003366',
+                    textColor: '#FFFFFF',
+                    fontStyle: 'bold'
+                },
+                tableBody: {
+                    textColor: '#4A5568'
+                },
+                highlightGreen: {
+                    textColor: [22, 163, 74],
+                    fontStyle: 'bold'
+                },
+                highlightRed: {
+                    textColor: [220, 38, 38],
+                    fontStyle: 'bold'
+                },
+                highlightBlue: {
+                    textColor: [0, 51, 102],
+                    fontStyle: 'bold'
+                },
+            };
+            const addFooter = () => {
+                const pageCount = doc.internal.getNumberOfPages();
+                const now = new Date();
+                const pad = (num) => String(num).padStart(2, '0');
+                const folio = `${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${now.getFullYear()}`;
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(150);
+                    const footerStartY = pageHeight - 50;
+                    doc.setLineWidth(0.5);
+                    doc.setDrawColor(180);
+                    doc.line(40, footerStartY, doc.internal.pageSize.width - 40, footerStartY);
+                    doc.text('Eje Central Lázaro Cárdenas 555, Narvarte Poniente, Benito Juárez, 03023 Ciudad de México, CDMX', 40, footerStartY + 15);
+                    doc.text(`© ${now.getFullYear()} Ivan Roberto Ortiz Cano. Derechos Reservados. | v3.0`, 40, footerStartY + 27);
+                    doc.text(`Folio: ${folio}`, 40, footerStartY + 39);
+                    doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width - 40, footerStartY + 39, {
+                        align: 'right'
+                    });
+                }
+            };
+            const checkPageBreak = (currentY, requiredSpace) => {
+                if (currentY + requiredSpace > pageHeight - 70) {
+                    doc.addPage();
+                    return 50;
+                }
+                return currentY;
+            };
+
+            // --- PDF CONTENT ---
+            doc.setFont(styles.header.font, styles.header.fontStyle);
+            doc.setFontSize(styles.header.fontSize);
+            doc.setTextColor(styles.header.textColor);
+            doc.text("Reporte de Proyección de Pensión", 40, 50);
+            doc.setFontSize(12);
+            doc.text("RGC Pensiones y Seguros", 40, 70);
+            doc.setLineWidth(1.5);
+            doc.setDrawColor(0, 51, 102);
+            doc.line(40, 75, 572, 75);
+            finalY = 100;
+            doc.setFont(styles.subHeader.font, styles.subHeader.fontStyle);
+            doc.setFontSize(styles.subHeader.fontSize);
+            doc.setTextColor(styles.subHeader.textColor);
+            doc.text("1. Datos del Asegurado", 40, finalY);
+            doc.autoTable({
+                startY: finalY + 10,
+                body: [
+                    ['Nombre Completo:', cliente.nombre],
+                    ['CURP:', cliente.curp],
+                    ['Teléfono:', cliente.telefono],
+                    ['Asesor a Cargo:', "Asesor RGC"],
+                    ['Semanas Base:', formatNumber(cliente.semanasCotizadasBase, 0)],
+                ],
+                theme: 'grid',
+                styles: {
+                    fontSize: 10
+                },
+                columnStyles: {
+                    0: {
+                        fontStyle: 'bold',
+                        cellWidth: 180
+                    }
+                }
+            });
+            finalY = doc.autoTable.previous.finalY;
+
+            if (AppState.isSisecNoDetallado) {
+                finalY += 10;
+                finalY = checkPageBreak(finalY, 40);
+                doc.setFont(styles.body.font, 'bold');
+                doc.setTextColor(styles.highlightRed.textColor);
+                doc.setDrawColor(styles.highlightRed.textColor[0], styles.highlightRed.textColor[1], styles.highlightRed.textColor[2]);
+                doc.rect(40, finalY, doc.internal.pageSize.width - 80, 30, 'S'); // Draw a box
+                doc.text("SBC DE SISEC SIN DETALLAR. SE NECESITA CONSTANCIA DETALLADA PARA FIRMA DE CONTRATO.", doc.internal.pageSize.width / 2, finalY + 18, {
+                    align: 'center',
+                    maxWidth: doc.internal.pageSize.width - 90
+                });
+                finalY += 35;
+            }
+
+            finalY = checkPageBreak(finalY, 100);
+            finalY += 20;
+            doc.setFont(styles.subHeader.font, styles.subHeader.fontStyle);
+            doc.setTextColor(styles.subHeader.textColor);
+            doc.text("2. Cálculo del Salario Promedio (Últimas 250 Semanas)", 40, finalY);
+            doc.autoTable({
+                startY: finalY + 10,
+                head: [
+                    ['Registro Patronal', 'Inicio', 'Fin', 'Días', 'SBC', 'Ponderado']
+                ],
+                body: AppState.sbcCalculationPeriods.map(p => [p.regPatronal, formatDateDDMMYYYY(p.fechaInicio), formatDateDDMMYYYY(p.fechaFin), formatNumber(p.dias, 0), `$${formatNumber(p.sbc)}`, `$${formatNumber(p.ponderado)}`]),
+                theme: 'striped',
+                headStyles: styles.tableHeader,
+                styles: {
+                    fontSize: 8
+                },
+            });
+            finalY = doc.autoTable.previous.finalY;
+            finalY = checkPageBreak(finalY, 100);
+            finalY += 20;
+            doc.text("3. Pensión Base (Sin Estrategia de Modalidad 40)", 40, finalY);
+            doc.autoTable({
+                startY: finalY + 10,
+                body: [
+                    ['SBC Promedio Base:', `$${formatNumber(cliente.sbcPromedioBase)}`],
+                    ['Pensión Mensual Estimada:', `$${formatNumber(AppState.pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA)}`],
+                    ['Aguinaldo Estimado:', `$${formatNumber(AppState.pensionBaseResultadosInfo.AGUINALDO_ESTIMADO)}`]
+                ],
+                theme: 'grid',
+                styles: {
+                    fontSize: 10
+                },
+                columnStyles: {
+                    0: {
+                        fontStyle: 'bold'
+                    }
+                }
+            });
+            finalY = doc.autoTable.previous.finalY;
+
+            // SCENARIO ANALYSIS
+            const activeScenarios = Object.values(AppState.scenarioData).filter(s => s && s.costoTotalContrato !== undefined && s.meses >= 0).slice(0, 2);
+            // CONCISE CLIENT PDF
+            doc.addPage();
+            finalY = 50;
+            doc.text("4. Análisis Comparativo de Escenarios", 40, finalY);
+            const startX_sc1 = 40,
+                startX_sc2 = 310,
+                tableWidth = 262;
+            let finalY_sc1 = finalY,
+                finalY_sc2 = finalY;
+            doc.setFontSize(11);
+            doc.text("Escenario 1", startX_sc1, finalY + 25);
+            if (activeScenarios[1]) doc.text("Escenario 2", startX_sc2, finalY + 25);
+            finalY += 40;
+            finalY_sc1 = finalY;
+            finalY_sc2 = finalY;
+            const sc1 = activeScenarios[0];
+            doc.autoTable({
+                startY: finalY_sc1,
+                head: [
+                    ['Resultados del Escenario 1', '']
+                ],
+                body: [
+                    ['Meses Pagados M40:', `${sc1.meses} meses`],
+                    ['Edad al Finalizar:', `${sc1.edadFinM40.anos}a, ${sc1.edadFinM40.meses}m`],
+                    ['SBC Promedio Final:', `$${formatNumber(sc1.sbcPromedio)}`],
+                    ['Semanas Finales:', formatNumber(sc1.semanas, 0)]
+                ],
+                theme: 'striped',
+                headStyles: styles.tableHeader,
+                styles: {
+                    fontSize: 8
+                },
+                tableWidth: tableWidth,
+                margin: {
+                    left: startX_sc1
+                }
+            });
+            finalY_sc1 = doc.autoTable.previous.finalY + 15;
+            if (activeScenarios[1]) {
+                const sc2 = activeScenarios[1];
+                doc.autoTable({
+                    startY: finalY_sc2,
+                    head: [
+                        ['Resultados del Escenario 2', '']
+                    ],
+                    body: [
+                        ['Meses Pagados M40:', `${sc2.meses} meses`],
+                        ['Edad al Finalizar:', `${sc2.edadFinM40.anos}a, ${sc2.edadFinM40.meses}m`],
+                        ['SBC Promedio Final:', `$${formatNumber(sc2.sbcPromedio)}`],
+                        ['Semanas Finales:', formatNumber(sc2.semanas, 0)]
+                    ],
+                    theme: 'striped',
+                    headStyles: styles.tableHeader,
+                    styles: {
+                        fontSize: 8
+                    },
+                    tableWidth: tableWidth,
+                    margin: {
+                        left: startX_sc2
+                    }
+                });
+                finalY_sc2 = doc.autoTable.previous.finalY + 15;
+            }
+            finalY = Math.max(finalY_sc1, finalY_sc2);
+            doc.autoTable({
+                startY: finalY,
+                head: [
+                    ['Análisis Financiero', '']
+                ],
+                body: [
+                    ['Pensión Mensual Bruta:', `$${formatNumber(sc1.pensionMensual)}`],
+                    ['Aguinaldo:', `$${formatNumber(sc1.aguinaldo)}`],
+                    [{
+                        content: 'Costo Total del Proyecto:',
+                        styles: {
+                            fontStyle: 'bold',
+                            textColor: styles.highlightRed.textColor
+                        }
+                    }, {
+                        content: `$${formatNumber(sc1.costoTotalContrato)}`,
+                        styles: {
+                            fontStyle: 'bold',
+                            textColor: styles.highlightRed.textColor
+                        }
+                    }],
+                    ['Resultado Final:', {
+                        content: sc1.saldoFinal > 1 ? `SALDO A FAVOR: $${formatNumber(sc1.saldoFinal)}` : (sc1.saldoFinal < -1 ? `DÉFICIT: $${formatNumber(Math.abs(sc1.saldoFinal))}` : 'PROYECTO VIABLE'),
+                        styles: {
+                            fontStyle: 'bold',
+                            textColor: sc1.saldoFinal >= 0 ? styles.highlightGreen.textColor : styles.highlightRed.textColor
+                        }
+                    }],
+                ],
+                theme: 'grid',
+                headStyles: styles.tableHeader,
+                styles: {
+                    fontSize: 8
+                },
+                columnStyles: {
+                    0: {
+                        fontStyle: 'bold'
+                    }
+                },
+                tableWidth: tableWidth,
+                margin: {
+                    left: startX_sc1
+                }
+            });
+            finalY_sc1 = doc.autoTable.previous.finalY;
+            if (activeScenarios[1]) {
+                const sc2 = activeScenarios[1];
+                doc.autoTable({
+                    startY: finalY,
+                    head: [
+                        ['Análisis Financiero', '']
+                    ],
+                    body: [
+                        ['Pensión Mensual Bruta:', `$${formatNumber(sc2.pensionMensual)}`],
+                        ['Aguinaldo:', `$${formatNumber(sc2.aguinaldo)}`],
+                        [{
+                            content: 'Costo Total del Proyecto:',
+                            styles: {
+                                fontStyle: 'bold',
+                                textColor: styles.highlightRed.textColor
+                            }
+                        }, {
+                            content: `$${formatNumber(sc2.costoTotalContrato)}`,
+                            styles: {
+                                fontStyle: 'bold',
+                                textColor: styles.highlightRed.textColor
+                            }
+                        }],
+                        ['Resultado Final:', {
+                            content: sc2.saldoFinal > 1 ? `SALDO A FAVOR: $${formatNumber(sc2.saldoFinal)}` : (sc2.saldoFinal < -1 ? `DÉFICIT: $${formatNumber(Math.abs(sc2.saldoFinal))}` : 'PROYECTO VIABLE'),
+                            styles: {
+                                fontStyle: 'bold',
+                                textColor: sc2.saldoFinal >= 0 ? styles.highlightGreen.textColor : styles.highlightRed.textColor
+                            }
+                        }],
+                    ],
+                    theme: 'grid',
+                    headStyles: styles.tableHeader,
+                    styles: {
+                        fontSize: 8
+                    },
+                    columnStyles: {
+                        0: {
+                            fontStyle: 'bold'
+                        }
+                    },
+                    tableWidth: tableWidth,
+                    margin: {
+                        left: startX_sc2
+                    }
+                });
+            }
+            addFooter();
+            const fileName = `Reporte_RGC_${cliente.nombre.replace(/\s/g, '_')}_CLI.pdf`;
+            doc.save(fileName);
+            showCustomAlert(`El reporte PDF "${fileName}" ha sido generado y descargado.`, "Reporte Generado");
+        }
+
+        function validarNombreCURP(nombreCompleto, curp) {
+            if (!nombreCompleto || !curp || curp.length < 4) return false;
+            const articulos = ["DA", "DAS", "DE", "DEL", "DER", "DI", "DIE", "DD", "EL", "LA", "LOS", "LAS", "LE", "LES", "MAC", "MC", "VAN", "VON", "Y"];
+            const nombreNormalizado = nombreCompleto.trim().toUpperCase().replace(/\s+/g, ' ');
+            let partes = nombreNormalizado.split(' ');
+            partes = partes.filter(p => !articulos.includes(p));
+            if (partes.length < 2) return false;
+            let apPaterno = partes[0];
+            let apMaterno = partes.length > 2 ? partes[1] : 'X';
+            let nombre = partes.length > 2 ? partes.slice(2).join(' ') : partes[1];
+            if (['MARIA', 'JOSE'].includes(partes[2]) && partes.length > 3) {
+                nombre = partes[3];
+            } else if (partes.length > 2) {
+                nombre = partes[2];
+            }
+            apPaterno = apPaterno.replace(/Ñ/g, 'X');
+            apMaterno = apMaterno.replace(/Ñ/g, 'X');
+            let iniciales = apPaterno.charAt(0);
+            let vocalEncontrada = false;
+            for (let i = 1; i < apPaterno.length; i++) {
+                if ('AEIOU'.includes(apPaterno.charAt(i))) {
+                    iniciales += apPaterno.charAt(i);
+                    vocalEncontrada = true;
+                    break;
+                }
+            }
+            if (!vocalEncontrada) iniciales += 'X';
+            iniciales += apMaterno.charAt(0);
+            iniciales += nombre.charAt(0);
+            const curpIniciales = curp.substring(0, 4).toUpperCase();
+            return curpIniciales === iniciales;
+        }
+
+        // --- AUTOMATIC TEXT PARSING FUNCTION ---
+        function analizarTextoCompleto() {
+            const textoCompleto = document.getElementById('info_textoCompleto').value;
+            if (!textoCompleto.trim()) {
+                showCustomAlert("El área de texto está vacía. Por favor, pegue el contenido del documento.", "Error");
+                return;
+            }
+
+            AppState.isSisecNoDetallado = document.getElementById('isSisecNoDetallado').checked;
+
+            document.getElementById('employmentCardsContainer').innerHTML = '';
+            AppState.employmentCardIdCounter = 0;
+
+            const datosPersonalesRegex = /Estimado\(a\),\s*([A-Z\s,ÑÁÉÍÓÚ]+)\s*NSS:\s*[\w\d]+\s*CURP:\s*(\w{18})/i;
+            const datosPersonalesMatch = textoCompleto.match(datosPersonalesRegex);
+            if (datosPersonalesMatch && datosPersonalesMatch[1] && datosPersonalesMatch[2]) {
+                document.getElementById('info_nombreCompleto').value = datosPersonalesMatch[1].trim();
+                document.getElementById('info_curpCliente').value = datosPersonalesMatch[2].trim();
+            } else {
+                showCustomAlert("No fue posible extraer el Nombre y CURP del texto. Verifique que el formato sea correcto.", "Datos Faltantes");
+                return;
+            }
+
+            const semanasCompuestasRegex = /Semanas\s+Reintegradas\s*\(\+\)[\s\S]*?(\d+)\s+(\d+)\s+(\d+)/i;
+            const semanasCompuestasMatch = textoCompleto.match(semanasCompuestasRegex);
+            if (semanasCompuestasMatch && semanasCompuestasMatch.length === 4) {
+                const imss = parseInt(semanasCompuestasMatch[1], 10);
+                const descontadas = parseInt(semanasCompuestasMatch[2], 10);
+                const reintegradas = parseInt(semanasCompuestasMatch[3], 10);
+                const totalSemanasCalculadas = imss - descontadas + reintegradas;
+                document.getElementById('info_semanasTotalesManual').value = totalSemanasCalculadas;
+            } else {
+                const semanasTotalRegex = /Total de semanas cotizadas\s+(\d+)/i;
+                const semanasTotalMatch = textoCompleto.match(semanasTotalRegex);
+                if (semanasTotalMatch && semanasTotalMatch[1]) {
+                    document.getElementById('info_semanasTotalesManual').value = semanasTotalMatch[1].trim();
+                } else {
+                    showCustomAlert("No fue posible extraer el total de semanas cotizadas. Ingrese el dato manualmente.", "Dato Faltante");
+                    return;
+                }
+            }
+
+            if (AppState.isSisecNoDetallado) {
+                const employerBlocks = textoCompleto.split(/Nombre del patrón/gi).slice(1);
+                if (employerBlocks.length === 0) {
+                    showCustomAlert("No se encontraron registros de empleadores en el formato de SISEC no detallado.", "Error de Formato");
+                    return;
+                }
+                employerBlocks.forEach(block => {
+                    const lines = block.trim().split('\n').map(l => l.trim()).filter(l => l);
+                    const nombrePatron = lines[0] || 'No Encontrado';
+                    let regPatronal = 'No Encontrado';
+                    const regMatch = block.match(/Registro Patronal\s+([A-Z0-9]+)/i);
+                    if (regMatch) regPatronal = regMatch[1];
+                    let fechaAlta = null;
+                    const altaMatch = block.match(/Fecha de alta\s+(\d{2}\/\d{2}\/\d{4})/i);
+                    if (altaMatch) fechaAlta = altaMatch[1];
+                    let fechaBaja = 'Vigente';
+                    const bajaMatch = block.match(/Fecha de baja\s+([\d{2}\/\d{2}\/\d{4}]+|Vigente)/i);
+                    if (bajaMatch) fechaBaja = bajaMatch[1];
+                    let sbc = '0.00';
+                    const sbcMatch = block.match(/Salario Base de Cotización \*\s+\$\s*([\d,]+\.?\d*)/i);
+                    if (sbcMatch) sbc = sbcMatch[1];
+
+                    if (nombrePatron !== 'No Encontrado' && fechaAlta) {
+                        let movimientoTexto = `REINGRESO ${fechaAlta} $ ${sbc}\n`;
+                        if (fechaBaja.toLowerCase() !== 'vigente') {
+                            movimientoTexto += `BAJA ${fechaBaja}`;
+                        }
+                        addEmploymentCard(nombrePatron, regPatronal, movimientoTexto);
+                    }
+                });
+            } else { // Detailed SISEC
+                const employerBlocks = textoCompleto.split(/Nombre\s+del\s+patrón/gi).slice(1);
+                if (employerBlocks.length === 0) {
+                    showCustomAlert("No se encontraron registros de empleadores en el texto. Verifique que el texto contenga la frase 'Nombre del patrón'.", "Error de Formato");
+                    return;
+                }
+                employerBlocks.forEach(block => {
+                    const lines = block.trim().split('\n').map(l => l.trim()).filter(l => l);
+                    const nombrePatron = lines[0] || 'No Encontrado';
+                    let regPatronal = 'No Encontrado';
+                    const regPatronalMatch = block.match(/Registro\s+Patronal\s+([A-Z0-9]+)/i);
+                    if (regPatronalMatch && regPatronalMatch[1]) {
+                        regPatronal = regPatronalMatch[1];
+                    }
+                    const movimientoRegex = /(REINGRESO|MODIFICACION\s*DE\s*SALARIO|BAJA|ALTA)\s+(\d{2}\/\d{2}\/\d{4})(?:\s*\$\s*([\d,]+\.?\d*))?/i;
+                    let movimientosEncontrados = [];
+                    for (const linea of lines) {
+                        const lineaLimpia = linea.trim().replace(/\s+/g, ' ');
+                        if (movimientoRegex.test(lineaLimpia)) {
+                            movimientosEncontrados.push(lineaLimpia);
+                        }
+                    }
+                    if (movimientosEncontrados.length > 0) {
+                        addEmploymentCard(nombrePatron, regPatronal, movimientosEncontrados.join('\n'));
+                    }
+                });
+            }
+
+            showElement('toggleCardsBtn', 'inline-flex');
+            showCustomAlert("Datos extraídos correctamente. Iniciando análisis...", "Proceso Iniciado");
+            setTimeout(analizarYCalcularSBC, 500);
+        }
+
+
+        function toggleAutoCards() {
+            const container = document.getElementById('employmentCardsContainer');
+            container.style.display = container.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // --- TIMELINE & OVERLAP LOGIC ---
+        function processOverlappingPeriods(periods) {
+            if (!periods || periods.length === 0) {
+                return [];
+            }
+            const datePoints = new Set();
+            periods.forEach(p => {
+                datePoints.add(p.fechaInicio.getTime());
+                const nextDay = new Date(p.fechaFin);
+                nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+                datePoints.add(nextDay.getTime());
+            });
+            const sortedDates = Array.from(datePoints).sort((a, b) => a - b);
+            const microPeriods = [];
+            for (let i = 0; i < sortedDates.length - 1; i++) {
+                const start = new Date(sortedDates[i]);
+                const end = new Date(sortedDates[i + 1]);
+                end.setUTCDate(end.getUTCDate() - 1);
+                if (start > end) continue;
+                const activePeriods = periods.filter(p => start >= p.fechaInicio && end <= p.fechaFin);
+                if (activePeriods.length > 0) {
+                    const totalSBC = activePeriods.reduce((sum, p) => sum + p.sbc, 0);
+                    const employers = activePeriods.map(p => p.nombrePatron).join(' + ');
+                    const regPatronales = activePeriods.map(p => p.regPatronal).join(', ');
+                    microPeriods.push({
+                        fechaInicio: start,
+                        fechaFin: end,
+                        sbc: totalSBC,
+                        nombrePatron: employers,
+                        regPatronal: regPatronales,
+                        isOverlapped: activePeriods.length > 1,
+                        originalPeriods: activePeriods
+                    });
+                }
+            }
+            if (microPeriods.length === 0) return [];
+            const mergedPeriods = [microPeriods[0]];
+            for (let i = 1; i < microPeriods.length; i++) {
+                const lastMerged = mergedPeriods[mergedPeriods.length - 1];
+                const current = microPeriods[i];
+                const nextDayOfLast = new Date(lastMerged.fechaFin);
+                nextDayOfLast.setUTCDate(nextDayOfLast.getUTCDate() + 1);
+                if (nextDayOfLast.getTime() === current.fechaInicio.getTime() && lastMerged.sbc === current.sbc && lastMerged.nombrePatron === current.nombrePatron) {
+                    lastMerged.fechaFin = current.fechaFin; // Extend the end date
+                } else {
+                    mergedPeriods.push(current); // Add as a new period
+                }
+            }
+            return mergedPeriods;
+        }
+
+        function drawScenarioTimeline(svgId, legendId, timelineData, titleId = null) {
+            const container = d3.select(`#${svgId}`).node() ? d3.select(`#${svgId}`).node().parentNode : null;
+            if (!container) return;
+            const svg = d3.select(`#${svgId}`);
+            svg.selectAll("*").remove();
+            const timelineTooltip = d3.select("#timeline-tooltip");
+            if (!timelineData || timelineData.length === 0) return;
+            const filteredData = [...timelineData];
+            if (filteredData.length === 0) return;
+            const containerWidth = container.getBoundingClientRect().width;
+            const containerHeight = container.getBoundingClientRect().height;
+            const margin = {
+                top: 20,
+                right: 30,
+                bottom: 65,
+                left: 70
+            }; // Márgenes ajustados
+            const height = Math.max(containerHeight, 250) - margin.top - margin.bottom;
+            // --- Cálculo de Ancho Dinámico ---
+            const minDate = d3.min(filteredData, d => d.fechaInicio);
+            const maxDate = d3.max(filteredData, d => d.fechaFin);
+            const yearsDifference = (maxDate - minDate) / (1000 * 60 * 60 * 24 * 365.25);
+            const widthPerYear = 50; // Píxeles por año en la línea de tiempo
+            const minWidth = containerWidth > 0 ? containerWidth - margin.left - margin.right : 500;
+            let calculatedWidth = yearsDifference * widthPerYear;
+            const width = Math.max(minWidth, calculatedWidth); // Asegura que sea al menos tan ancho como el contenedor
+            svg.attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom);
+            const chart = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+            const x = d3.scaleTime()
+                .domain([minDate, maxDate])
+                .range([0, width]);
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(filteredData, d => d.sbc) * 1.1 || 4000])
+                .range([height, 0]).nice();
+            chart.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)).tickFormat(d3.timeFormat("%Y")))
+                .selectAll("text")
+                .attr("class", "text-xs")
+                .style("text-anchor", "end")
+                .attr("dx", "-.8em")
+                .attr("dy", ".15em")
+                .attr("transform", "rotate(-65)");
+            chart.append("g")
+                .call(d3.axisLeft(y).tickFormat(d => `$${d.toLocaleString('es-MX')}`))
+                .attr("class", "text-xs");
+            const uniqueEmployers = [...new Map(filteredData.flatMap(d => d.originalPeriods || [d]).map(p => [p.regPatronal, p])).values()];
+            const color = d3.scaleOrdinal(d3.schemeTableau10).domain(uniqueEmployers.map(e => e.regPatronal));
+            color("Modalidad 40");
+            color("Traslape");
+            chart.selectAll(".bar")
+                .data(filteredData)
+                .enter()
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(d.fechaInicio))
+                .attr("y", d => y(d.sbc))
+                .attr("width", d => Math.max(1, x(d.fechaFin) - x(d.fechaInicio)))
+                .attr("height", d => height - y(d.sbc))
+                .attr("fill", d => {
+                    if (d.nombrePatron === 'Modalidad 40') return '#f97316';
+                    if (d.isOverlapped) return "#A855F7";
+                    return color((d.originalPeriods || [d])[0].regPatronal);
+                })
+                .style("opacity", 0.8)
+                .on("mouseover", (event, d) => {
+                    timelineTooltip.style("opacity", 1);
+                    d3.select(event.currentTarget).style('opacity', 1).style('stroke', 'black').style('stroke-width', '1.5px');
+                })
+                .on("mousemove", (event, d) => {
+                    const employerList = (d.originalPeriods && d.originalPeriods.length > 0) ? d.originalPeriods.map(e => e.nombrePatron).join(' + ') : d.nombrePatron;
+                    timelineTooltip.html(`<strong>${employerList}</strong><br/>Salario: ${d.sbc.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}<br/>Inicio: ${formatDateDDMMYYYY(d.fechaInicio)}<br/>Fin: ${formatDateDDMMYYYY(d.fechaFin)}`)
+                        .style("left", (event.pageX + 15) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", (event, d) => {
+                    timelineTooltip.style("opacity", 0);
+                    d3.select(event.currentTarget).style('opacity', 0.8).style('stroke', 'none');
+                });
+            const legendContainer = d3.select(`#${legendId}`);
+            legendContainer.html("");
+            let legendSource = [...uniqueEmployers];
+            if (filteredData.some(d => d.nombrePatron === 'Modalidad 40') && !legendSource.some(e => e.regPatronal === 'Modalidad 40')) {
+                legendSource.unshift({
+                    nombrePatron: 'Modalidad 40',
+                    regPatronal: 'Modalidad 40'
+                });
+            }
+            if (filteredData.some(d => d.isOverlapped) && !legendSource.some(e => e.regPatronal === 'Traslape')) {
+                legendSource.unshift({
+                    nombrePatron: 'Traslape de Empleos',
+                    regPatronal: 'Traslape'
+                });
+            }
+            const legendData = [...new Map(legendSource.map(item => [item.regPatronal, item])).values()];
+            const legend = legendContainer.selectAll(".legend-item").data(legendData).enter().append("div").attr("class", "legend-item flex items-center");
+            legend.append("div").style("width", "12px").style("height", "12px").style("background-color", d => {
+                if (d.regPatronal === 'Modalidad 40') return '#f97316';
+                if (d.regPatronal === 'Traslape') return '#A855F7';
+                return color(d.regPatronal);
+            }).attr("class", "mr-1 rounded-sm flex-shrink-0");
+            legend.append("span").text(d => d.nombrePatron).attr("class", "text-xs text-gray-700");
+        }
+
+        // --- NEW VIGENCIA LOGIC ---
+        function checkVigencia() {
+            const resultBox = document.getElementById('vigenciaResultBox');
+            const resultText = document.getElementById('vigenciaResultText');
+            const resultSubText = document.getElementById('vigenciaResultSubText');
+            if (AppState.timelinePeriods.length === 0) {
+                resultBox.className = 'p-6 rounded-2xl shadow-sm border md:col-span-3 bg-gray-100 text-gray-800';
+                resultText.textContent = 'Información Insuficiente';
+                resultSubText.textContent = 'No se puede determinar la vigencia sin un historial laboral.';
+                return;
+            }
+            const lastPeriod = [...AppState.timelinePeriods].sort((a, b) => b.fechaFin - a.fechaFin)[0];
+            const fechaReferenciaBaja = lastPeriod.fechaFin;
+            // Condition 1: Check for 365 days in the 5 years prior to the reference date
+            const fechaInicioPeriodoRevision = new Date(fechaReferenciaBaja);
+            fechaInicioPeriodoRevision.setUTCFullYear(fechaInicioPeriodoRevision.getUTCFullYear() - 5);
+            let diasCotizadosUltimos5Anos = 0;
+            AppState.fullHistoryPeriods.forEach(period => {
+                const startOverlap = Math.max(period.fechaInicio.getTime(), fechaInicioPeriodoRevision.getTime());
+                const endOverlap = Math.min(period.fechaFin.getTime(), fechaReferenciaBaja.getTime());
+                if (startOverlap <= endOverlap) {
+                    const overlapDays = (endOverlap - startOverlap) / (1000 * 60 * 60 * 24) + 1;
+                    diasCotizadosUltimos5Anos += overlapDays;
+                }
+            });
+            diasCotizadosUltimos5Anos = Math.round(diasCotizadosUltimos5Anos);
+            if (diasCotizadosUltimos5Anos < 365) {
+                resultBox.className = 'p-6 rounded-2xl shadow-sm border md:col-span-3 bg-red-100 text-red-800';
+                resultText.textContent = 'NO VIGENTE';
+                resultSubText.textContent = `No se cumplen los 365 días cotizados en los 5 años previos a la baja (${formatDateDDMMYYYY(fechaReferenciaBaja)}). Días cotizados: ${diasCotizadosUltimos5Anos}.`;
+                return;
+            }
+            // Condition 2: Check the 5-year conservation period from the reference date
+            const expirationDate = new Date(fechaReferenciaBaja);
+            expirationDate.setUTCFullYear(expirationDate.getUTCFullYear() + 5);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const formattedReferenciaBaja = formatDateDDMMYYYY(fechaReferenciaBaja);
+            const formattedExpirationDate = formatDateDDMMYYYY(expirationDate);
+            if (today <= expirationDate) {
+                resultBox.className = 'p-6 rounded-2xl shadow-sm border md:col-span-3 bg-green-100 text-green-800';
+                resultText.textContent = 'VIGENTE';
+                resultSubText.textContent = `La conservación de derechos vence el ${formattedExpirationDate}. Calculado 5 años desde la última baja (real o proyectada): ${formattedReferenciaBaja}.`;
+            } else {
+                resultBox.className = 'p-6 rounded-2xl shadow-sm border md:col-span-3 bg-red-100 text-red-800';
+                resultText.textContent = 'NO VIGENTE';
+                resultSubText.textContent = `La conservación de derechos venció el ${formattedExpirationDate}. Calculado 5 años desde la última baja (real o proyectada): ${formattedReferenciaBaja}.`;
+            }
+        }
+
+        // --- PIE CHART FOR SCENARIO COVERAGE ---
+        function drawCoveragePieChart(scenarioNum) {
+            const data = AppState.scenarioData[scenarioNum];
+            const step = data.pieChartStep || 0;
+            const container = d3.select("#pie-chart-container-" + scenarioNum);
+            container.html(""); // Clear previous chart
+            if (!data || !data.costoTotalContrato || data.costoTotalContrato <= 0) {
+                container.append("div")
+                    .attr("class", "flex items-center justify-center h-full text-gray-500 text-sm")
+                    .text("No hay datos de costo para graficar.");
+                return;
+            }
+            const {
+                costoTotalContrato,
+                coberturaAfore,
+                coberturaDeposito,
+                coberturaExtra,
+                prestamoRequerido,
+                saldoFinal,
+                meses
+            } = data;
+            // Ordered slices as requested by the user
+            const allSlices = [{
+                id: 'deposito',
+                label: '1er Depósito',
+                value: coberturaDeposito,
+                color: '#4ade80'
+            }, {
+                id: 'prestamo',
+                label: 'Préstamo',
+                value: prestamoRequerido,
+                color: '#fb923c'
+            }, {
+                id: 'afore',
+                label: 'AFORE',
+                value: coberturaAfore,
+                color: '#60a5fa'
+            }, {
+                id: 'extra',
+                label: 'Extra de AFORE',
+                value: coberturaExtra,
+                color: '#a78bfa'
+            } // Corrected label & new color
+            ];
+            let pieData = [];
+            let coveredValue = 0;
+            for (let i = 0; i < step; i++) {
+                const slice = allSlices[i];
+                if (slice && slice.value > 0.01) {
+                    pieData.push(slice);
+                    coveredValue += slice.value;
+                }
+            }
+            const remainingValue = Math.max(0, costoTotalContrato - coveredValue);
+            if (remainingValue > 0.01) {
+                pieData.push({
+                    id: 'restante',
+                    label: 'Costo por Cubrir',
+                    value: remainingValue,
+                    color: '#e5e7eb'
+                }); // gray-200
+            }
+            if (pieData.length === 0) {
+                pieData.push({
+                    id: 'restante',
+                    label: 'Costo Total',
+                    value: costoTotalContrato || 1,
+                    color: '#e5e7eb'
+                });
+            }
+            const containerNode = container.node();
+            const width = containerNode.getBoundingClientRect().width;
+            const height = containerNode.getBoundingClientRect().height;
+            const radius = Math.min(width, height) / 2 - 10;
+            const svg = container.append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", `translate(${width / 2}, ${height / 2})`);
+            const pie = d3.pie().value(d => d.value).sort(null);
+            const arc = d3.arc().innerRadius(radius * 0.6).outerRadius(radius);
+            const tooltip = d3.select("#timeline-tooltip");
+            svg.selectAll("path")
+                .data(pie(pieData), d => d.data.id)
+                .enter()
+                .append("path")
+                .attr("d", arc)
+                .attr("fill", d => d.data.color)
+                .attr("stroke", "white")
+                .style("stroke-width", "2px")
+                .style("cursor", "pointer")
+                .on("mouseover", (event, d) => {
+                    tooltip.style("opacity", 1);
+                    d3.select(event.currentTarget).style("filter", "brightness(1.1)");
+                })
+                .on("mousemove", (event, d) => {
+                    const percentage = (d.data.value / costoTotalContrato * 100).toFixed(1);
+                    tooltip.html(`<strong>${d.data.label}</strong><br>$${formatNumber(d.data.value)}<br>(${percentage}%)`)
+                        .style("left", (event.pageX + 15) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", (event, d) => {
+                    tooltip.style("opacity", 0);
+                    d3.select(event.currentTarget).style("filter", "brightness(1)");
+                });
+            svg.append("text")
+                .attr("text-anchor", "middle")
+                .attr("dy", "-0.5em")
+                .style("font-size", "0.75rem")
+                .style("fill", "#6b7280")
+                .text("Costo Total");
+            svg.append("text")
+                .attr("text-anchor", "middle")
+                .attr("dy", "1.0em")
+                .style("font-size", "1rem")
+                .style("font-weight", "bold")
+                .style("fill", "#1f2937")
+                .text(`$${formatNumber(costoTotalContrato, 0)}`);
+            const badgeContainer = document.getElementById(`special-client-badge-${scenarioNum}`);
+            if (badgeContainer) {
+                if (prestamoRequerido <= 0 && saldoFinal >= 0 && meses > 0) {
+                    badgeContainer.innerHTML = `
+                    <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full animate-pulse">
+                        <i class="fas fa-star mr-1"></i> Cliente de Gran Oportunidad
+                    </span>`;
+                } else {
+                    badgeContainer.innerHTML = '';
+                }
+            }
+        }
+
+        function renderPieControls(scenarioNum) {
+            const data = AppState.scenarioData[scenarioNum];
+            const container = document.getElementById(`pie-chart-controls-${scenarioNum}`);
+            if (!container) return;
+            container.innerHTML = '';
+            if (!data || !data.costoTotalContrato || data.costoTotalContrato <= 0) {
+                return;
+            }
+            const step = data.pieChartStep || 0;
+            const allSlices = [{
+                label: '1er Dep.'
+            }, {
+                label: 'Préstamo'
+            }, {
+                label: 'AFORE'
+            }, {
+                label: 'Extra'
+            }];
+            const resetBtn = document.createElement('button');
+            resetBtn.innerHTML = `<i class="fas fa-undo"></i>`;
+            resetBtn.title = "Reiniciar Gráfica";
+            resetBtn.className = `btn !p-2 text-xs ${step === 0 ? 'bg-gray-300 text-white cursor-not-allowed' : 'btn-secondary'}`;
+            resetBtn.disabled = step === 0;
+            resetBtn.onclick = () => updatePieChartStep(scenarioNum, 0);
+            container.appendChild(resetBtn);
+            allSlices.forEach((slice, index) => {
+                const btnStep = index + 1;
+                const btn = document.createElement('button');
+                btn.textContent = slice.label;
+                btn.className = `btn !p-2 text-xs ${step === btnStep ? 'btn-blue' : 'btn-secondary'}`;
+                btn.onclick = () => updatePieChartStep(scenarioNum, btnStep);
+                container.appendChild(btn);
+            });
+        }
+
+        function updatePieChartStep(scenarioNum, step) {
+            if (AppState.scenarioData[scenarioNum]) {
+                AppState.scenarioData[scenarioNum].pieChartStep = step;
+                drawCoveragePieChart(scenarioNum);
+                renderPieControls(scenarioNum);
+            }
+        }
+
+        // --- NEW FEATURES ---
+        async function generateTotalCapturePDF() {
+            showCustomAlert("Generando PDF con capturas de todos los pasos. La descarga comenzará en breve...", "Procesando");
+            const {
+                jsPDF
+            } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'letter');
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const margin = 20;
+            const contentWidth = pageWidth - (margin * 2);
+            // Helper function to capture an element and return its image data
+            const captureAndGetImageData = async (elementId) => {
+                const element = document.getElementById(elementId);
+                if (!element || element.style.display === 'none') {
+                    console.log(`Elemento ${elementId} no visible, omitiendo captura.`);
+                    return null;
+                }
+                element.scrollIntoView({
+                    behavior: 'instant',
+                    block: 'start'
+                });
+                await new Promise(resolve => setTimeout(resolve, 300)); // Increased delay for complex renders
+                try {
+                    const canvas = await html2canvas(element, {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        windowWidth: element.scrollWidth,
+                        windowHeight: element.scrollHeight
+                    });
+                    return {
+                        dataUrl: canvas.toDataURL('image/png'),
+                        width: canvas.width,
+                        height: canvas.height
+                    };
+                } catch (error) {
+                    console.error(`Error al capturar ${elementId}:`, error);
+                    return null;
+                }
+            };
+            const steps = [{
+                id: 'infoSection1',
+                title: 'Paso 1: Datos y Análisis'
+            }, {
+                id: 'infoSection2',
+                title: 'Paso 2: Estrategia M40'
+            }, {
+                id: 'infoSection3',
+                title: 'Paso 3: Análisis Financiero'
+            }, {
+                id: 'infoSection4',
+                title: 'Paso 4: Comparador de Escenarios'
+            }];
+            let isFirstPage = true;
+            for (const step of steps) {
+                const imageData = await captureAndGetImageData(step.id);
+                if (imageData) {
+                    if (!isFirstPage) {
+                        doc.addPage();
+                    }
+                    const aspectRatio = imageData.height / imageData.width;
+                    const imgHeight = contentWidth * aspectRatio;
+                    doc.setFontSize(14);
+                    doc.setTextColor(40);
+                    doc.text(step.title, margin, margin + 10);
+                    doc.addImage(imageData.dataUrl, 'PNG', margin, margin + 20, contentWidth, imgHeight);
+                    isFirstPage = false;
+                }
+            }
+            const clientName = AppState.datosClienteInfo.nombre || 'Cliente';
+            doc.save(`Captura_Total_RGC_${clientName.replace(/\s/g, '_')}.pdf`);
+            setTimeout(() => {
+                showCustomAlert("Se ha generado el PDF con las capturas de pantalla.", "Completado");
+            }, 1000);
+        }
+
+        function showWhatsAppModal() {
+            if (!AppState.scenarioData[1] || !AppState.pensionBaseResultadosInfo) {
+                showCustomAlert("Primero debe calcular un escenario para generar el resumen.", "Acción Requerida");
+                return;
+            }
+            const sc1 = AppState.scenarioData[1];
+            const basePension = AppState.pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA;
+            const clientName = AppState.datosClienteInfo.nombre.split(' ')[0] || "Cliente";
+            const asesorName = "Asesor RGC";
+
+            const template =
+                `Estimado(a) ${clientName},\n\nLe comparto un resumen de la proyección de pensión que analizamos:\n\n- Pensión Base Estimada: $${formatNumber(basePension)}\n- Pensión Proyectada con Estrategia: *$${formatNumber(sc1.pensionMensual)}*\n- Inversión Total Estimada del Proyecto: $${formatNumber(sc1.costoTotalContrato)}\n\nEsta estrategia representa una excelente oportunidad para optimizar su retiro. Quedo a su disposición para cualquier consulta.\n\nAtentamente,\n${asesorName}`;
+
+            document.getElementById('whatsAppSummaryText').value = template;
+            showElement('whatsAppModal');
+        }
+
+
+        function copyWhatsAppText() {
+            const textArea = document.getElementById('whatsAppSummaryText');
+            textArea.select();
+            document.execCommand('copy');
+            showCustomAlert("El texto ha sido copiado al portapapeles.", "Completado");
+        }
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeMainAppDisplay();
+            initDateSelectors();
+
+            const m40Selectors = ['m40_day', 'm40_month', 'm40_year'];
+            m40Selectors.forEach(id => {
+                const el = document.getElementById(id);
+                el.addEventListener('change', () => {
+                    actualizarSBCMaximoM40();
+                    actualizarFechaFinM40Display();
+                });
+            });
+            document.getElementById('m40_year').addEventListener('change', updateDaySelector);
+            document.getElementById('m40_month').addEventListener('change', updateDaySelector);
+            showElement('appContainer', 'flex');
+            document.getElementById('appContainer').style.flexDirection = 'column';
+        });
+        // --- Make functions globally accessible ---
+        window.addEmploymentCard = addEmploymentCard;
+        window.removeEmploymentCard = removeEmploymentCard;
+        window.analizarYCalcularSBC = analizarYCalcularSBC;
+        window.actualizarSBCMaximoM40 = actualizarSBCMaximoM40;
+        window.actualizarFechaFinM40Display = actualizarFechaFinM40Display;
+        window.calcularEscenarioM40Infografia = calcularEscenarioM40Infografia;
+        window.handleMesesDepositoChange = handleMesesDepositoChange;
+        window.recalculateScenario = recalculateScenario;
+        window.promptForClientPDF = promptForClientPDF;
+        window.generateFullReportPDF = generateFullReportPDF;
+        window.closeCustomAlert = closeCustomAlert;
+        window.analizarTextoCompleto = analizarTextoCompleto;
+        window.renderSbcAnalysisTable = renderSbcAnalysisTable;
+        window.addScenarioCard = addScenarioCard;
+        window.recalculateAllScenarios = recalculateAllScenarios;
+        window.removeScenarioCard = removeScenarioCard;
+        window.checkVigencia = checkVigencia;
+        window.toggleAutoCards = toggleAutoCards;
+        window.showWhatsAppModal = showWhatsAppModal;
+        window.copyWhatsAppText = copyWhatsAppText;
+        window.generateTotalCapturePDF = generateTotalCapturePDF;
+        window.toggleQPCardStyle = toggleQPCardStyle;
+    </script>
+</body>
+
+</html>
 
