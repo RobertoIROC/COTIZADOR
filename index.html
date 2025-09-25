@@ -1,4 +1,3 @@
-calculadora 6 
 <!DOCTYPE html>
 <html lang="es">
 
@@ -607,7 +606,14 @@ calculadora 6
                         </div>
                     </div>
                     <div>
-                        <h3 class="subsection-title">Tabla de Referencia UMA</h3>
+                        <div class="flex justify-between items-center">
+                            <h3 class="subsection-title">Tabla de Referencia UMA</h3>
+                            <button id="editUmasBtn" onclick="promptForPassword(enableUmaEditing)" class="btn btn-secondary !py-1 !px-3 text-xs"><i class="fas fa-pencil-alt mr-2"></i>Editar Futuras</button>
+                        </div>
+                        <div id="umaEditControls" class="hidden text-right mb-2 space-x-2">
+                            <button onclick="saveUmas()" class="btn btn-blue !py-1 !px-3 text-xs">Guardar</button>
+                            <button onclick="populateUmaTable()" class="btn btn-secondary !py-1 !px-3 text-xs">Cancelar</button>
+                        </div>
                         <div class="overflow-x-auto max-h-72 border rounded-xl">
                             <table class="w-full text-sm text-left">
                                 <thead class="bg-gray-100 sticky top-0">
@@ -647,10 +653,39 @@ calculadora 6
                             <input type="text" id="info_comisionExcedente_concepto" placeholder="Concepto para reporte" class="w-1/2">
                         </div>
                     </div>
+                    <div class="md:col-span-2 mt-6">
+                        <button id="toggleAdvancedParamsBtn" onclick="promptForPassword(toggleAdvancedEditing)" class="btn btn-secondary w-full"><i class="fas fa-cogs mr-2"></i>Editar Parámetros Financieros Avanzados</button>
+                        <div id="advancedParamsContainer" class="hidden mt-4 p-4 border-2 border-dashed rounded-lg bg-gray-50">
+                            <h4 class="font-bold text-center text-gray-700 mb-4">Parámetros Avanzados (Requiere Contraseña)</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                                <div class="input-group">
+                                    <label for="info_inpcGrowth">Estimación Crecimiento INPC Anual (%):</label>
+                                    <input type="number" id="info_inpcGrowth" value="6" step="0.1" class="w-full" oninput="updateAdvancedConstants(true)" disabled>
+                                </div>
+                                <div class="input-group">
+                                    <label for="info_m40surcharge">Tasa Recargo M40 Mensual (%):</label>
+                                    <input type="number" id="info_m40surcharge" value="1.47" step="0.01" class="w-full" oninput="updateAdvancedConstants(true)" disabled>
+                                </div>
+                                 <div class="input-group md:col-span-2">
+                                    <label for="info_m40surchargeFuture">Tasa Recargo M40 Mensual (2026 en adelante) (%):</label>
+                                    <input type="number" id="info_m40surchargeFuture" value="2.07" step="0.01" class="w-full" oninput="updateAdvancedConstants(true)" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
             <section id="infoSection4" class="infographic-section" style="display: none;">
                 <h2><i class="fas fa-balance-scale-right"></i>Paso 4: Comparativa de Escenarios</h2>
+                <div id="umaSelectorContainer" class="mb-8 p-6 bg-blue-50 border-2 border-dashed border-blue-200 rounded-2xl" style="display: none;">
+                    <h4 class="font-bold text-center text-gray-800 text-lg mb-4">Selector Rápido de SBC para Escenario Principal</h4>
+                    <p class="text-center text-sm text-gray-600 mb-5">Ajuste el Salario Base de Cotización para la proyección de Modalidad 40. Los cambios se aplicarán a los escenarios principales y se recalculará todo.</p>
+                    <div class="flex justify-center flex-wrap gap-4" id="umaButtons">
+                        <button onclick="setSBCFromUMA(25)" class="btn btn-secondary !py-2 !px-5 text-base" data-uma="25">25 UMA (Tope)</button>
+                        <button onclick="setSBCFromUMA(20)" class="btn btn-secondary !py-2 !px-5 text-base" data-uma="20">20 UMA</button>
+                        <button onclick="setSBCFromUMA(15)" class="btn btn-secondary !py-2 !px-5 text-base" data-uma="15">15 UMA</button>
+                    </div>
+                </div>
                 <div id="benchmarkingResult" class="mb-4 p-3 rounded-lg text-sm bg-blue-50 border border-blue-200 text-blue-800" style="display: none;"></div>
                 <div id="scenariosContainer" class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 </div>
@@ -668,8 +703,8 @@ calculadora 6
                         <button onclick="showWhatsAppModal()" class="btn !bg-green-500 hover:!bg-green-600 !text-white text-lg">
                             <i class="fab fa-whatsapp"></i> Resumen para WhatsApp
                         </button>
-                        <button onclick="generateTotalCapturePDF()" class="btn btn-blue text-lg">
-                            <i class="fas fa-file-pdf"></i> Captura Completa a PDF
+                        <button onclick="startComprehensiveReportProcess()" class="btn btn-blue text-lg">
+                            <i class="fas fa-file-invoice"></i> Reporte Detallado a PDF
                         </button>
                     </div>
                 </div>
@@ -727,9 +762,11 @@ calculadora 6
     </div>
     <div id="timeline-tooltip"></div>
     <div id="whatsAppModal" class="modal-overlay">
-        <div class="modal-content">
+        <div class="modal-content relative">
+            <button onclick="hideElement('whatsAppModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"><i class="fas fa-times fa-2x"></i></button>
             <h2><i class="fab fa-whatsapp text-green-500 mr-2"></i>Resumen para Cliente</h2>
-            <p class="text-center text-sm mb-4">Copie este texto y envíelo a su cliente.</p>
+            <p class="text-center text-sm mb-4">Seleccione una plantilla y copie el texto para enviarlo a su cliente.</p>
+            <div id="whatsappOptionsContainer" class="mb-4"></div>
             <textarea id="whatsAppSummaryText" rows="10" class="w-full p-3 border rounded bg-gray-50 font-mono text-sm"></textarea>
             <div class="text-center mt-6">
                 <button onclick="copyWhatsAppText()" class="btn btn-blue"><i class="fas fa-copy"></i> Copiar Texto</button>
@@ -775,6 +812,7 @@ calculadora 6
             scenarioData: {},
             activeScenarios: 0,
             isSisecNoDetallado: false,
+            semanasAyudaDesempleo: 0,
             datosClienteInfo: {
                 nombre: '',
                 curp: '',
@@ -816,6 +854,8 @@ calculadora 6
             AJUSTE_PENSION_MENSUAL: -250,
             INPC_GROWTH_ESTIMATE: 0.06,
             RECARGO_M40_MENSUAL: 0.0147,
+            RECARGO_M40_MENSUAL_FUTURO: 0.0207,
+            ANO_CAMBIO_RECARGO: 2026,
             economicData: {
                 umas: {
                     2016: 73.04,
@@ -1036,6 +1076,69 @@ calculadora 6
             confirmBtn.className = 'btn btn-blue';
             confirmBtn.onclick = closeCustomAlert;
             cancelBtn.style.display = 'none';
+            showElement('customAlertModal');
+        }
+
+        function showAyudaDesempleoModal(semanasDescuento, semanasOriginales, semanasReintegradas, callback) {
+            const title = "Ayuda por Desempleo Detectada";
+            const message = `Se detectaron ${semanasDescuento} semanas descontadas por ayuda de desempleo. Por favor, seleccione el total de semanas a utilizar para el cálculo base:`;
+            document.getElementById('customAlertTitle').textContent = title;
+            document.getElementById('customAlertMessage').textContent = message;
+            const promptContainer = document.getElementById('passwordPromptContainer');
+            window.selectSemanasOption = (value) => {
+                const radio = document.querySelector(`input[name="semanas_option"][value="${value}"]`);
+                if (radio) {
+                    radio.checked = true;
+                }
+            };
+            promptContainer.innerHTML = `
+                <div class="space-y-3 text-left">
+                    <div class="p-3 border rounded-lg hover:bg-blue-50 cursor-pointer" onclick="selectSemanasOption('${semanasOriginales}')">
+                        <input type="radio" id="optSemanas1" name="semanas_option" value="${semanasOriginales}" class="mr-2 align-middle">
+                        <label for="optSemanas1" class="align-middle cursor-pointer w-full block"><strong>${semanasOriginales} semanas</strong> (Total original sin descontar ayuda).</label>
+                    </div>
+                    <div class="p-3 border rounded-lg hover:bg-blue-50 cursor-pointer" onclick="selectSemanasOption('${semanasReintegradas}')">
+                        <input type="radio" id="optSemanas2" name="semanas_option" value="${semanasReintegradas}" checked class="mr-2 align-middle">
+                        <label for="optSemanas2" class="align-middle cursor-pointer w-full block"><strong>${semanasReintegradas} semanas</strong> (Total con descuento ya aplicado).</label>
+                    </div>
+                    <div class="p-3 border rounded-lg hover:bg-blue-50 cursor-pointer" onclick="document.getElementById('semanasManualInput').focus()">
+                         <input type="radio" id="optSemanas3" name="semanas_option" value="manual" class="mr-2 align-middle">
+                         <label for="optSemanas3" class="align-middle cursor-pointer"><strong>Ingresar manualmente:</strong></label>
+                         <input type="number" id="semanasManualInput" class="w-full mt-2 p-2 border rounded" placeholder="Escriba el total de semanas" onfocus="document.getElementById('optSemanas3').checked = true;">
+                    </div>
+                    <div id="semanasManualError" class="text-red-600 text-sm text-center h-4"></div>
+                </div>
+            `;
+            promptContainer.style.display = 'block';
+            const confirmBtn = document.getElementById('customAlertButton');
+            const cancelBtn = document.getElementById('customAlertCancelButton');
+            confirmBtn.textContent = 'Confirmar y Continuar';
+            cancelBtn.style.display = 'inline-flex';
+            const cleanupAndClose = () => {
+                delete window.selectSemanasOption;
+                closeCustomAlert();
+            };
+            confirmBtn.onclick = () => {
+                const errorDiv = document.getElementById('semanasManualError');
+                errorDiv.textContent = '';
+                const selectedOption = document.querySelector('input[name="semanas_option"]:checked').value;
+                let finalSemanas;
+                if (selectedOption === 'manual') {
+                    finalSemanas = document.getElementById('semanasManualInput').value;
+                    if (!finalSemanas || isNaN(parseInt(finalSemanas)) || parseInt(finalSemanas) < 0) {
+                        errorDiv.textContent = 'Por favor, ingrese un número válido.';
+                        return;
+                    }
+                } else {
+                    finalSemanas = selectedOption;
+                }
+                document.getElementById('info_semanasTotalesManual').value = finalSemanas;
+                cleanupAndClose();
+                if (callback) {
+                    callback();
+                }
+            };
+            cancelBtn.onclick = cleanupAndClose;
             showElement('customAlertModal');
         }
 
@@ -1371,15 +1474,34 @@ calculadora 6
         }
 
         function actualizarSBCMaximoM40() {
+            setSBCFromUMA(25);
+        }
+
+        function setSBCFromUMA(multiplier) {
             const inicioP1Str = getM40StartDate();
             const sbcM40Input = document.getElementById('info_m40_p1_sbc');
             if (inicioP1Str) {
                 const [anioInicioP1, mesInicioP1] = inicioP1Str.split('-').map(Number);
                 const umaP1 = getUMA(anioInicioP1, mesInicioP1);
-                const sbcMaxP1 = umaP1 * 25;
-                sbcM40Input.value = sbcMaxP1.toFixed(2);
+                const sbcCalculado = umaP1 * multiplier;
+                sbcM40Input.value = sbcCalculado.toFixed(2);
+                
+                const buttons = document.querySelectorAll('#umaButtons button');
+                buttons.forEach(btn => {
+                    if (parseInt(btn.dataset.uma) === multiplier) {
+                        btn.classList.remove('btn-secondary');
+                        btn.classList.add('btn-gold');
+                    } else {
+                        btn.classList.remove('btn-gold');
+                        btn.classList.add('btn-secondary');
+                    }
+                });
+
+                if (document.getElementById('infoSection4').style.display !== 'none') {
+                    recalculateAllScenarios();
+                }
             } else {
-                sbcM40Input.value = '';
+                showCustomAlert("Por favor, seleccione primero una fecha de inicio para la Modalidad 40 en el Paso 2.", "Fecha Requerida");
             }
         }
 
@@ -1834,14 +1956,21 @@ calculadora 6
             document.getElementById('scenariosContainer').innerHTML = '';
             AppState.activeScenarios = 0;
             AppState.scenarioData = {};
-            addScenarioCard(1, numMesesP1);
 
-            // Add base scenario only if there was a history to begin with
+            if (AppState.semanasAyudaDesempleo > 0) {
+                 showCustomAlert(`Detectada Ayuda por Desempleo. Creando escenarios comparativos con y sin reintegración de ${AppState.semanasAyudaDesempleo} semanas.`, "Análisis Automático");
+                addScenarioCard(1, numMesesP1, 0);
+                addScenarioCard(2, numMesesP1, AppState.semanasAyudaDesempleo);
+            } else {
+                addScenarioCard(1, numMesesP1, 0);
+            }
+
             if (AppState.fullHistoryPeriods.length > 0) {
-                addScenarioCard(2, 0);
+                addScenarioCard(null, 0, 0); 
             }
 
             showElement('infoSection4');
+            showElement('umaSelectorContainer');
             showElement('infoSection3');
             showElement('infoSection5');
             document.getElementById('addScenarioBtn').disabled = false;
@@ -1851,20 +1980,20 @@ calculadora 6
 
 
         // --- SCENARIO MANAGEMENT ---
-        function addScenarioCard(scenarioNum, meses = 0) {
+        function addScenarioCard(scenarioNum, meses = 0, semanasAjuste = 0) {
             const isManualAdd = !scenarioNum;
             if (isManualAdd) {
                 if (AppState.activeScenarios >= 4) {
                     showCustomAlert("Se ha alcanzado el número máximo de escenarios (4).", "Límite Alcanzado");
                     return;
                 }
-                addScenarioCardInternal();
+                addScenarioCardInternal(null, 0, 0);
                 return;
             }
-            addScenarioCardInternal(scenarioNum, meses);
+            addScenarioCardInternal(scenarioNum, meses, semanasAjuste);
         }
 
-        function addScenarioCardInternal(scenarioNum, meses = 0) {
+        function addScenarioCardInternal(scenarioNum, meses = 0, semanasAjuste = 0) {
             if (!scenarioNum) {
                 AppState.activeScenarios++;
                 scenarioNum = AppState.activeScenarios;
@@ -1887,7 +2016,7 @@ calculadora 6
                         </div>
                         <div class="input-group">
                             <label for="scenario_${scenarioNum}_semanas_ajuste">Ajuste de Semanas:</label>
-                            <input type="number" id="scenario_${scenarioNum}_semanas_ajuste" value="0" oninput="recalculateScenario(${scenarioNum})" class="w-full" ${isFirstScenario ? 'readonly' : ''}>
+                            <input type="number" id="scenario_${scenarioNum}_semanas_ajuste" value="${semanasAjuste}" oninput="recalculateScenario(${scenarioNum})" class="w-full" ${isFirstScenario ? 'readonly' : ''}>
                         </div>
                         <input type="hidden" id="scenario_${scenarioNum}_semanas" value="0">
                     </div>
@@ -2229,10 +2358,10 @@ calculadora 6
                 // Compara la fecha de pago simulada con el vencimiento del mes actual.
                 if (fechaSimulacionPago > fechaVencimiento) {
                     // Calcula la diferencia en meses completos.
-                    mesesRetraso = (fechaSimulacionPago.getUTCFullYear() - fechaVencimiento.getUTCFullYear()) * 12 + (fechaSimulacionPago.getUTCMonth() - fechaVencimiento.getUTCMonth());
-                    
-                    // Aplica la fórmula si hay retraso.
-                    if (mesesRetraso > 0) montoRecargos = pagoBaseActualizado * Constants.RECARGO_M40_MENSUAL * mesesRetraso;
+                    if (mesesRetraso > 0) {
+                        const tasaRecargoAplicable = anioCuota >= Constants.ANO_CAMBIO_RECARGO ? Constants.RECARGO_M40_MENSUAL_FUTURO : Constants.RECARGO_M40_MENSUAL;
+                        montoRecargos = pagoBaseActualizado * tasaRecargoAplicable * mesesRetraso;
+                    }
                 }
                 const costoTotalMes = pagoBaseActualizado + montoRecargos;
                 costoM40 += costoTotalMes;
@@ -2251,7 +2380,7 @@ calculadora 6
                     montoAct: actualizacion,
                     pagoBaseActualizado: pagoBaseActualizado,
                     mesesRetraso: mesesRetraso,
-                    tasaRecargo: Constants.RECARGO_M40_MENSUAL,
+                    tasaRecargo: anioCuota >= Constants.ANO_CAMBIO_RECARGO ? Constants.RECARGO_M40_MENSUAL_FUTURO : Constants.RECARGO_M40_MENSUAL,
                     recargos: montoRecargos,
                     totalMes: costoTotalMes
                 });
@@ -2403,17 +2532,32 @@ calculadora 6
             getEl('proyeccion').innerHTML = '';
         }
 
-        function populateUmaTable() {
+        function populateUmaTable(isEditing = false) {
             const tableBody = document.getElementById('umaReferenceTableBody');
             tableBody.innerHTML = '';
             const years = Object.keys(Constants.economicData.umas).sort((a, b) => b - a);
+            const currentYear = new Date().getFullYear();
+            const editControls = document.getElementById('umaEditControls');
+
+            if (isEditing) {
+                editControls.classList.remove('hidden');
+            } else {
+                editControls.classList.add('hidden');
+            }
+
             years.forEach(year => {
                 const uma = Constants.economicData.umas[year];
                 const sbcTope = uma * 25;
+                let umaCellHTML = `$${formatNumber(uma)}`;
+
+                if (isEditing && parseInt(year) > currentYear) {
+                    umaCellHTML = `<input type="number" class="w-24 p-1 text-right border rounded bg-yellow-50" id="uma_edit_${year}" value="${uma}" step="0.01">`;
+                }
+
                 const row = `
                 <tr class="border-b last:border-b-0 hover:bg-gray-50">
                     <td class="p-3 font-semibold">${year}</td>
-                    <td class="p-3 text-right">$${formatNumber(uma)}</td>
+                    <td class="p-3 text-right">${umaCellHTML}</td>
                     <td class="p-3 text-right font-bold text-gray-800">$${formatNumber(sbcTope)}</td>
                 </tr>
                 `;
@@ -2422,12 +2566,12 @@ calculadora 6
         }
 
         // --- PDF GENERATION ---
-        async function startFullReportProcess() {
-            AppState.pdfGenerated = true;
+        async function startComprehensiveReportProcess() {
+             AppState.pdfGenerated = true;
             await recalculateAllScenarios(); // Ensure data is up to date
 
             const title = "Datos del Asesor para Reporte";
-            const message = "Por favor, ingrese su nombre y teléfono para incluirlos en el PDF.";
+            const message = "Por favor, ingrese su nombre para incluirlo en el PDF.";
 
             document.getElementById('customAlertTitle').textContent = title;
             document.getElementById('customAlertMessage').textContent = message;
@@ -2439,10 +2583,6 @@ calculadora 6
                     <div class="input-group">
                         <label for="asesorNameInput" class="!text-left">Nombre del Asesor:</label>
                         <input type="text" id="asesorNameInput" class="w-full p-2 border rounded" placeholder="Su nombre completo">
-                    </div>
-                    <div class="input-group">
-                        <label for="asesorPhoneInput" class="!text-left">Teléfono del Asesor:</label>
-                        <input type="tel" id="asesorPhoneInput" class="w-full p-2 border rounded" placeholder="Su teléfono de contacto">
                     </div>
                 </div>`;
             passwordContainer.style.display = 'block';
@@ -2459,212 +2599,320 @@ calculadora 6
 
             confirmBtn.onclick = () => {
                 const asesorNombre = document.getElementById('asesorNameInput').value.trim();
-                const asesorTelefono = document.getElementById('asesorPhoneInput').value.trim();
-                if (!asesorNombre || !asesorTelefono) {
-                    showCustomAlert("Debe ingresar ambos, nombre y teléfono.", "Datos Faltantes");
+                if (!asesorNombre) {
+                    showCustomAlert("Debe ingresar su nombre.", "Datos Faltantes");
                     return; 
                 }
                 restoreAndClose();
-                generateFullReportPDF(asesorNombre, asesorTelefono);
+                generateComprehensiveReportPDF(asesorNombre);
             };
 
             cancelBtn.onclick = restoreAndClose;
             showElement('customAlertModal');
         }
 
-
-        // --- DETAILED PDF GENERATION FUNCTION ---
-        async function generateFullReportPDF(asesorNombre, asesorTelefono) {
-            showCustomAlert("Generando reporte detallado... Este proceso puede tardar unos momentos.", "Procesando PDF");
-            const {
-                jsPDF
-            } = window.jspdf;
+        async function generateComprehensiveReportPDF(asesorNombre) {
+            showCustomAlert("Generando reporte profesional... Este proceso puede tardar unos momentos.", "Procesando PDF");
+            const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'pt', 'letter');
             const pageHeight = doc.internal.pageSize.height;
             const pageWidth = doc.internal.pageSize.width;
             let finalY = 0;
+            const margin = 40;
+            const contentWidth = pageWidth - (margin * 2);
             const cliente = AppState.datosClienteInfo;
-            const styles = {
-                header: { font: "helvetica", fontStyle: 'bold', fontSize: 16, textColor: '#003366' },
-                subHeader: { font: "helvetica", fontStyle: 'bold', fontSize: 12, textColor: '#1A202C' },
-                body: { font: "helvetica", fontStyle: 'normal', fontSize: 10, textColor: '#4A5568' },
-                tableHeader: { fillColor: '#003366', textColor: '#FFFFFF', fontStyle: 'bold' },
-                tableBody: { textColor: '#4A5568' },
-                highlightGreen: { textColor: [22, 163, 74], fontStyle: 'bold' },
-                highlightRed: { textColor: [220, 38, 38], fontStyle: 'bold' },
+            const generationDate = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+        
+            // --- STYLES & FONTS ---
+            const RGC_BLUE = '#003366';
+            const RGC_GOLD = '#D4AF37';
+            const TEXT_DARK = '#1A202C';
+            const TEXT_MEDIUM = '#4A5568';
+            const BORDER_COLOR = '#E2E8F0';
+            
+            doc.setFont('helvetica');
+
+            // --- HELPER FUNCTIONS ---
+            const addPageHeader = (isCover = false) => {
+                if (isCover) return; // No header on cover page
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(RGC_GOLD);
+                doc.text("RGC", margin, 45);
+                doc.setTextColor(RGC_BLUE);
+                doc.text("Pensiones y Seguros", margin + 35, 45);
+        
+                doc.setFontSize(10);
+                doc.setTextColor(TEXT_MEDIUM);
+                doc.text("Reporte de Proyección de Pensión", pageWidth - margin, 45, { align: 'right' });
+        
+                doc.setDrawColor(BORDER_COLOR);
+                doc.setLineWidth(1);
+                doc.line(margin, 60, pageWidth - margin, 60);
+                finalY = 80;
             };
-            const addFooter = () => {
+        
+            const addPageFooter = () => {
                 const pageCount = doc.internal.getNumberOfPages();
-                const now = new Date();
-                const pad = (num) => String(num).padStart(2, '0');
-                const folio = `${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${now.getFullYear()}`;
                 for (let i = 1; i <= pageCount; i++) {
                     doc.setPage(i);
-                    doc.setFontSize(8); doc.setTextColor(150);
-                    const footerStartY = pageHeight - 50;
-                    doc.setLineWidth(0.5); doc.setDrawColor(180);
-                    doc.line(40, footerStartY, pageWidth - 40, footerStartY);
-                    doc.text('Eje Central Lázaro Cárdenas 555, Narvarte Poniente, Benito Juárez, 03023 Ciudad de México, CDMX', 40, footerStartY + 15);
-                    doc.text(`© ${now.getFullYear()} RGC Pensiones y Seguros. Derechos Reservados. | v3.4`, 40, footerStartY + 27);
-                    doc.text(`Folio: ${folio}`, 40, footerStartY + 39);
-                    doc.text(`Página ${i} de ${pageCount}`, pageWidth - 40, footerStartY + 39, { align: 'right' });
+                    doc.setFontSize(8);
+                    doc.setTextColor(TEXT_MEDIUM);
+                    const footerY = pageHeight - 30;
+                    if (i > 1) { // No footer line on cover
+                        doc.setDrawColor(BORDER_COLOR);
+                        doc.setLineWidth(0.5);
+                        doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
+                    }
+                    doc.text(`Reporte generado para: ${cliente.nombre}`, margin, footerY);
+                    doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, footerY, { align: 'right' });
                 }
             };
+            
             const checkPageBreak = (currentY, requiredSpace) => {
-                if (currentY + requiredSpace > pageHeight - 70) {
+                if (currentY + requiredSpace > pageHeight - 50) {
                     doc.addPage();
-                    return 50;
+                    addPageHeader();
+                    return finalY;
                 }
                 return currentY;
             };
-
+            
+            const addSectionTitle = (title, yPos) => {
+                finalY = checkPageBreak(yPos, 30);
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(RGC_BLUE);
+                doc.setFillColor(RGC_GOLD);
+                doc.rect(margin, finalY, 5, 15, 'F');
+                doc.text(title, margin + 12, finalY + 11);
+                return finalY + 30;
+            };
+        
+            const captureElement = async (elementId) => {
+                const element = document.getElementById(elementId);
+                if (!element || element.style.display === 'none') return null;
+                element.scrollIntoView({ block: 'center' });
+                await new Promise(r => setTimeout(r, 400));
+                const canvas = await html2canvas(element, { scale: 2.5, useCORS: true, logging: false, backgroundColor: '#ffffff' });
+                return canvas;
+            };
+        
             // --- PDF CONTENT ---
-            doc.setFont(styles.header.font, styles.header.fontStyle);
-            doc.setFontSize(styles.header.fontSize); doc.setTextColor(styles.header.textColor);
-            doc.text("Reporte de Proyección de Pensión", 40, 50);
+            // 1. Cover Page
+            addPageHeader(true);
+            doc.setFontSize(32);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(RGC_BLUE);
+            doc.text("Reporte de Proyección de Pensión", pageWidth / 2, pageHeight / 2 - 100, { align: 'center' });
+            
+            doc.setFontSize(16);
+            doc.setTextColor(TEXT_DARK);
+            doc.text("Preparado para:", pageWidth / 2, pageHeight / 2 - 20, { align: 'center' });
+            
+            doc.setFontSize(22);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(RGC_GOLD);
+            doc.text(cliente.nombre, pageWidth / 2, pageHeight / 2 + 20, { align: 'center' });
+
             doc.setFontSize(12);
-            doc.text("RGC Pensiones y Seguros", 40, 70);
-            doc.setLineWidth(1.5); doc.setDrawColor(0, 51, 102);
-            doc.line(40, 75, pageWidth - 40, 75);
-            finalY = 100;
-            doc.setFont(styles.subHeader.font, styles.subHeader.fontStyle);
-            doc.setFontSize(styles.subHeader.fontSize); doc.setTextColor(styles.subHeader.textColor);
-            doc.text("1. Datos del Asegurado", 40, finalY);
+            doc.setTextColor(TEXT_MEDIUM);
+            doc.text(`Preparado por: ${asesorNombre}`, pageWidth / 2, pageHeight / 2 + 80, { align: 'center' });
+            doc.text(`Generado el: ${generationDate}`, pageWidth / 2, pageHeight / 2 + 100, { align: 'center' });
+
+            doc.addPage();
+            addPageHeader();
+
+            // 2. Client Data & Base Analysis
+            finalY = addSectionTitle("Resumen de Análisis Inicial", finalY);
             doc.autoTable({
-                startY: finalY + 10,
+                startY: finalY,
+                theme: 'grid',
+                styles: { fontSize: 9, cellPadding: 5, font: 'helvetica' },
+                headStyles: { fillColor: RGC_BLUE },
                 body: [
-                    ['Nombre Completo:', cliente.nombre],
-                    ['CURP:', cliente.curp],
-                    ['Teléfono Cliente:', cliente.telefono],
-                    ['Asesor a Cargo:', asesorNombre],
-                    ['Teléfono Asesor:', asesorTelefono],
-                    ['Semanas Base:', formatNumber(cliente.semanasCotizadasBase, 0)],
-                ],
-                theme: 'grid', styles: { fontSize: 10 },
-                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 180 } }
+                    [{ content: 'Nombre Completo:', styles: { fontStyle: 'bold' }}, cliente.nombre, { content: 'SBC Promedio (Base):', styles: { fontStyle: 'bold' }}, `$${formatNumber(cliente.sbcPromedioBase)}`],
+                    [{ content: 'CURP:', styles: { fontStyle: 'bold' }}, cliente.curp, { content: 'Semanas Netas a Considerar:', styles: { fontStyle: 'bold' }}, formatNumber(AppState.datosClienteInfo.semanasCotizadasBase, 0)],
+                    [{ content: 'Edad Actual:', styles: { fontStyle: 'bold' }}, `${cliente.edadBase} años`, { content: 'Vigencia de Derechos:', styles: { fontStyle: 'bold' }}, document.getElementById('vigenciaResultText').textContent.trim()],
+                    [{ content: 'Pensión Mensual Base (sin M40):', styles: { fontStyle: 'bold', fillColor: '#e0f2fe' }}, { content: `$${formatNumber(AppState.pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA)}`, styles: { fontStyle: 'bold', fillColor: '#e0f2fe' }}, { content: '' }, { content: '' }],
+                ]
             });
             finalY = doc.autoTable.previous.finalY;
+        
+            // 3. Timeline Slicing Logic
+            finalY = addSectionTitle("Línea de Tiempo del Historial Laboral", finalY + 15);
+            const timelineCanvas = await captureElement(`timeline-container`);
+            if (timelineCanvas) {
+                const minDate = d3.min(AppState.timelinePeriods, d => d.fechaInicio);
+                const maxDate = d3.max(AppState.timelinePeriods, d => d.fechaFin);
+                if (minDate && maxDate) {
+                    const totalYears = (maxDate - minDate) / (1000 * 3600 * 24 * 365.25);
+                    if (totalYears > 0) {
+                        const pixelsPerYear = timelineCanvas.width / totalYears;
+                        const chunkYears = 12; 
+                        const numChunks = Math.ceil(totalYears / chunkYears);
 
-            if (AppState.isSisecNoDetallado) {
-                 finalY = checkPageBreak(finalY, 45);
-                 finalY += 10;
-                 doc.setFont(styles.body.font, 'bold'); doc.setTextColor(styles.highlightRed.textColor);
-                 doc.setDrawColor(styles.highlightRed.textColor[0], styles.highlightRed.textColor[1], styles.highlightRed.textColor[2]);
-                 doc.rect(40, finalY, pageWidth - 80, 30, 'S');
-                 doc.text("SBC DE SISEC SIN DETALLAR. SE NECESITA CONSTANCIA DETALLADA PARA FIRMA DE CONTRATO.", pageWidth / 2, finalY + 18, { align: 'center', maxWidth: pageWidth - 90 });
-                 finalY += 35;
+                        for (let i = 0; i < numChunks; i++) {
+                            finalY = checkPageBreak(finalY, 200);
+
+                            const startChunkDate = new Date(minDate.getTime());
+                            startChunkDate.setFullYear(startChunkDate.getFullYear() + (i * chunkYears));
+                            const endChunkDate = new Date(minDate.getTime());
+                            endChunkDate.setFullYear(endChunkDate.getFullYear() + Math.min((i + 1) * chunkYears, totalYears));
+                            
+                            doc.setFontSize(10);
+                            doc.setFont('helvetica', 'italic');
+                            doc.setTextColor(TEXT_MEDIUM);
+                            doc.text(`Periodo: ${startChunkDate.getFullYear()} - ${endChunkDate.getFullYear()}`, margin, finalY - 5);
+
+                            const sourceX = i * chunkYears * pixelsPerYear;
+                            const sourceWidth = Math.min(chunkYears * pixelsPerYear, timelineCanvas.width - sourceX);
+
+                            const tempCanvas = document.createElement('canvas');
+                            const tempCtx = tempCanvas.getContext('2d');
+                            tempCanvas.width = sourceWidth;
+                            tempCanvas.height = timelineCanvas.height;
+                            tempCtx.drawImage(timelineCanvas, sourceX, 0, sourceWidth, timelineCanvas.height, 0, 0, sourceWidth, timelineCanvas.height);
+                            const chunkImgData = tempCanvas.toDataURL('image/jpeg', 0.9);
+                            
+                            const aspectRatio = tempCanvas.height / tempCanvas.width;
+                            const imgHeight = contentWidth * aspectRatio;
+                            
+                            doc.addImage(chunkImgData, 'JPEG', margin, finalY, contentWidth, imgHeight, undefined, 'FAST');
+                            finalY += imgHeight + 25;
+                        }
+                    }
+                }
+            } else {
+                 doc.text("No se pudo generar la gráfica de la línea de tiempo.", margin, finalY);
+                 finalY += 15;
             }
-
-            // --- SCENARIO ANALYSIS (VERTICAL LAYOUT) ---
-            finalY = checkPageBreak(finalY, 40);
-            finalY += 20;
-            doc.text("2. Análisis Comparativo de Escenarios", 40, finalY);
-            
+        
+            // 4. Scenarios
             const activeScenarios = Object.values(AppState.scenarioData).filter(s => s && s.costoTotalContrato !== undefined && s.meses >= 0);
-
             for (let i = 0; i < activeScenarios.length; i++) {
                 const sc = activeScenarios[i];
-                const scenarioNum = i + 1;
+                const scenarioId = Object.keys(AppState.scenarioData).find(key => AppState.scenarioData[key] === sc);
                 
-                finalY = checkPageBreak(finalY, 80);
-                finalY += 25;
-                doc.setFontSize(14);
-                doc.setTextColor(styles.header.textColor);
-                doc.text(`Escenario ${scenarioNum}: ${sc.meses} Meses en Modalidad 40`, 40, finalY);
-                finalY += 10;
+                doc.addPage();
+                addPageHeader();
                 
-                // --- Datos y Pensión ---
+                let sectionTitle = `Análisis del Escenario ${scenarioId}: ${sc.meses} Meses en Modalidad 40`;
+                if (sc.meses === 0) sectionTitle = `Análisis del Escenario ${scenarioId}: Sin Inversión M40 (Base)`;
+                finalY = addSectionTitle(sectionTitle, finalY);
+                
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(TEXT_MEDIUM);
+                let dateInfo = `Fecha Inicio M40: ${sc.meses > 0 ? formatDateDDMMYYYY(new Date(sc.inicioM40Str)) : 'N/A'}`;
+                dateInfo += `  |  Fecha Fin M40: ${sc.meses > 0 ? formatDateDDMMYYYY(sc.fechaFinM40Obj) : 'N/A'}`;
+                doc.text(dateInfo, margin, finalY - 10);
+        
+                // Pension & Financials side by side
+                const pensionBody = [
+                    [{ content: 'SBC Promedio Final:', styles: { fontStyle: 'bold' }}, `$${formatNumber(sc.sbcPromedio)}`],
+                    [{ content: 'Semanas Finales:', styles: { fontStyle: 'bold' }}, formatNumber(sc.semanas, 0)],
+                    [{ content: 'Edad al Finalizar:', styles: { fontStyle: 'bold' }}, `${sc.edadFinM40.anos}a, ${sc.edadFinM40.meses}m`],
+                    [{ content: 'Pensión Mensual:', styles: { fontStyle: 'bold', fillColor: '#e0f2fe', textColor: '#0c4a6e' }}, { content: `$${formatNumber(sc.pensionMensual)}`, styles: { fontStyle: 'bold', fillColor: '#e0f2fe', textColor: '#0c4a6e' }}],
+                    [{ content: 'Aguinaldo:', styles: { fontStyle: 'bold' }}, `$${formatNumber(sc.aguinaldo)}`],
+                ];
+                
                 doc.autoTable({
                     startY: finalY,
-                    head: [['Parámetros y Resultados', '']],
-                    body: [
-                        ['Meses Pagados M40:', `${sc.meses} meses`],
-                        ['Edad al Finalizar:', `${sc.edadFinM40.anos}a, ${sc.edadFinM40.meses}m`],
-                        ['SBC Promedio Final:', `$${formatNumber(sc.sbcPromedio)}`],
-                        ['Semanas Finales:', formatNumber(sc.semanas, 0)],
-                        [{ content: 'Pensión Mensual Bruta:', styles: { fontStyle: 'bold', fillColor: '#f0f9ff' }}, { content: `$${formatNumber(sc.pensionMensual)}`, styles: { fontStyle: 'bold', fillColor: '#f0f9ff' }}],
-                        ['Aguinaldo:', `$${formatNumber(sc.aguinaldo)}`],
-                    ],
-                    theme: 'striped', headStyles: styles.tableHeader, styles: { fontSize: 9 },
-                    columnStyles: { 0: { fontStyle: 'bold' } }
+                    head: [['Resultados de Pensión', '']],
+                    body: pensionBody,
+                    theme: 'grid', headStyles: { fillColor: RGC_BLUE }, styles: { fontSize: 9, cellPadding: 5 },
+                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 150 }, 1: { halign: 'right' } }
                 });
-                finalY = doc.autoTable.previous.finalY;
+                let table1FinalY = doc.autoTable.previous.finalY;
 
-                // --- Finanzas y Fechas ---
-                 if (sc.meses > 0) {
-                    finalY = checkPageBreak(finalY, 80);
-                    finalY += 15;
+                if (sc.meses > 0) {
+                    const saldoLabel = sc.saldoFinal >= 0 ? 'SALDO FINAL A FAVOR' : 'DÉFICIT FINAL';
+                    const saldoColor = sc.saldoFinal >= 0 ? '#dcfce7' : '#fee2e2';
+                    const financialBody = [
+                        [{ content: '(+) Cobertura Total', styles: { fontStyle: 'bold' } }, { content: `$${formatNumber(sc.coberturaAfore + sc.coberturaDeposito + sc.coberturaExtra + sc.prestamoRequerido)}`, styles: { fontStyle: 'bold', halign: 'right' } }],
+                        [{ content: '     AFORE Actual:', styles: { cellPadding: { left: 15 } } }, { content: `$${formatNumber(sc.coberturaAfore)}`, styles: { halign: 'right' } }],
+                        [{ content: '     1er Depósito:', styles: { cellPadding: { left: 15 } } }, { content: `$${formatNumber(sc.coberturaDeposito)}`, styles: { halign: 'right' } }],
+                        [{ content: '     Extra de AFORE:', styles: { cellPadding: { left: 15 } } }, { content: `$${formatNumber(sc.coberturaExtra)}`, styles: { halign: 'right' } }],
+                        [{ content: '     Préstamo Requerido:', styles: { cellPadding: { left: 15 } } }, { content: `$${formatNumber(sc.prestamoRequerido)}`, styles: { halign: 'right' } }],
+                        [{ content: '(-) Costo Total del Proyecto', styles: { fontStyle: 'bold' } }, { content: `$${formatNumber(sc.costoTotalContrato)}`, styles: { fontStyle: 'bold', halign: 'right' } }],
+                        [{ content: saldoLabel, styles: { fontStyle: 'bold', fillColor: saldoColor } }, { content: `$${formatNumber(Math.abs(sc.saldoFinal))}`, styles: { fontStyle: 'bold', halign: 'right', fillColor: saldoColor } }],
+                        [{ content: '% Límite Préstamo Usado', styles: { fontStyle: 'bold' } }, { content: `${formatNumber(sc.porcentajeUsoPrestamo, 1)}%`, styles: { fontStyle: 'bold', halign: 'right' } }]
+                    ];
+
                     doc.autoTable({
                         startY: finalY,
-                        head: [['Análisis Financiero y Fechas Clave', '']],
-                        body: [
-                            ['Fin de M40:', formatDateDDMMYYYY(sc.fechaFinM40Obj)],
-                            ['Primer Depósito:', formatDateDDMMYYYY(sc.fechaPrimerDeposito)],
-                            ['(+) Cobertura Total:', `$${formatNumber(sc.coberturaAfore + sc.coberturaDeposito + sc.coberturaExtra + sc.prestamoRequerido)}`],
-                            ['   - AFORE Actual:', `$${formatNumber(sc.coberturaAfore)}`],
-                            ['   - 1er Depósito:', `$${formatNumber(sc.coberturaDeposito)}`],
-                            ['   - Extra AFORE:', `$${formatNumber(sc.coberturaExtra)}`],
-                            ['   - Préstamo Requerido:', `$${formatNumber(sc.prestamoRequerido)}`],
-                            ['(-) Costo Total del Proyecto:', { content: `$${formatNumber(sc.costoTotalContrato)}`, styles: { textColor: styles.highlightRed.textColor }}],
-                            ['Resultado Final:', {
-                                content: sc.saldoFinal > 1 ? `SALDO A FAVOR: $${formatNumber(sc.saldoFinal)}` : (sc.saldoFinal < -1 ? `DÉFICIT: $${formatNumber(Math.abs(sc.saldoFinal))}` : 'PROYECTO VIABLE'),
-                                styles: { fontStyle: 'bold', textColor: sc.saldoFinal >= 0 ? styles.highlightGreen.textColor : styles.highlightRed.textColor }
-                            }],
-                        ],
-                        theme: 'grid', headStyles: styles.tableHeader, styles: { fontSize: 9 },
-                        columnStyles: { 0: { fontStyle: 'bold' } }
+                        head: [['Balance del Proyecto', '']],
+                        body: financialBody,
+                        theme: 'grid', headStyles: { fillColor: RGC_BLUE }, styles: { fontSize: 9, cellPadding: 5 },
+                        margin: { left: margin + contentWidth/2 + 10 }
+                    });
+                    finalY = Math.max(table1FinalY, doc.autoTable.previous.finalY);
+                }
+        
+                // Graphics
+                finalY = checkPageBreak(finalY, 220);
+                finalY += 15;
+                const pieImgData = await captureElement(`pie-chart-section-${scenarioId}`);
+                const scTimelineImgData = await captureElement(`timeline-section-${scenarioId}`);
+                const halfWidth = contentWidth / 2 - 5;
+                
+                if (pieImgData && sc.meses > 0) doc.addImage(await pieImgData.toDataURL('image/jpeg', 0.9), 'JPEG', margin, finalY, halfWidth, halfWidth, undefined, 'FAST');
+                if (scTimelineImgData) doc.addImage(await scTimelineImgData.toDataURL('image/jpeg', 0.9), 'JPEG', margin + (sc.meses > 0 ? halfWidth + 10 : 0) , finalY, sc.meses > 0 ? halfWidth : contentWidth, sc.meses > 0 ? halfWidth : halfWidth * 0.7, undefined, 'FAST');
+                finalY += (sc.meses > 0 ? halfWidth : halfWidth * 0.7) + 10;
+                
+                // Projection Table
+                finalY = checkPageBreak(finalY, 20);
+                finalY = addSectionTitle(`Proyección de Pensión Neta (10 Años) - Escenario ${scenarioId}`, finalY);
+                doc.autoTable({
+                    startY: finalY,
+                    head: [['Año', 'Pensión Bruta Anual', 'Descuento Anual', 'Pensión Neta Anual']],
+                    body: sc.proyeccion.map(row => [ row[0], row[1], row[2], row[3] ]),
+                    theme: 'striped', headStyles: { fillColor: RGC_BLUE }, styles: { fontSize: 8, font: 'helvetica' },
+                    didParseCell: (data) => {
+                        if(data.section === 'body' && data.column.index > 0) data.cell.styles.halign = 'right';
+                    }
+                });
+                finalY = doc.autoTable.previous.finalY;
+            }
+            
+            // 5. ROI Analysis
+            if (document.getElementById('roiAnalysisContainer').style.display !== 'none') {
+                doc.addPage();
+                addPageHeader();
+                finalY = addSectionTitle("Análisis de Evolución del Patrimonio (ROI)", finalY);
+        
+                const roiChartCanvas = await captureElement(`roiChartContainer`);
+                if (roiChartCanvas) {
+                    finalY = checkPageBreak(finalY, 280);
+                    const aspectRatio = 9 / 16;
+                    const imgHeight = contentWidth * aspectRatio;
+                    doc.addImage(await roiChartCanvas.toDataURL('image/jpeg', 0.9), 'JPEG', margin, finalY, contentWidth, imgHeight, undefined, 'FAST');
+                    finalY += imgHeight + 10;
+                }
+        
+                const roiTable = document.querySelector('#roiTableContainer table');
+                if (roiTable) {
+                    finalY = checkPageBreak(finalY, 20);
+                    finalY = addSectionTitle("Tabla de Datos ROI", finalY);
+                    doc.autoTable({
+                        startY: finalY,
+                        html: roiTable,
+                        theme: 'grid',
+                        headStyles: { fillColor: RGC_BLUE },
+                        styles: { fontSize: 7, cellPadding: 2, font: 'helvetica' }
                     });
                     finalY = doc.autoTable.previous.finalY;
                 }
-
-                // --- Captura de Gráficas e Imágenes ---
-                finalY = checkPageBreak(finalY, 250);
-                finalY += 20;
-
-                const captureElement = async (elementId) => {
-                    const element = document.getElementById(elementId);
-                    if (!element) return null;
-                    element.scrollIntoView({ block: 'center' });
-                    await new Promise(r => setTimeout(r, 300));
-                    const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
-                    return canvas.toDataURL('image/png');
-                };
-
-                const pieImgData = await captureElement(`pie-chart-section-${scenarioNum}`);
-                const timelineImgData = await captureElement(`timeline-section-${scenarioNum}`);
-                const imgWidth = (pageWidth / 2) - 50;
-                
-                if(pieImgData) {
-                    doc.addImage(pieImgData, 'PNG', 40, finalY, imgWidth, imgWidth * 0.8, undefined, 'FAST');
-                }
-                if(timelineImgData) {
-                    doc.addImage(timelineImgData, 'PNG', pageWidth / 2 + 10, finalY, imgWidth, imgWidth * 0.8, undefined, 'FAST');
-                }
-                finalY += (imgWidth * 0.8) + 20;
-                
-                 // --- Tabla de Proyección ---
-                finalY = checkPageBreak(finalY, 150);
-                doc.setFont(styles.subHeader.font, styles.subHeader.fontStyle); doc.setFontSize(10);
-                doc.text("Proyección de Pensión Neta (10 Años)", 40, finalY);
-                finalY += 5;
-                 doc.autoTable({
-                     startY: finalY,
-                     head: [['Año', 'Pensión Bruta', 'Descuento', 'Pensión Neta']],
-                     body: sc.proyeccion,
-                     theme: 'striped', headStyles: styles.tableHeader, styles: { fontSize: 8 }
-                 });
-                 finalY = doc.autoTable.previous.finalY;
             }
-
-            addFooter();
-            const fileName = `Reporte_RGC_${cliente.nombre.replace(/\s/g, '_')}_CLI.pdf`;
+        
+            addPageFooter();
+            const fileName = `Reporte_Profesional_RGC_${cliente.nombre.replace(/\s/g, '_')}.pdf`;
             doc.save(fileName);
-            // Use setTimeout to allow the UI to update with the "processing" message before the final alert
             setTimeout(() => {
-                showCustomAlert(`El reporte PDF "${fileName}" ha sido generado y descargado.`, "Reporte Generado");
+                showCustomAlert(`El reporte PDF profesional "${fileName}" ha sido generado y descargado.`, "Reporte Generado");
             }, 500);
         }
-
 
         function validarNombreCURP(nombreCompleto, curp) {
             if (!nombreCompleto || !curp || curp.length < 4) return false;
@@ -2700,21 +2948,79 @@ calculadora 6
         }
 
         // --- AUTOMATIC TEXT PARSING FUNCTION ---
-        function analizarTextoCompleto() {
-            const isSisecNoDetalladoChecked = document.getElementById('isSisecNoDetallado').checked;
+        function _continueAnalisis(textoCompleto) {
+            AppState.isSisecNoDetallado = document.getElementById('isSisecNoDetallado').checked;
+            document.getElementById('employmentCardsContainer').innerHTML = '';
+            AppState.employmentCardIdCounter = 0;
+            if (AppState.isSisecNoDetallado) {
+                const employerBlocks = textoCompleto.split(/Nombre del patrón/gi).slice(1);
+                if (employerBlocks.length === 0) {
+                    showCustomAlert("No se encontraron registros de empleadores en el formato de SISEC no detallado.", "Error de Formato");
+                    return;
+                }
+                employerBlocks.forEach(block => {
+                    const lines = block.trim().split('\n').map(l => l.trim()).filter(l => l);
+                    const nombrePatron = lines[0] || 'No Encontrado';
+                    let regPatronal = 'No Encontrado';
+                    const regMatch = block.match(/Registro Patronal\s+([A-Z0-9]+)/i);
+                    if (regMatch) regPatronal = regMatch[1];
+                    let fechaAlta = null;
+                    const altaMatch = block.match(/Fecha de alta\s+(\d{2}\/\d{2}\/\d{4})/i);
+                    if (altaMatch) fechaAlta = altaMatch[1];
+                    let fechaBaja = 'Vigente';
+                    const bajaMatch = block.match(/Fecha de baja\s+([\d{2}\/\d{2}\/\d{4}]+|Vigente)/i);
+                    if (bajaMatch) fechaBaja = bajaMatch[1];
+                    let sbc = '0.00';
+                    const sbcMatch = block.match(/Salario Base de Cotización \*\s+\$\s*([\d,]+\.?\d*)/i);
+                    if (sbcMatch) sbc = sbcMatch[1];
+                    if (nombrePatron !== 'No Encontrado' && fechaAlta) {
+                        let movimientoTexto = `REINGRESO ${fechaAlta} $ ${sbc}\n`;
+                        if (fechaBaja.toLowerCase() !== 'vigente') {
+                            movimientoTexto += `BAJA ${fechaBaja}`;
+                        }
+                        addEmploymentCard(nombrePatron, regPatronal, movimientoTexto);
+                    }
+                });
+            } else { // Detailed SISEC
+                const employerBlocks = textoCompleto.split(/Nombre\s+del\s+patrón/gi).slice(1);
+                if (employerBlocks.length === 0) {
+                    showCustomAlert("No se encontraron registros de empleadores en el texto. Verifique que el texto contenga la frase 'Nombre del patrón'.", "Error de Formato");
+                    return;
+                }
+                employerBlocks.forEach(block => {
+                    const lines = block.trim().split('\n').map(l => l.trim()).filter(l => l);
+                    const nombrePatron = lines[0] || 'No Encontrado';
+                    let regPatronal = 'No Encontrado';
+                    const regPatronalMatch = block.match(/Registro\s+Patronal\s+([A-Z0-9]+)/i);
+                    if (regPatronalMatch && regPatronalMatch[1]) {
+                        regPatronal = regPatronalMatch[1];
+                    }
+                    const movimientoRegex = /(REINGRESO|MODIFICACION\s*DE\s*SALARIO|BAJA|ALTA)\s+(\d{2}\/\d{2}\/\d{4})(?:\s*\$\s*([\d,]+\.?\d*))?/i;
+                    let movimientosEncontrados = [];
+                    for (const linea of lines) {
+                        const lineaLimpia = linea.trim().replace(/\s+/g, ' ');
+                        if (movimientoRegex.test(lineaLimpia)) {
+                            movimientosEncontrados.push(lineaLimpia);
+                        }
+                    }
+                    if (movimientosEncontrados.length > 0) {
+                        addEmploymentCard(nombrePatron, regPatronal, movimientosEncontrados.join('\n'));
+                    }
+                });
+            }
+            showElement('toggleCardsBtn', 'inline-flex');
+            showCustomAlert("Datos extraídos correctamente. Iniciando análisis...", "Proceso Iniciado");
+            setTimeout(analizarYCalcularSBC, 500);
+        }
 
+        function analizarTextoCompleto() {
             const proceedWithAnalysis = () => {
                 const textoCompleto = document.getElementById('info_textoCompleto').value;
                 if (!textoCompleto.trim()) {
                     showCustomAlert("El área de texto está vacía. Por favor, pegue el contenido del documento.", "Error");
                     return;
                 }
-
-                AppState.isSisecNoDetallado = document.getElementById('isSisecNoDetallado').checked;
-
-                document.getElementById('employmentCardsContainer').innerHTML = '';
-                AppState.employmentCardIdCounter = 0;
-
+                // 1. Extract Personal Data
                 const datosPersonalesRegex = /Estimado\(a\),\s*([A-Z\s,ÑÁÉÍÓÚ]+)\s*NSS:\s*[\w\d]+\s*CURP:\s*(\w{18})/i;
                 const datosPersonalesMatch = textoCompleto.match(datosPersonalesRegex);
                 if (datosPersonalesMatch && datosPersonalesMatch[1] && datosPersonalesMatch[2]) {
@@ -2724,96 +3030,46 @@ calculadora 6
                     showCustomAlert("No fue posible extraer el Nombre y CURP del texto. Verifique que el formato sea correcto.", "Datos Faltantes");
                     return;
                 }
-
+                // 2. Extract Weeks Data
+                let totalSemanasCalculadas = 0;
                 const semanasCompuestasRegex = /Semanas\s+Reintegradas\s*\(\+\)[\s\S]*?(\d+)\s+(\d+)\s+(\d+)/i;
                 const semanasCompuestasMatch = textoCompleto.match(semanasCompuestasRegex);
                 if (semanasCompuestasMatch && semanasCompuestasMatch.length === 4) {
                     const imss = parseInt(semanasCompuestasMatch[1], 10);
                     const descontadas = parseInt(semanasCompuestasMatch[2], 10);
                     const reintegradas = parseInt(semanasCompuestasMatch[3], 10);
-                    const totalSemanasCalculadas = imss - descontadas + reintegradas;
-                    document.getElementById('info_semanasTotalesManual').value = totalSemanasCalculadas;
+                    totalSemanasCalculadas = imss - descontadas + reintegradas;
                 } else {
                     const semanasTotalRegex = /Total de semanas cotizadas\s+(\d+)/i;
                     const semanasTotalMatch = textoCompleto.match(semanasTotalRegex);
                     if (semanasTotalMatch && semanasTotalMatch[1]) {
-                        document.getElementById('info_semanasTotalesManual').value = semanasTotalMatch[1].trim();
+                        totalSemanasCalculadas = parseInt(semanasTotalMatch[1].trim(), 10);
                     } else {
                         showCustomAlert("No fue posible extraer el total de semanas cotizadas. Ingrese el dato manualmente.", "Dato Faltante");
                         return;
                     }
                 }
-
-                if (AppState.isSisecNoDetallado) {
-                    const employerBlocks = textoCompleto.split(/Nombre del patrón/gi).slice(1);
-                    if (employerBlocks.length === 0) {
-                        showCustomAlert("No se encontraron registros de empleadores en el formato de SISEC no detallado.", "Error de Formato");
-                        return;
-                    }
-                    employerBlocks.forEach(block => {
-                        const lines = block.trim().split('\n').map(l => l.trim()).filter(l => l);
-                        const nombrePatron = lines[0] || 'No Encontrado';
-                        let regPatronal = 'No Encontrado';
-                        const regMatch = block.match(/Registro Patronal\s+([A-Z0-9]+)/i);
-                        if (regMatch) regPatronal = regMatch[1];
-                        let fechaAlta = null;
-                        const altaMatch = block.match(/Fecha de alta\s+(\d{2}\/\d{2}\/\d{4})/i);
-                        if (altaMatch) fechaAlta = altaMatch[1];
-                        let fechaBaja = 'Vigente';
-                        const bajaMatch = block.match(/Fecha de baja\s+([\d{2}\/\d{2}\/\d{4}]+|Vigente)/i);
-                        if (bajaMatch) fechaBaja = bajaMatch[1];
-                        let sbc = '0.00';
-                        const sbcMatch = block.match(/Salario Base de Cotización \*\s+\$\s*([\d,]+\.?\d*)/i);
-                        if (sbcMatch) sbc = sbcMatch[1];
-
-                        if (nombrePatron !== 'No Encontrado' && fechaAlta) {
-                            let movimientoTexto = `REINGRESO ${fechaAlta} $ ${sbc}\n`;
-                            if (fechaBaja.toLowerCase() !== 'vigente') {
-                                movimientoTexto += `BAJA ${fechaBaja}`;
-                            }
-                            addEmploymentCard(nombrePatron, regPatronal, movimientoTexto);
-                        }
-                    });
-                } else { // Detailed SISEC
-                    const employerBlocks = textoCompleto.split(/Nombre\s+del\s+patrón/gi).slice(1);
-                    if (employerBlocks.length === 0) {
-                        showCustomAlert("No se encontraron registros de empleadores en el texto. Verifique que el texto contenga la frase 'Nombre del patrón'.", "Error de Formato");
-                        return;
-                    }
-                    employerBlocks.forEach(block => {
-                        const lines = block.trim().split('\n').map(l => l.trim()).filter(l => l);
-                        const nombrePatron = lines[0] || 'No Encontrado';
-                        let regPatronal = 'No Encontrado';
-                        const regPatronalMatch = block.match(/Registro\s+Patronal\s+([A-Z0-9]+)/i);
-                        if (regPatronalMatch && regPatronalMatch[1]) {
-                            regPatronal = regPatronalMatch[1];
-                        }
-                        const movimientoRegex = /(REINGRESO|MODIFICACION\s*DE\s*SALARIO|BAJA|ALTA)\s+(\d{2}\/\d{2}\/\d{4})(?:\s*\$\s*([\d,]+\.?\d*))?/i;
-                        let movimientosEncontrados = [];
-                        for (const linea of lines) {
-                            const lineaLimpia = linea.trim().replace(/\s+/g, ' ');
-                            if (movimientoRegex.test(lineaLimpia)) {
-                                movimientosEncontrados.push(lineaLimpia);
-                            }
-                        }
-                        if (movimientosEncontrados.length > 0) {
-                            addEmploymentCard(nombrePatron, regPatronal, movimientosEncontrados.join('\n'));
-                        }
-                    });
+                // 3. Check for Unemployment Aid
+                const ayudaDesempleoRegex = /Semanas descontadas por.*?Ayuda.*?Desempleo.*?\(-\)\s*(\d+)/i;
+                const ayudaMatch = textoCompleto.match(ayudaDesempleoRegex);
+                if (ayudaMatch && ayudaMatch[1]) {
+                    const semanasDescuento = parseInt(ayudaMatch[1], 10);
+                    AppState.semanasAyudaDesempleo = semanasDescuento;
+                    const semanasOriginales = totalSemanasCalculadas + semanasDescuento;
+                    showAyudaDesempleoModal(semanasDescuento, semanasOriginales, totalSemanasCalculadas, () => _continueAnalisis(textoCompleto));
+                } else {
+                    AppState.semanasAyudaDesempleo = 0;
+                    document.getElementById('info_semanasTotalesManual').value = totalSemanasCalculadas;
+                    _continueAnalisis(textoCompleto);
                 }
-
-                showElement('toggleCardsBtn', 'inline-flex');
-                showCustomAlert("Datos extraídos correctamente. Iniciando análisis...", "Proceso Iniciado");
-                setTimeout(analizarYCalcularSBC, 500);
             };
-
+            const isSisecNoDetalladoChecked = document.getElementById('isSisecNoDetallado').checked;
             if (isSisecNoDetalladoChecked) {
                 promptForPassword(proceedWithAnalysis);
             } else {
                 proceedWithAnalysis();
             }
         }
-
 
         function toggleAutoCards() {
             const container = document.getElementById('employmentCardsContainer');
@@ -3200,7 +3456,7 @@ calculadora 6
         }
 
         // --- EDITING & PERMISSIONS ---
-        const DIRECTOR_PASSWORD = "RGC"; 
+        const DIRECTOR_PASSWORD = "OICI010503120566"; 
 
         function promptForPassword(onSuccess) {
             const title = "Acceso Restringido";
@@ -3272,6 +3528,53 @@ calculadora 6
                 
                 showElement('customAlertModal');
             });
+        }
+        
+        function toggleAdvancedEditing() {
+            const container = document.getElementById('advancedParamsContainer');
+            const inputs = container.querySelectorAll('input');
+            const isHidden = container.classList.contains('hidden');
+            if (isHidden) {
+                container.classList.remove('hidden');
+                inputs.forEach(input => input.disabled = false);
+                document.getElementById('info_inpcGrowth').value = Constants.INPC_GROWTH_ESTIMATE * 100;
+                document.getElementById('info_m40surcharge').value = Constants.RECARGO_M40_MENSUAL * 100;
+                document.getElementById('info_m40surchargeFuture').value = Constants.RECARGO_M40_MENSUAL_FUTURO * 100;
+            } else {
+                container.classList.add('hidden');
+                inputs.forEach(input => input.disabled = true);
+            }
+        }
+        
+        function updateAdvancedConstants(shouldRecalculate = false) {
+            const inpcGrowth = parseFloat(document.getElementById('info_inpcGrowth').value);
+            const m40surcharge = parseFloat(document.getElementById('info_m40surcharge').value);
+            const m40surchargeFuture = parseFloat(document.getElementById('info_m40surchargeFuture').value);
+            
+            if (!isNaN(inpcGrowth)) Constants.INPC_GROWTH_ESTIMATE = inpcGrowth / 100;
+            if (!isNaN(m40surcharge)) Constants.RECARGO_M40_MENSUAL = m40surcharge / 100;
+            if (!isNaN(m40surchargeFuture)) Constants.RECARGO_M40_MENSUAL_FUTURO = m40surchargeFuture / 100;
+            
+            if(shouldRecalculate) {
+                recalculateAllScenarios();
+            }
+        }
+        
+        function enableUmaEditing() {
+            populateUmaTable(true);
+        }
+
+        function saveUmas() {
+            const inputs = document.querySelectorAll('#umaReferenceTableBody input[type="number"]');
+            inputs.forEach(input => {
+                const year = input.id.split('_')[2];
+                const newValue = parseFloat(input.value);
+                if (year && !isNaN(newValue) && newValue > 0) {
+                    Constants.economicData.umas[year] = newValue;
+                }
+            });
+            populateUmaTable(false);
+            recalculateAllScenarios();
         }
 
         // --- NEW FEATURES ---
@@ -3358,12 +3661,47 @@ calculadora 6
             const sc1 = AppState.scenarioData[1];
             const basePension = AppState.pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA;
             const clientName = AppState.datosClienteInfo.nombre.split(' ')[0] || "Cliente";
-            const asesorName = "Asesor RGC";
+            const asesorName = "Asesor RGC"; // You can make this dynamic if needed
+            const optionsContainer = document.getElementById('whatsappOptionsContainer');
+            const textArea = document.getElementById('whatsAppSummaryText');
+            
+            const templates = [
+                {
+                    id: "formal",
+                    label: "Formal",
+                    text: `Estimado(a) ${clientName},\n\nLe comparto un resumen de la proyección de pensión que analizamos:\n\n- Pensión Base Actual: $${formatNumber(basePension)}\n- Pensión Proyectada con Estrategia: *$${formatNumber(sc1.pensionMensual)}*\n- Inversión Total Estimada: $${formatNumber(sc1.costoTotalContrato)}\n\nEsta estrategia representa una excelente oportunidad para optimizar su retiro. Quedo a su disposición para cualquier consulta.\n\nAtentamente,\n${asesorName}`
+                },
+                {
+                    id: "directo",
+                    label: "Directo y Rápido",
+                    text: `¡Hola ${clientName}! Aquí el resumen:\n\n*Pensión Actual:* $${formatNumber(basePension)}\n*Pensión con Plan:* ¡$${formatNumber(sc1.pensionMensual)}!\n\nLa inversión total es de aprox. $${formatNumber(sc1.costoTotalContrato)}. ¡Es una gran mejora! Avísame si tienes dudas. Saludos, ${asesorName}.`
+                },
+                {
+                    id: "informativo",
+                    label: "Detallado",
+                    text: `Buen día ${clientName},\n\nSiguiendo nuestra conversación, aquí están los números clave de su proyección:\n\n*Situación Base:*\n- Pensión Mensual: $${formatNumber(basePension)}\n\n*Proyección con Inversión en M40:*\n- Meses de Inversión: ${sc1.meses}\n- Pensión Mensual Objetivo: $${formatNumber(sc1.pensionMensual)}\n- Inversión Requerida: $${formatNumber(sc1.costoTotalContrato)}\n\nComo puede ver, el incremento es significativo. Estoy para servirle.\n\n${asesorName}`
+                }
+            ];
 
-            const template =
-                `Estimado(a) ${clientName},\n\nLe comparto un resumen de la proyección de pensión que analizamos:\n\n- Pensión Base Estimada: $${formatNumber(basePension)}\n- Pensión Proyectada con Estrategia: *$${formatNumber(sc1.pensionMensual)}*\n- Inversión Total Estimada del Proyecto: $${formatNumber(sc1.costoTotalContrato)}\n\nEsta estrategia representa una excelente oportunidad para optimizar su retiro. Quedo a su disposición para cualquier consulta.\n\nAtentamente,\n${asesorName}`;
+            optionsContainer.innerHTML = templates.map((template, index) => `
+                <div class="flex items-center">
+                    <input type="radio" id="wa-opt-${template.id}" name="whatsapp_option" value="${index}" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500" ${index === 0 ? 'checked' : ''}>
+                    <label for="wa-opt-${template.id}" class="ml-2 block text-sm font-medium text-gray-700">${template.label}</label>
+                </div>
+            `).join('');
 
-            document.getElementById('whatsAppSummaryText').value = template;
+            const updateTextArea = () => {
+                const selectedOption = document.querySelector('input[name="whatsapp_option"]:checked');
+                if (selectedOption) {
+                    textArea.value = templates[selectedOption.value].text;
+                }
+            };
+            
+            document.querySelectorAll('input[name="whatsapp_option"]').forEach(radio => {
+                radio.addEventListener('change', updateTextArea);
+            });
+
+            updateTextArea(); // Set initial text
             showElement('whatsAppModal');
         }
 
@@ -3402,7 +3740,7 @@ calculadora 6
         window.copyWhatsAppText = copyWhatsAppText;
         window.generateTotalCapturePDF = generateTotalCapturePDF;
         window.toggleQPCardStyle = toggleQPCardStyle;
-        window.startFullReportProcess = startFullReportProcess;
+        window.startComprehensiveReportProcess = startComprehensiveReportProcess;
         window.editTotalCost = editTotalCost;
 
         function showPaymentBreakdown(scenarioNum) {
@@ -3791,6 +4129,12 @@ calculadora 6
 </body>
 
 </html>
+
+
+
+
+
+
 
 
 
