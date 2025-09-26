@@ -899,7 +899,9 @@ async function toggleUserStatus(username) {
 async function handleLogin() {
     const usernameInput = document.getElementById('username').value.trim().toLowerCase();
     const passwordInput = document.getElementById('password').value;
-    const users = await getUsers(); // <-- Este "await" es el cambio importante
+    console.log(`Intentando iniciar sesión con usuario: '[${usernameInput}]' y contraseña: '[${passwordInput}]'`);
+
+    const users = await getUsers();
     const user = users[usernameInput];
 
     if (user && user.password === passwordInput) {
