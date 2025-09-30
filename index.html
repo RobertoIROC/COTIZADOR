@@ -177,12 +177,20 @@
             }
 
             try {
-                // CORREGIDO: Lógica de mayúsculas/minúsculas mejorada
+                // CORRECCIÓN FINAL: Lógica de búsqueda más explícita y robusta.
                 let usernameToSearch;
-                if (usernameInput.toLowerCase().startsWith('rgc')) {
+                const lowerCaseInput = usernameInput.toLowerCase();
+                const knownLowerCaseUsers = ['roberto ortiz', 'alma cano', 'mariano godinez'];
+
+                if (knownLowerCaseUsers.includes(lowerCaseInput)) {
+                    // Si es uno de los usuarios con nombre, búscalo en minúsculas.
+                    usernameToSearch = lowerCaseInput;
+                } else if (lowerCaseInput.startsWith('rgc')) {
+                    // Si empieza con 'rgc', búscalo siempre en mayúsculas.
                     usernameToSearch = usernameInput.toUpperCase();
                 } else {
-                    usernameToSearch = usernameInput.toLowerCase();
+                    // Para cualquier otro caso, intenta buscarlo como fue escrito.
+                    usernameToSearch = usernameInput;
                 }
                 
                 const userDocRef = doc(db, "users", usernameToSearch);
@@ -233,7 +241,6 @@
                     const username = doc.id;
                     const isCurrentUser = username === loggedInUser.username;
                     
-                    // CORREGIDO: Crear un ID seguro para elementos HTML, reemplazando espacios
                     const safeUsernameId = username.replace(/\s+/g, '-');
 
                     const userElement = document.createElement('div');
