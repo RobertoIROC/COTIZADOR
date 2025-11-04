@@ -1,3 +1,4 @@
+aaba
 <!DOCTYPE html>
 <html lang="es">
 
@@ -25,6 +26,18 @@
         // Estas variables se declaran aquí para ser accesibles en el script principal
         window.db = null;
         window.auth = null;
+        
+        // --- AÑADIR ESTAS LÍNEAS ---
+        // Exponer las funciones de Firestore necesarias al scope global
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.setDoc = setDoc;
+        window.updateDoc = updateDoc;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.onSnapshot = onSnapshot;
+        // --- FIN DE LÍNEAS AÑADIDAS ---
+
 
         // --- 1. Inicialización de Firebase ---
         async function initFirebase() {
@@ -959,8 +972,8 @@
             }
             try {
                 // Usamos una ruta de colección específica para esta app
-                const usersCollection = collection(window.db, "rgc-calculadora-users");
-                const querySnapshot = await getDocs(usersCollection);
+                const usersCollection = window.collection(window.db, "rgc-calculadora-users"); // USAR window.collection
+                const querySnapshot = await window.getDocs(usersCollection); // USAR window.getDocs
                 const users = {};
                 querySnapshot.forEach((doc) => {
                     users[doc.id] = doc.data();
@@ -984,8 +997,8 @@
             }
 
             try {
-                const userDocRef = doc(window.db, "rgc-calculadora-users", usernameInput);
-                const userDoc = await getDoc(userDocRef);
+                const userDocRef = window.doc(window.db, "rgc-calculadora-users", usernameInput); // USAR window.doc
+                const userDoc = await window.getDoc(userDocRef); // USAR window.getDoc
 
                 if (userDoc.exists()) {
                     const user = userDoc.data();
@@ -1125,12 +1138,12 @@
             if (checkbox) checkbox.disabled = true;
 
             try {
-                const userDocRef = doc(window.db, "rgc-calculadora-users", username);
-                const userDoc = await getDoc(userDocRef);
+                const userDocRef = window.doc(window.db, "rgc-calculadora-users", username); // USAR window.doc
+                const userDoc = await window.getDoc(userDocRef); // USAR window.getDoc
 
                 if (userDoc.exists()) {
                     const newStatus = !userDoc.data().active;
-                    await updateDoc(userDocRef, {
+                    await window.updateDoc(userDocRef, { // USAR window.updateDoc
                         active: newStatus
                     });
                     console.log(`Usuario ${username} actualizado a active: ${newStatus}`);
@@ -4668,6 +4681,7 @@
 </body>
 
 </html>
+
 
 
 
