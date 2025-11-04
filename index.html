@@ -1,4 +1,3 @@
-pop
 <!DOCTYPE html>
 <html lang="es">
 
@@ -30,14 +29,34 @@ pop
         // --- 1. Inicialización de Firebase ---
         async function initFirebase() {
             try {
-                // Estas variables __firebase_config y __app_id son inyectadas por el entorno
-                if (typeof __firebase_config === 'undefined' || typeof __app_id === 'undefined') {
-                    console.error("Firebase config (__firebase_config o __app_id) no está definida. La app no puede conectar.");
-                    showCustomAlert("Error crítico: La configuración de Firebase no está presente. El panel de admin no funcionará.", "Error de Configuración");
+                // === INICIO DE CAMBIO PARA GITHUB PAGES ===
+                // GitHub Pages no inyecta __firebase_config. Debes pegar tu configuración aquí.
+                // Ve a tu consola de Firebase -> Configuración del Proyecto -> Tus apps -> Web
+                // y copia el objeto de configuración aquí.
+                
+                const firebaseConfig = {
+                  apiKey: "AIzaSyC3V_v-LeSYCrC-d8_D0FvFIUBbAheBY6k",
+                  authDomain: "rgc-calculo.firebaseapp.com",
+                  projectId: "rgc-calculo",
+                  storageBucket: "rgc-calculo.firebasestorage.app",
+                  messagingSenderId: "519106340161",
+                  appId: "1:519106340161:web:1e05b5237d02b76e52adc0",
+                  measurementId: "G-C2T9KNNN3Q"
+                };
+                
+                // Si alguna de las llaves sigue siendo un placeholder, detente.
+                /* ESTA VALIDACIÓN YA NO ES NECESARIA
+                if (firebaseConfig.apiKey === "TU_API_KEY_VA_AQUI") {
+                    console.error("Firebase config no está configurada en el HTML.");
+                    showCustomAlert("Error crítico: La configuración de Firebase no ha sido añadida al archivo HTML. Edite el archivo y pegue su 'firebaseConfig'.", "Error de Configuración");
                     return false;
                 }
-                
-                const firebaseConfig = JSON.parse(__firebase_config);
+                */
+
+                // Ya no necesitamos la variable __firebase_config ni __app_id
+                // const firebaseConfig = JSON.parse(__firebase_config);
+                // === FIN DE CAMBIO PARA GITHUB PAGES ===
+
                 const app = initializeApp(firebaseConfig);
                 window.db = getFirestore(app);
                 window.auth = getAuth(app);
@@ -4649,6 +4668,8 @@ pop
 </body>
 
 </html>
+
+
 
 
 
