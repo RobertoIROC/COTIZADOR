@@ -12,6 +12,57 @@ pop
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- === INICIO DE CAMBIOS PARA FIREBASE === -->
+    <script type="module">
+        // Importar Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, onSnapshot, setLogLevel 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Variables Globales de Firebase ---
+        // Estas variables se declaran aquí para ser accesibles en el script principal
+        window.db = null;
+        window.auth = null;
+
+        // --- 1. Inicialización de Firebase ---
+        async function initFirebase() {
+            try {
+                // Estas variables __firebase_config y __app_id son inyectadas por el entorno
+                if (typeof __firebase_config === 'undefined' || typeof __app_id === 'undefined') {
+                    console.error("Firebase config (__firebase_config o __app_id) no está definida. La app no puede conectar.");
+                    showCustomAlert("Error crítico: La configuración de Firebase no está presente. El panel de admin no funcionará.", "Error de Configuración");
+                    return false;
+                }
+                
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                window.db = getFirestore(app);
+                window.auth = getAuth(app);
+                
+                // Iniciar sesión anónima para tener permisos de lectura/escritura según las reglas
+                await signInAnonymously(window.auth);
+                console.log("Firebase inicializado y sesión anónima iniciada.");
+                
+                // Opcional: Habilitar logs detallados de Firestore
+                // setLogLevel('debug'); 
+                
+                return true;
+            } catch (error) {
+                console.error("Error al inicializar Firebase: ", error);
+                showCustomAlert(`Error al conectar con Firebase: ${error.message}`, "Error de Conexión");
+                return false;
+            }
+        }
+        
+        // Exponer la función de inicialización al script principal
+        window.initFirebase = initFirebase;
+
+    </script>
+    <!-- === FIN DE CAMBIOS PARA FIREBASE === -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
@@ -716,6 +767,22 @@ pop
                                     <label for="info_m40surcharge">Tasa Recargo M40 Mensual (2026 en adelante, %):</label>
                                     <input type="number" id="info_m40surcharge" value="1.47" step="0.01" class="w-full" oninput="updateAdvancedConstants(true)" disabled>
                                 </div>
+                                
+                                <!-- CAMPOS AÑADIDOS -->
+                                <div class="input-group">
+                                    <label for="info_factorCosto">Factor Multiplicador Costo (Ej. 0.4):</label>
+                                    <input type="number" id="info_factorCosto" value="0.4" step="0.01" class="w-full" oninput="updateAdvancedConstants(true)" disabled>
+                                </div>
+                                <div class="input-group">
+                                    <label for="info_costoFijo">Costo Fijo Adicional (Trámite, $):</label>
+                                    <input type="number" id="info_costoFijo" value="120000" step="1" class="w-full" oninput="updateAdvancedConstants(true)" disabled>
+                                </div>
+                                <div class="input-group">
+                                    <label for="info_ajusteContrato">Ajuste Final Contrato (Ej. -20000):</label>
+                                    <input type="number" id="info_ajusteContrato" value="-20000" step="1" class="w-full" oninput="updateAdvancedConstants(true)" disabled>
+                                </div>
+                                <!-- FIN DE CAMPOS AÑADIDOS -->
+                                
                                 <div class="input-group md:col-span-2 text-center">
                                     <button id="commissionToggleButton" onclick="promptToChangeCommission()" class="btn btn-secondary w-full">
                                         Comisión Base Actual: 16% (Click para cambiar)
@@ -861,46 +928,68 @@ pop
         // --- USER AUTHENTICATION & MANAGEMENT ---
         const ADMIN_USER = 'roberto ortiz';
 
-        function getUsers() {
-            const usersFromStorage = localStorage.getItem('rgc_users');
-            if (usersFromStorage) {
-                return JSON.parse(usersFromStorage);
-            } else {
-                // Default users if none in storage
-                const defaultUsers = {
-                    'roberto ortiz': { password: '9192', role: 'admin', active: true },
-                    'alma cano': { password: '9192', role: 'admin', active: true },
-                    'mariano godinez': { password: '9192', role: 'user', active: true },
-                    'rgc1': { password: '4729', role: 'user', active: true },
-                    'rgc2': { password: '8315', role: 'user', active: true },
-                    'rgc3': { password: '6092', role: 'user', active: true },
-                    'rgc4': { password: '1578', role: 'user', active: true },
-                    'rgc5': { password: '9234', role: 'user', active: true },
-                    'rgc6': { password: '5801', role: 'user', active: true },
-                    'rgc7': { password: '2468', role: 'user', active: true },
-                    'rgc8': { password: '7139', role: 'user', active: true }
-                };
-                localStorage.setItem('rgc_users', JSON.stringify(defaultUsers));
-                return defaultUsers;
+        // --- MODIFICADO PARA FIREBASE ---
+        // La función getUsers() que usaba localStorage ha sido reemplazada 
+        // por getUsersFromFirebase() que lee de Firestore.
+        // La función saveUsers() ha sido eliminada, la lógica ahora está en toggleUserStatus().
+        async function getUsersFromFirebase() {
+            // db está en el scope de 'window'
+            if (!window.db) {
+                console.error("Firestore (db) no está inicializado. No se pueden obtener usuarios.");
+                return {};
+            }
+            try {
+                // Usamos una ruta de colección específica para esta app
+                const usersCollection = collection(window.db, "rgc-calculadora-users");
+                const querySnapshot = await getDocs(usersCollection);
+                const users = {};
+                querySnapshot.forEach((doc) => {
+                    users[doc.id] = doc.data();
+                });
+                return users;
+            } catch (error) {
+                console.error("Error obteniendo usuarios de Firebase: ", error);
+                showCustomAlert("Error al cargar usuarios desde la base de datos.", "Error de Red");
+                return {}; // Devuelve vacío en caso de error
             }
         }
 
-        function handleLogin() {
+        async function handleLogin() {
             const usernameInput = document.getElementById('username').value.trim().toLowerCase();
             const passwordInput = document.getElementById('password').value;
-            const users = getUsers();
-            const user = users[usernameInput];
-
-            if (user && user.password === passwordInput) {
-                if (user.active) {
-                    sessionStorage.setItem('rgc_currentUser', usernameInput);
-                    showAppForUser(usernameInput);
-                } else {
-                    showCustomAlert("Su cuenta ha sido desactivada. Póngase en contacto con el administrador.", "Acceso Denegado");
-                }
-            } else {
-                showCustomAlert("Nombre de usuario o contraseña incorrectos.", "Error de Inicio de Sesión");
+            
+            // --- MODIFICADO PARA FIREBASE ---
+            if (!window.db) {
+                showCustomAlert("La base de datos no está conectada. Por favor, recargue la página.", "Error de Conexión");
+                return;
             }
+
+            try {
+                const userDocRef = doc(window.db, "rgc-calculadora-users", usernameInput);
+                const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists()) {
+                    const user = userDoc.data();
+                    if (user.password === passwordInput) {
+                        // ¡AQUÍ ESTÁ LA VINCULACIÓN!
+                        // Comprueba si el perfil está "encendido" (active: true)
+                        if (user.active) {
+                            sessionStorage.setItem('rgc_currentUser', usernameInput);
+                            showAppForUser(usernameInput, user.role); // Pasar el rol
+                        } else {
+                            showCustomAlert("Su cuenta ha sido desactivada. Póngase en contacto con el administrador.", "Acceso Denegado");
+                        }
+                    } else {
+                        showCustomAlert("Nombre de usuario o contraseña incorrectos.", "Error de Inicio de Sesión");
+                    }
+                } else {
+                     showCustomAlert("Nombre de usuario o contraseña incorrectos.", "Error de Inicio de Sesión");
+                }
+            } catch (error) {
+                console.error("Error en handleLogin con Firebase: ", error);
+                showCustomAlert("Error al verificar credenciales. Revise la conexión.", "Error de Red");
+            }
+            // --- FIN DE MODIFICACIÓN ---
         }
 
         function handleLogout() {
@@ -914,13 +1003,24 @@ pop
         function checkSession() {
             const currentUser = sessionStorage.getItem('rgc_currentUser');
             if (currentUser) {
-                showAppForUser(currentUser);
+                // --- MODIFICADO PARA FIREBASE ---
+                // Leemos el rol guardado en la sesión para no tener que consultar Firebase CADA VEZ
+                const userRole = sessionStorage.getItem('rgc_userRole'); 
+                if (userRole) {
+                    showAppForUser(currentUser, userRole);
+                } else {
+                    // Si no está el rol (sesión antigua), forzamos logout
+                    handleLogout();
+                }
+                // --- FIN DE MODIFICACIÓN ---
             } else {
                 document.getElementById('loginScreen').style.display = 'flex';
             }
         }
 
-        function showAppForUser(username) {
+        // --- MODIFICADO PARA FIREBASE ---
+        // showAppForUser ahora recibe el rol
+        function showAppForUser(username, role) {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('appContainer').style.display = 'block';
             document.getElementById('appContainer').style.flexDirection = 'column';
@@ -930,11 +1030,12 @@ pop
             loggedInUserName.textContent = `Bienvenido(a), ${username.split(' ').map(n => n.charAt(0).toUpperCase() + n.slice(1)).join(' ')}`;
             userInfoContainer.style.display = 'block';
 
-            const users = getUsers();
-            const user = users[username];
-            if (user && user.role === 'admin') {
+            // Guardar rol en sessionStorage para checkSession
+            sessionStorage.setItem('rgc_userRole', role);
+
+            if (role === 'admin') {
                 showElement('adminPanel');
-                renderAdminPanel();
+                renderAdminPanel(); // Esta función AHORA debe leer de Firebase
             } else {
                 hideElement('adminPanel');
                 // Set time limit for non-admin users
@@ -947,8 +1048,14 @@ pop
             }
         }
 
-        function renderAdminPanel() {
-            const users = getUsers();
+        // --- MODIFICADO PARA FIREBASE ---
+        async function renderAdminPanel() {
+            if (!window.db) {
+                 showCustomAlert("No se puede cargar el panel de admin. La base de datos no está conectada.", "Error");
+                 return;
+            }
+            
+            const users = await getUsersFromFirebase(); // Leer de Firebase
             const container = document.getElementById('userManagementTableContainer');
             let tableHTML = `
                 <table class="w-full text-sm text-left">
@@ -971,14 +1078,9 @@ pop
                         <td class="p-3 font-medium">${capitalizedUsername}</td>
                         <td class="p-3 font-mono text-gray-700">${user.password}</td>
                         <td class="p-3 text-center">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${user.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                                ${user.active ? 'Activo' : 'Inactivo'}
-                            </span>
-                        </td>
-                        <td class="p-3 text-center">
-                            <label for="toggle_${username.replace(' ', '_')}" class="flex items-center justify-center cursor-pointer">
+                            <label for="toggle_${username.replace(/[\s.]+/g, '_')}" class="flex items-center justify-center cursor-pointer">
                                 <div class="relative">
-                                    <input type="checkbox" id="toggle_${username.replace(' ', '_')}" class="sr-only" onchange="toggleUserStatus('${username}')" ${user.active ? 'checked' : ''}>
+                                    <input type="checkbox" id="toggle_${username.replace(/[\s.]+/g, '_')}" class="sr-only" onchange="toggleUserStatus('${username}')" ${user.active ? 'checked' : ''}>
                                     <div class="block bg-gray-600 w-14 h-8 rounded-full"></div>
                                     <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
                                 </div>
@@ -991,12 +1093,38 @@ pop
             container.innerHTML = tableHTML;
         }
 
-        function toggleUserStatus(username) {
-            const users = getUsers();
-            if (users[username]) {
-                users[username].active = !users[username].active;
-                saveUsers(users);
-                renderAdminPanel();
+        // --- MODIFICADO PARA FIREBASE ---
+        async function toggleUserStatus(username) {
+            if (!window.db) {
+                 showCustomAlert("No se puede actualizar el usuario. La base de datos no está conectada.", "Error");
+                 return;
+            }
+            
+            // Deshabilitar el checkbox temporalmente para evitar clics dobles
+            const checkboxId = `toggle_${username.replace(/[\s.]+/g, '_')}`;
+            const checkbox = document.getElementById(checkboxId);
+            if (checkbox) checkbox.disabled = true;
+
+            try {
+                const userDocRef = doc(window.db, "rgc-calculadora-users", username);
+                const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists()) {
+                    const newStatus = !userDoc.data().active;
+                    await updateDoc(userDocRef, {
+                        active: newStatus
+                    });
+                    console.log(`Usuario ${username} actualizado a active: ${newStatus}`);
+                    // Volver a renderizar el panel para reflejar el cambio
+                    await renderAdminPanel(); // renderAdminPanel ya habilita los checkboxes
+                } else {
+                    console.error(`No se encontró al usuario ${username} para actualizar.`);
+                    if (checkbox) checkbox.disabled = false;
+                }
+            } catch (error) {
+                 console.error("Error al actualizar usuario en Firebase: ", error);
+                 showCustomAlert("Error al actualizar el estado del usuario.", "Error de Red");
+                 if (checkbox) checkbox.disabled = false;
             }
         }
 
@@ -1045,7 +1173,7 @@ pop
             COSTO_FIJO_ADICIONAL: 120000,
             COMISION_BASE_M40: 0.12,
             FACTOR_MULTIPLICADOR_COSTO: 0.4,
-            AJUSTE_FINAL_CONTRATO: -35000,
+            AJUSTE_FINAL_CONTRATO: -20000,
             AJUSTE_PENSION_MENSUAL: -250,
             INPC_GROWTH_ESTIMATE: 0.06,
             RECARGO_M40_MENSUAL_PRE_2026: 0.0147, // Tasa fija para antes de 2026
@@ -3767,7 +3895,7 @@ pop
         }
 
         // --- EDITING & PERMISSIONS ---
-        const DIRECTOR_PASSWORD = "OICI010503120566"; 
+        const DIRECTOR_PASSWORD = "9192"; 
 
         function promptForPassword(onSuccess) {
             const currentUser = sessionStorage.getItem('rgc_currentUser');
@@ -3883,6 +4011,13 @@ pop
                 inputs.forEach(input => input.disabled = false);
                 document.getElementById('info_inpcGrowth').value = Constants.INPC_GROWTH_ESTIMATE * 100;
                 document.getElementById('info_m40surcharge').value = Constants.RECARGO_M40_MENSUAL * 100;
+                
+                // --- CAMPOS AÑADIDOS ---
+                document.getElementById('info_factorCosto').value = Constants.FACTOR_MULTIPLICADOR_COSTO;
+                document.getElementById('info_costoFijo').value = Constants.COSTO_FIJO_ADICIONAL;
+                document.getElementById('info_ajusteContrato').value = Constants.AJUSTE_FINAL_CONTRATO;
+                // --- FIN DE CAMPOS AÑADIDOS ---
+
                 updateCommissionButtonText();
             } else {
                 container.classList.add('hidden');
@@ -3894,8 +4029,20 @@ pop
             const inpcGrowth = parseFloat(document.getElementById('info_inpcGrowth').value);
             const m40surcharge = parseFloat(document.getElementById('info_m40surcharge').value);
             
+            // --- CAMPOS AÑADIDOS ---
+            const factorCosto = parseFloat(document.getElementById('info_factorCosto').value);
+            const costoFijo = parseFloat(document.getElementById('info_costoFijo').value);
+            const ajusteContrato = parseFloat(document.getElementById('info_ajusteContrato').value);
+            // --- FIN DE CAMPOS AÑADIDOS ---
+            
             if (!isNaN(inpcGrowth)) Constants.INPC_GROWTH_ESTIMATE = inpcGrowth / 100;
             if (!isNaN(m40surcharge)) Constants.RECARGO_M40_MENSUAL = m40surcharge / 100;
+            
+            // --- CAMPOS AÑADIDOS ---
+            if (!isNaN(factorCosto)) Constants.FACTOR_MULTIPLICADOR_COSTO = factorCosto;
+            if (!isNaN(costoFijo)) Constants.COSTO_FIJO_ADICIONAL = costoFijo;
+            if (!isNaN(ajusteContrato)) Constants.AJUSTE_FINAL_CONTRATO = ajusteContrato;
+            // --- FIN DE CAMPOS AÑADIDOS ---
             
             if(shouldRecalculate) {
                 recalculateAllScenarios();
@@ -4062,7 +4209,20 @@ pop
         }
 
         // --- EVENT LISTENERS ---
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => { // Hacer async
+            
+            // --- AÑADIDO PARA FIREBASE ---
+            // initFirebase está en 'window' porque se definió en el script type="module"
+            const firebaseReady = await window.initFirebase();
+            if (!firebaseReady) {
+                // Si Firebase falla, la app (especialmente el login) no debe continuar.
+                console.error("La inicialización de Firebase falló. La funcionalidad de login estará deshabilitada.");
+                // Mostramos la pantalla de login, pero el botón de login fallará (ya que db es null)
+                document.getElementById('loginScreen').style.display = 'flex';
+                return; // Detener la ejecución si Firebase no carga
+            }
+            // --- FIN AÑADIDO ---
+            
             initializeMainAppDisplay();
             initDateSelectors();
 
@@ -4489,6 +4649,9 @@ pop
 </body>
 
 </html>
+
+
+
 
 
 
