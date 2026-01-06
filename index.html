@@ -520,9 +520,16 @@ aaba
 
     <div id="appContainer" class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl" style="display: none;">
         <header class="main-header">
-            <div class="absolute top-4 right-8 text-white" id="userInfoContainer" style="display: none;">
-                <span id="loggedInUserName"></span>
-                <button onclick="handleLogout()" class="ml-4 font-bold hover:underline">[ Salir ]</button>
+            <div class="absolute top-4 right-8 text-white flex items-center gap-4" id="userInfoContainer" style="display: none;">
+                <!-- AÑADIDO: Cronómetro Visual -->
+                <div id="sessionTimerDisplay" class="hidden font-mono text-lg bg-white/20 px-3 py-1 rounded-lg border border-white/30 backdrop-blur-sm">
+                    <i class="fas fa-stopwatch mr-2"></i><span id="timerText">30:00</span>
+                </div>
+                <!-- FIN AÑADIDO -->
+                <span id="loggedInUserName" class="font-medium"></span>
+                <button onclick="handleLogout()" class="font-bold hover:text-gold transition-colors flex items-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
             </div>
             <div class="logo-text-elegant">RGC Pensiones y Seguros</div>
             <h1>Calculadora de Proyección de Pensión</h1>
@@ -601,7 +608,10 @@ aaba
                                 <button id="toggleCardsBtn" onclick="toggleAutoCards()" class="btn btn-secondary mb-4" style="display: none;">Mostrar/Ocultar Tarjetas Automáticas</button>
                                 <div id="employmentCardsContainer" style="display: none;"></div>
                             </div>
-                            <button onclick="addEmploymentCard()" class="btn btn-secondary mt-4"><i class="fas fa-plus mr-2"></i>Agregar Periodo Laboral</button>
+                            <div class="flex flex-wrap gap-4 mt-4">
+                                <button onclick="addEmploymentCard()" class="btn btn-secondary"><i class="fas fa-paste mr-2"></i>Pegar Texto (SISEC)</button>
+                                <button onclick="addManualEmploymentCard()" class="btn btn-gold"><i class="fas fa-calendar-plus mr-2"></i>Agregar Proyección (Simulación)</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -797,7 +807,8 @@ aaba
                                 </div>
                                 <div class="input-group">
                                     <label for="info_m40surcharge">Tasa Recargo M40 Mensual (2026 en adelante, %):</label>
-                                    <input type="number" id="info_m40surcharge" value="1.47" step="0.01" class="w-full" oninput="updateAdvancedConstants(true)" disabled>
+                                    <!-- CAMBIO: Valor por defecto actualizado a 2.07 -->
+                                    <input type="number" id="info_m40surcharge" value="2.07" step="0.01" class="w-full" oninput="updateAdvancedConstants(true)" disabled>
                                 </div>
                                 
                                 <!-- CAMPOS AÑADIDOS -->
@@ -957,6 +968,8 @@ aaba
 
         <script>
         let sessionTimer = null;
+        let countdownInterval = null; // Variable para el intervalo del cronómetro visual
+
         // --- USER AUTHENTICATION & MANAGEMENT ---
         const ADMIN_USER = 'roberto ortiz';
 
@@ -1026,10 +1039,16 @@ aaba
 
         function handleLogout() {
             if (sessionTimer) clearTimeout(sessionTimer);
+            if (countdownInterval) clearInterval(countdownInterval); // Limpiar cronómetro visual
             sessionStorage.removeItem('rgc_currentUser');
+            sessionStorage.removeItem('rgc_userRole'); // Limpiar rol también
             document.getElementById('appContainer').style.display = 'none';
             hideElement('adminPanel');
             document.getElementById('loginScreen').style.display = 'flex';
+            
+            // Resetear formularios para seguridad
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
         }
 
         function checkSession() {
@@ -1059,24 +1078,57 @@ aaba
             
             const userInfoContainer = document.getElementById('userInfoContainer');
             const loggedInUserName = document.getElementById('loggedInUserName');
-            loggedInUserName.textContent = `Bienvenido(a), ${username.split(' ').map(n => n.charAt(0).toUpperCase() + n.slice(1)).join(' ')}`;
-            userInfoContainer.style.display = 'block';
+            const timerDisplay = document.getElementById('sessionTimerDisplay');
+            const timerText = document.getElementById('timerText');
+
+            loggedInUserName.textContent = `Hola, ${username.split(' ').map(n => n.charAt(0).toUpperCase() + n.slice(1)).join(' ')}`;
+            userInfoContainer.style.display = 'flex'; // Flex para alinear items
 
             // Guardar rol en sessionStorage para checkSession
             sessionStorage.setItem('rgc_userRole', role);
 
+            // Limpiar timers previos si existen
+            if (sessionTimer) clearTimeout(sessionTimer);
+            if (countdownInterval) clearInterval(countdownInterval);
+
             if (role === 'admin') {
                 showElement('adminPanel');
-                renderAdminPanel(); // Esta función AHORA debe leer de Firebase
+                renderAdminPanel(); 
+                timerDisplay.classList.add('hidden'); // Ocultar cronómetro para admin
             } else {
                 hideElement('adminPanel');
-                // Set time limit for non-admin users
-                const TIME_LIMIT = 20 * 60 * 1000; // 20 minutes
-                if (sessionTimer) clearTimeout(sessionTimer); // Clear any existing timer
-                sessionTimer = setTimeout(() => {
-                    showCustomAlert("Su sesión ha expirado por límite de tiempo.", "Sesión Terminada");
-                    setTimeout(handleLogout, 4000); // Give user time to read message
-                }, TIME_LIMIT);
+                timerDisplay.classList.remove('hidden'); // Mostrar cronómetro para usuarios
+                
+                // --- LÓGICA DEL CRONÓMETRO ---
+                const DURATION_MINUTES = 30;
+                let timeRemaining = DURATION_MINUTES * 60; // Segundos
+
+                const updateTimer = () => {
+                    const minutes = Math.floor(timeRemaining / 60);
+                    const seconds = timeRemaining % 60;
+                    
+                    timerText.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    // Alerta visual (rojo) cuando queda poco tiempo
+                    if (timeRemaining < 60) {
+                        timerDisplay.classList.remove('bg-white/20');
+                        timerDisplay.classList.add('bg-red-500/80', 'animate-pulse');
+                    } else {
+                        timerDisplay.classList.add('bg-white/20');
+                        timerDisplay.classList.remove('bg-red-500/80', 'animate-pulse');
+                    }
+
+                    if (timeRemaining <= 0) {
+                        clearInterval(countdownInterval);
+                        showCustomAlert("Su sesión ha expirado por límite de tiempo.", "Sesión Terminada");
+                        setTimeout(handleLogout, 3000);
+                    }
+                    timeRemaining--;
+                };
+
+                // Iniciar inmediatamente y actualizar cada segundo
+                updateTimer(); 
+                countdownInterval = setInterval(updateTimer, 1000);
             }
         }
 
@@ -1208,8 +1260,8 @@ aaba
             AJUSTE_FINAL_CONTRATO: -20000,
             AJUSTE_PENSION_MENSUAL: -250,
             INPC_GROWTH_ESTIMATE: 0.06,
-            RECARGO_M40_MENSUAL_PRE_2026: 0.0147, // Tasa fija para antes de 2026
-            RECARGO_M40_MENSUAL: 0.0147, // Tasa para 2026 en adelante (editable)
+            RECARGO_M40_MENSUAL_PRE_2026: 0.0147, // Tasa fija para antes de 2026 (1.47%)
+            RECARGO_M40_MENSUAL: 0.0207, // CAMBIO: Tasa para 2026 en adelante (2.07%)
             economicData: {
                 umas: {
                     2016: 73.04,
@@ -1718,6 +1770,80 @@ aaba
                 yearSelect.appendChild(option);
             }
         }
+        
+        // --- FUNCIÓN RESTAURADA Y MEJORADA: TARJETA MANUAL ---
+        function addManualEmploymentCard() {
+            AppState.employmentCardIdCounter++;
+            const cardId = AppState.employmentCardIdCounter;
+            const container = document.getElementById('employmentCardsContainer');
+            
+            // Diseño distintivo (Ámbar) para diferenciar visualmente la proyección
+            const cardHTML = `
+                <div class="employment-card manual-card border-l-8 border-amber-500 bg-amber-50" id="empCard_${cardId}">
+                    <div class="absolute top-4 left-4 flex items-center">
+                         <span class="bg-amber-200 text-amber-900 text-xs font-bold px-2.5 py-1 rounded shadow-sm">
+                            <i class="fas fa-hard-hat mr-1"></i>PROYECCIÓN / EMPLEO
+                         </span>
+                    </div>
+                    <button onclick="removeEmploymentCard(this)" class="btn-danger-icon absolute top-4 right-4" title="Eliminar Periodo"><i class="fas fa-times"></i></button>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4 mt-10">
+                        <div class="input-group">
+                            <label class="text-amber-900 font-bold">Fecha de ALTA (DD/MM/AAAA):</label>
+                            <input type="text" class="emp_manual_start w-full border-amber-300 focus:border-amber-500 font-medium" placeholder="Ej. 01/01/2024" maxlength="10">
+                        </div>
+                        <div class="input-group">
+                            <label class="text-amber-900 font-bold">Fecha de BAJA (DD/MM/AAAA):</label>
+                            <input type="text" class="emp_manual_end w-full border-amber-300 focus:border-amber-500 font-medium" placeholder="Ej. 31/12/2024" maxlength="10">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="input-group">
+                            <label class="text-amber-900">Nombre del Patrón (Opcional):</label>
+                            <input type="text" class="emp_name w-full border-amber-300 focus:border-amber-500" value="Empleo Simulado">
+                            <!-- Campo oculto para identificar tipo -->
+                            <input type="hidden" class="emp_reg" value="PROYECCION">
+                        </div>
+                         <div class="input-group">
+                            <label class="text-amber-900 font-bold">Salario Diario (SBC):</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-amber-700 font-bold">$</span>
+                                <input type="number" class="emp_manual_salary w-full border-amber-300 focus:border-amber-500 font-bold text-amber-900 pl-8" placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', cardHTML);
+            // Asegurar que el contenedor sea visible
+            const wrapper = document.getElementById('employmentCardsContainer');
+            wrapper.style.display = 'block';
+            
+            // Foco automático en el primer campo de fecha para agilizar captura
+            setTimeout(() => {
+                const newCard = document.getElementById(`empCard_${cardId}`);
+                if(newCard) {
+                    const firstInput = newCard.querySelector('.emp_manual_start');
+                    if(firstInput) firstInput.focus();
+                }
+            }, 100);
+        }
+
+        // Helper para parsear DD/MM/AAAA (Restaurado)
+        function parseDateDDMMYYYY(dateStr) {
+            if (!dateStr) return null;
+            // Limpiar espacios
+            dateStr = dateStr.trim();
+            const parts = dateStr.split('/');
+            if (parts.length !== 3) return null;
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            const year = parseInt(parts[2], 10);
+            if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+            if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+            // Usar UTC para evitar problemas de zona horaria
+            return new Date(Date.UTC(year, month - 1, day));
+        }
 
         function addEmploymentCard(patron = '', regPatronal = '', movimientos = '') {
             AppState.employmentCardIdCounter++;
@@ -1748,6 +1874,10 @@ aaba
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', cardHTML);
+            // Asegurar que el contenedor sea visible cuando se agrega una tarjeta
+            const wrapper = document.getElementById('employmentCardsContainer');
+            wrapper.style.display = 'block';
+            
             return `emp_history_${cardId}`;
         }
 
@@ -1956,6 +2086,7 @@ aaba
             const cards = document.querySelectorAll('.employment-card');
 
             let allParsedPeriods = [];
+            let projectionWeeks = 0; // Acumulador para semanas simuladas
             let isValid = true;
 
             cards.forEach((card, index) => {
@@ -1964,85 +2095,130 @@ aaba
                 const qpCheckbox = card.querySelector('.emp_qp');
                 const isQP = qpCheckbox && qpCheckbox.checked;
 
-                const nombrePatron = card.querySelector('.emp_name').value.trim();
-                const regPatronal = card.querySelector('.emp_reg').value.trim();
-                const texto = card.querySelector('.emp_history_text').value.trim();
-                if (!nombrePatron || !regPatronal || !texto) {
-                    showCustomAlert(`Por favor, complete todos los campos para el Periodo Laboral #${index + 1}.`, "Datos Faltantes");
-                    isValid = false;
-                    return;
-                }
-                const movementsOnCard = [];
-                const lineas = texto.split('\n').filter(line => line.trim() !== '');
-                const regex = /(.+?)\s+(\d{2}\/\d{2}\/\d{4})\s*(?:\$\s*([\d,]+\.?\d*))?/;
-                lineas.forEach(linea => {
-                    const match = linea.trim().match(regex);
-                    if (match) {
-                        const tipo = match[1].trim().toUpperCase();
-                        const [dia, mes, anio] = match[2].split('/');
-                        const fecha = new Date(Date.UTC(anio, mes - 1, dia));
-                        const sbc = match[3] ? parseFloat(match[3].replace(/,/g, '')) : null;
-                        movementsOnCard.push({
-                            tipo,
-                            fecha,
-                            sbc,
-                            nombrePatron,
-                            regPatronal
-                        });
-                    } else {
-                        showCustomAlert(`En Periodo Laboral #${index + 1}, la línea "${linea}" no tiene un formato válido.`, "Error de Formato");
+                // --- NUEVA LÓGICA: DETECCIÓN DE TARJETA MANUAL ---
+                const manualStart = card.querySelector('.emp_manual_start');
+                
+                if (manualStart) {
+                    // === PROCESAMIENTO DE PROYECCIÓN MANUAL ===
+                    const startStr = manualStart.value;
+                    const endStr = card.querySelector('.emp_manual_end').value;
+                    const sbcVal = parseFloat(card.querySelector('.emp_manual_salary').value) || 0;
+                    const patron = card.querySelector('.emp_name').value || "Proyección";
+                    
+                    const startDate = parseDateDDMMYYYY(startStr);
+                    const endDate = parseDateDDMMYYYY(endStr);
+                    
+                    if (!startDate || !endDate) { 
+                        showCustomAlert(`Fechas inválidas en la tarjeta de Proyección (use formato DD/MM/AAAA).`, "Error de Fecha"); 
+                        isValid = false; 
+                        return; 
+                    }
+                    if (endDate <= startDate) { 
+                        showCustomAlert(`La fecha de BAJA debe ser posterior a la de ALTA en la proyección.`, "Error de Lógica"); 
+                        isValid = false; 
+                        return; 
+                    }
+                    
+                    // Calcular días naturales
+                    const days = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                    // Calcular semanas cotizadas (division entre 7)
+                    const weeks = Math.floor(days / 7);
+                    
+                    // *** AQUÍ OCURRE LA MAGIA: SUMAR AL ACUMULADOR ***
+                    projectionWeeks += weeks;
+                    
+                    allParsedPeriods.push({
+                        fechaInicio: startDate,
+                        fechaFin: endDate,
+                        sbc: sbcVal,
+                        dias: days,
+                        nombrePatron: patron,
+                        regPatronal: "PROYECCION", // ID especial para colorearlo diferente
+                        isQP: false
+                    });
+
+                } else {
+                    // === LÓGICA EXISTENTE PARA TEXTO SISEC ===
+                    let movementsOnCard = [];
+                    let nombrePatron = card.querySelector('.emp_name').value.trim();
+                    let regPatronal = card.querySelector('.emp_reg').value.trim();
+                    const texto = card.querySelector('.emp_history_text').value.trim();
+
+                    if (!nombrePatron || !regPatronal || !texto) {
+                        showCustomAlert(`Por favor, complete todos los campos para el Periodo Laboral #${index + 1}.`, "Datos Faltantes");
                         isValid = false;
+                        return;
                     }
-                });
-                if (!isValid) return;
 
-                movementsOnCard.sort((a, b) => {
-                    if (a.fecha.getTime() !== b.fecha.getTime()) {
-                        return a.fecha - b.fecha;
-                    }
-                    if (a.tipo.includes('BAJA')) return 1;
-                    if (b.tipo.includes('BAJA')) return -1;
-                    return 0;
-                });
-
-                for (let i = 0; i < movementsOnCard.length; i++) {
-                    const mov = movementsOnCard[i];
-                    if (mov.tipo.includes('BAJA') || mov.sbc === null || mov.sbc <= 0) {
-                        continue;
-                    }
-                    const fechaInicio = mov.fecha;
-                    let fechaFin = null;
-                    for (let j = i + 1; j < movementsOnCard.length; j++) {
-                        const nextMov = movementsOnCard[j];
-                        if (nextMov.tipo.includes('BAJA')) {
-                            fechaFin = nextMov.fecha;
-                            i = j;
-                            break;
-                        } else if (nextMov.sbc !== null && nextMov.sbc > 0) {
-                            fechaFin = new Date(nextMov.fecha);
-                            fechaFin.setUTCDate(fechaFin.getUTCDate() - 1);
-                            break;
+                    const lineas = texto.split('\n').filter(line => line.trim() !== '');
+                    const regex = /(.+?)\s+(\d{2}\/\d{2}\/\d{4})\s*(?:\$\s*([\d,]+\.?\d*))?/;
+                    lineas.forEach(linea => {
+                        const match = linea.trim().match(regex);
+                        if (match) {
+                            const tipo = match[1].trim().toUpperCase();
+                            const [dia, mes, anio] = match[2].split('/');
+                            const fecha = new Date(Date.UTC(anio, mes - 1, dia));
+                            const sbc = match[3] ? parseFloat(match[3].replace(/,/g, '')) : null;
+                            movementsOnCard.push({
+                                tipo,
+                                fecha,
+                                sbc,
+                                nombrePatron,
+                                regPatronal
+                            });
                         }
-                    }
-                    if (fechaFin === null) {
-                        const hoy = new Date();
-                        fechaFin = new Date(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth() + 1, 0));
-                    }
-                    if (fechaFin >= fechaInicio) {
-                        allParsedPeriods.push({
-                            fechaInicio: fechaInicio,
-                            fechaFin: fechaFin,
-                            sbc: mov.sbc,
-                            dias: Math.round((fechaFin - fechaInicio) / (1000 * 60 * 60 * 24)) + 1,
-                            nombrePatron: nombrePatron,
-                            regPatronal: regPatronal,
-                            isQP: isQP
-                        });
+                    });
+                    
+                    // Ordenar movimientos por fecha
+                    movementsOnCard.sort((a, b) => {
+                        if (a.fecha.getTime() !== b.fecha.getTime()) return a.fecha - b.fecha;
+                        if (a.tipo.includes('BAJA')) return 1;
+                        if (b.tipo.includes('BAJA')) return -1;
+                        return 0;
+                    });
+
+                    // Convertir movimientos a periodos
+                    for (let i = 0; i < movementsOnCard.length; i++) {
+                        const mov = movementsOnCard[i];
+                        if (mov.tipo.includes('BAJA') || mov.sbc === null || mov.sbc <= 0) continue;
+                        
+                        const fechaInicio = mov.fecha;
+                        let fechaFin = null;
+                        for (let j = i + 1; j < movementsOnCard.length; j++) {
+                            const nextMov = movementsOnCard[j];
+                            if (nextMov.tipo.includes('BAJA')) {
+                                fechaFin = nextMov.fecha;
+                                i = j;
+                                break;
+                            } else if (nextMov.sbc !== null && nextMov.sbc > 0) {
+                                fechaFin = new Date(nextMov.fecha);
+                                fechaFin.setUTCDate(fechaFin.getUTCDate() - 1);
+                                break;
+                            }
+                        }
+                        if (fechaFin === null) {
+                            const hoy = new Date();
+                            fechaFin = new Date(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth() + 1, 0));
+                        }
+                        if (fechaFin >= fechaInicio) {
+                            allParsedPeriods.push({
+                                fechaInicio: fechaInicio,
+                                fechaFin: fechaFin,
+                                sbc: mov.sbc,
+                                dias: Math.round((fechaFin - fechaInicio) / (1000 * 60 * 60 * 24)) + 1,
+                                nombrePatron: nombrePatron,
+                                regPatronal: regPatronal,
+                                isQP: isQP
+                            });
+                        }
                     }
                 }
             });
 
             if (!isValid) return;
+
+            // --- APLICAR LA SUMA DE SEMANAS PROYECTADAS AL TOTAL BASE ---
+            AppState.datosClienteInfo.semanasCotizadasBase += projectionWeeks;
 
             const totalQpDays = allParsedPeriods
                 .filter(p => p.isQP)
@@ -2386,6 +2562,9 @@ aaba
                             <h4 class="font-bold text-center text-gray-700 text-lg mb-4">Resultados de Pensión</h4>
                             <div class="space-y-3 text-base">
                                 <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-chart-bar fa-fw"></i>SBC Promedio:</span><span id="scenario_${scenarioNum}_sbc_final" class="font-semibold text-gray-800">--</span></div>
+                                <!-- AÑADIDO: Línea para mostrar SBC M40 en pantalla -->
+                                <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-file-invoice-dollar fa-fw"></i>SBC Inscripción M40:</span><span id="scenario_${scenarioNum}_sbc_m40" class="font-semibold text-gray-800">--</span></div>
+                                <!-- FIN AÑADIDO -->
                                 <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-calendar-check fa-fw"></i>Semanas Finales:</span><span id="scenario_${scenarioNum}_semanas_finales" class="font-semibold text-gray-800">--</span></div>
                                 <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-user-clock fa-fw"></i>Edad al Finalizar:</span><span id="scenario_${scenarioNum}_edad_final" class="font-semibold text-gray-800">--</span></div>
                                 <hr class="my-3">
@@ -2722,6 +2901,8 @@ aaba
                     mesesRetraso += fechaSimulacionPago.getUTCMonth() - fechaVencimiento.getUTCMonth();
                     
                     if (mesesRetraso > 0) {
+                        // LÓGICA DE TASAS DIFERENCIADAS POR AÑO
+                        // Si el año de la cuota es menor a 2026, usa 1.47%. Si es 2026 o más, usa la nueva tasa (2.07%).
                         const tasaRecargoAplicable = anioCuota < 2026 ? Constants.RECARGO_M40_MENSUAL_PRE_2026 : Constants.RECARGO_M40_MENSUAL;
                         montoRecargos = pagoBaseActualizado * tasaRecargoAplicable * mesesRetraso;
                     }
@@ -2743,6 +2924,7 @@ aaba
                     montoAct: actualizacion,
                     pagoBaseActualizado: pagoBaseActualizado,
                     mesesRetraso: mesesRetraso,
+                    // Mostrar la tasa correcta en el desglose
                     tasaRecargo: anioCuota < 2026 ? Constants.RECARGO_M40_MENSUAL_PRE_2026 : Constants.RECARGO_M40_MENSUAL,
                     recargos: montoRecargos,
                     totalMes: costoTotalMes
@@ -2806,6 +2988,13 @@ aaba
             getEl('pension').textContent = '$' + formatNumber(data.pensionMensual);
             getEl('aguinaldo').textContent = '$' + formatNumber(data.aguinaldo);
             getEl('sbc_final').textContent = '$' + formatNumber(data.sbcPromedio);
+            
+            // AÑADIDO: Actualizar valor de SBC M40 en pantalla
+            if(getEl('sbc_m40')) {
+                getEl('sbc_m40').textContent = data.sbcM40 > 0 ? '$' + formatNumber(data.sbcM40) : 'N/A';
+            }
+            // FIN AÑADIDO
+
             getEl('semanas_finales').textContent = formatNumber(data.semanas, 0);
             getEl('edad_final').textContent = `${data.edadFinM40.anos}a, ${data.edadFinM40.meses}m`;
             
@@ -3192,6 +3381,9 @@ aaba
 
                 const pensionBody = [
                     [{ content: 'SBC Promedio Final:', styles: { fontStyle: 'bold' }}, `$${formatNumber(sc.sbcPromedio)}`],
+                    // AÑADIDO: Fila de SBC M40 en el PDF
+                    [{ content: 'SBC Inscripción M40:', styles: { fontStyle: 'bold' }}, sc.sbcM40 > 0 ? `$${formatNumber(sc.sbcM40)}` : 'N/A'],
+                    // FIN AÑADIDO
                     [{ content: 'Semanas Finales:', styles: { fontStyle: 'bold' }}, formatNumber(sc.semanas, 0)],
                     [{ content: 'Edad al Finalizar:', styles: { fontStyle: 'bold' }}, `${sc.edadFinM40.anos}a, ${sc.edadFinM40.meses}m`],
                     [{ content: 'Pensión Mensual:', styles: { fontStyle: 'bold', fillColor: '#e0f2fe', textColor: '#0c4a6e' }}, { content: `$${formatNumber(sc.pensionMensual)}`, styles: { fontStyle: 'bold', fillColor: '#e0f2fe', textColor: '#0c4a6e' }}],
@@ -4282,6 +4474,8 @@ aaba
         });
         // --- Make functions globally accessible ---
         window.addEmploymentCard = addEmploymentCard;
+        // EXPORTAR NUEVA FUNCIÓN
+        window.addManualEmploymentCard = addManualEmploymentCard; 
         window.removeEmploymentCard = removeEmploymentCard;
         window.checkVigencia = checkVigencia;
         window.toggleAutoCards = toggleAutoCards;
@@ -4681,50 +4875,3 @@ aaba
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
