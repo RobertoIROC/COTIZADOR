@@ -580,14 +580,33 @@ aaba
                     </div>
                     <div>
                         <h3 class="subsection-title !mt-0">Análisis de Semanas Cotizadas</h3>
-                        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-6">
-                            <div class="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-lg mb-6" role="alert">
-                                <p class="font-bold">Instrucción Importante</p>
-                                <p class="text-sm">Para el análisis automático, convierta la Constancia de Semanas Cotizadas (PDF) a un documento de Word, copie todo el texto y péguelo a continuación.</p>
-                                <a href="https://www.ilovepdf.com/es/pdf_a_word" target="_blank" class="btn btn-gold mt-4 text-sm !py-2">
-                                    <i class="fas fa-file-word"></i> Abrir Conversor PDF a Word
-                                </a>
+                        
+                        <!-- SECCIÓN RESTAURADA Y MODERNIZADA (PDF) -->
+                        <div class="bg-white border border-gray-200 rounded-2xl p-6 mb-6 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-start gap-4">
+                                <div class="bg-blue-100 p-3 rounded-full text-blue-600">
+                                    <i class="fas fa-info-circle text-xl"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-gray-800 text-lg mb-2">Instrucción para Análisis Automático</h4>
+                                    <p class="text-sm text-gray-600 mb-4 leading-relaxed">
+                                        El sistema requiere que la información sea texto legible. Por favor, convierte tu Constancia de Semanas (PDF) a Word, copia <strong>todo</strong> el contenido y pégalo abajo.
+                                    </p>
+                                    
+                                    <!-- BOTÓN MODERNIZADO -->
+                                    <a href="https://www.ilovepdf.com/es/pdf_a_word" target="_blank" class="group relative inline-flex items-center justify-center px-6 py-3 font-bold text-white transition-all duration-200 bg-gradient-to-r from-amber-500 to-yellow-600 rounded-xl hover:from-amber-600 hover:to-yellow-700 hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                                        <span class="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
+                                        <span class="relative flex items-center gap-2">
+                                            <i class="fas fa-file-word text-lg"></i> 
+                                            Abrir Conversor PDF a Word
+                                            <i class="fas fa-external-link-alt text-xs opacity-70 group-hover:translate-x-1 transition-transform"></i>
+                                        </span>
+                                    </a>
+                                </div>
                             </div>
+                        </div>
+
+                        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-6">
                             <div class="input-group">
                                 <label for="info_textoCompleto">Pegue aquí el texto del documento:</label>
                                 <div class="flex items-center mb-2">
@@ -609,8 +628,7 @@ aaba
                                 <div id="employmentCardsContainer" style="display: none;"></div>
                             </div>
                             <div class="flex flex-wrap gap-4 mt-4">
-                                <button onclick="addEmploymentCard()" class="btn btn-secondary"><i class="fas fa-paste mr-2"></i>Pegar Texto (SISEC)</button>
-                                <button onclick="addManualEmploymentCard()" class="btn btn-gold"><i class="fas fa-calendar-plus mr-2"></i>Agregar Proyección (Simulación)</button>
+                                <button onclick="addManualEmploymentCard()" class="btn btn-gold"><i class="fas fa-calendar-plus mr-2"></i>AGREGAR R.I., MOD 10, MOD 40, R.O.</button>
                             </div>
                         </div>
                     </div>
@@ -637,7 +655,7 @@ aaba
                          <div class="bg-gray-50 p-6 rounded-2xl shadow-sm border">
                               <div class="text-3xl text-blue-500 mb-3"><i class="fas fa-birthday-cake"></i></div>
                             <p class="text-sm text-gray-500">Edad Actual</p>
-                            <p id="res_edadActual" class="text-3xl font-bold text-blue-900 mt-1">0 años</p>
+                            <div id="res_edadActual" class="text-xl font-bold text-blue-900 mt-1">0 años</div>
                         </div>
                          <div class="bg-gray-50 p-6 rounded-2xl shadow-sm border">
                              <div class="text-3xl text-blue-500 mb-3"><i class="fas fa-phone-alt"></i></div>
@@ -779,7 +797,7 @@ aaba
                 </div>
             </section>
             <section id="infoSection3" class="infographic-section" style="display: none;">
-                <h2><i class="fas fa-hand-holding-usd"></i>Paso 3: Parámetros del Análisis Financiero</h2>
+                <h2><i class="fas fa-hand-holding-usd"></i>Paso 3: Factores del Análisis Financiero</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <div class="input-group">
                         <label for="info_aforeActual">Saldo Actual en AFORE ($):</label>
@@ -790,16 +808,16 @@ aaba
                         <input type="number" id="info_mesesPrimerDeposito" value="6" min="6" max="12" onchange="handleMesesDepositoChange(this)" data-last-valid="6">
                     </div>
                     <div class="input-group md:col-span-2">
-                        <label for="info_comisionExcedente">Comisión Adicional ($) y Concepto:</label>
+                        <label for="info_comisionExcedente">Proceso Adicional ($) y Concepto:</label>
                         <div class="flex gap-4">
                             <input type="number" id="info_comisionExcedente" placeholder="0.00" oninput="recalculateAllScenarios();" class="w-1/2">
                             <input type="text" id="info_comisionExcedente_concepto" placeholder="Concepto para reporte" class="w-1/2">
                         </div>
                     </div>
                     <div class="md:col-span-2 mt-6">
-                        <button id="toggleAdvancedParamsBtn" onclick="promptForPassword(toggleAdvancedEditing)" class="btn btn-secondary w-full"><i class="fas fa-cogs mr-2"></i>Editar Parámetros Financieros Avanzados</button>
+                        <button id="toggleAdvancedParamsBtn" onclick="promptForPassword(toggleAdvancedEditing)" class="btn btn-secondary w-full"><i class="fas fa-cogs mr-2"></i>Editar Factores Financieros Avanzados</button>
                         <div id="advancedParamsContainer" class="hidden mt-4 p-4 border-2 border-dashed rounded-lg bg-gray-50">
-                            <h4 class="font-bold text-center text-gray-700 mb-4">Parámetros Avanzados (Requiere Contraseña)</h4>
+                            <h4 class="font-bold text-center text-gray-700 mb-4">Factores Avanzados (Requiere Contraseña)</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                                 <div class="input-group">
                                     <label for="info_inpcGrowth">Estimación Crecimiento INPC Anual (%):</label>
@@ -1273,7 +1291,8 @@ aaba
                     2022: 96.22,
                     2023: 103.74,
                     2024: 108.57,
-                    2025: 113.14
+                    2025: 113.14,
+                    2026: 117.31
                 },
                 smgv_diario: {
                     2018: 88.36,
@@ -1297,7 +1316,9 @@ aaba
                     "2021-01": 110.211, "2021-02": 110.895, "2021-03": 111.831, "2021-04": 112.195, "2021-05": 112.394, "2021-06": 113.064, "2021-07": 113.731, "2021-08": 114.174, "2021-09": 114.881, "2021-10": 115.632, "2021-11": 116.796, "2021-12": 117.364,
                     "2022-01": 118.044, "2022-02": 119.023, "2022-03": 120.211, "2022-04": 120.865, "2022-05": 121.082, "2022-06": 122.100, "2022-07": 123.003, "2022-08": 123.868, "2022-09": 124.636, "2022-10": 125.357, "2022-11": 126.096, "2022-12": 126.491,
                     "2023-01": 127.351, "2023-02": 128.169, "2023-03": 128.513, "2023-04": 128.281, "2023-05": 127.989, "2023-06": 128.118, "2023-07": 128.730, "2023-08": 129.438, "2023-09": 130.043, "2023-10": 130.542, "2023-11": 131.782, "2023-12": 132.355,
-                    "2024-01": 133.523, "2024-02": 133.650, "2024-03": 133.689, "2024-04": 133.955, "2024-05": 133.702, "2024-06": 134.026, "2024-07": 134.428
+                    "2024-01": 133.523, "2024-02": 133.650, "2024-03": 133.689, "2024-04": 133.955, "2024-05": 133.702, "2024-06": 134.026, "2024-07": 134.428,
+                    "2024-08": 136.013, "2024-09": 136.080, "2024-10": 136.828, "2024-11": 137.424, "2024-12": 137.949,
+                    "2025-01": 138.343, "2025-02": 138.726, "2025-03": 139.161, "2025-04": 139.620, "2025-05": 140.012, "2025-06": 140.405, "2025-07": 140.780, "2025-08": 140.867, "2025-09": 141.197, "2025-10": 141.708, "2025-11": 142.645, "2025-12": 143.042
                 }
             },
             tasasPagoM40: {
@@ -1853,7 +1874,7 @@ aaba
                 <div class="employment-card" id="empCard_${cardId}">
                     <div class="absolute top-4 left-4 flex items-center">
                         <input type="checkbox" id="emp_qp_${cardId}" class="emp_qp h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500" onchange="toggleQPCardStyle(${cardId})">
-                        <label for="emp_qp_${cardId}" class="ml-2 text-sm font-semibold text-red-700 cursor-pointer">Excluir (QP)</label>
+                        <label for="emp_qp_${cardId}" class="ml-2 text-sm font-semibold text-red-700 cursor-pointer">QP</label>
                     </div>
                     <button onclick="removeEmploymentCard(this)" class="btn-danger-icon absolute top-4 right-4" title="Eliminar Periodo"><i class="fas fa-times"></i></button>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 mt-8">
@@ -2250,15 +2271,25 @@ aaba
             AppState.sbcCalculationPeriods = periodosParaTabla;
             const sbcPromedioFinal = diasAcumuladosSBC > 0 ? sbcPonderadoTotal / diasAcumuladosSBC : 0;
 
-            let edadParaCalculoBase = AppState.datosClienteInfo.edadBase;
+            // --- CÁLCULO DE EDAD CON REGLA DE 6 MESES + 1 DÍA ---
+            const edadObj = AppState.datosClienteInfo.edadObjCompleta;
+            let edadConsiderada = edadObj.anos;
+            // Regla: Si tiene 6 meses y al menos 1 día, sube al siguiente año
+            if (edadObj.meses > 6 || (edadObj.meses === 6 && edadObj.dias > 0)) {
+                edadConsiderada = edadObj.anos + 1;
+            }
+            
+            // Validar mínima de 60
+            let edadParaCalculoBase = Math.max(60, edadConsiderada);
+
             const ageWarningEl = document.getElementById('ageAdjustmentWarning');
-            if (AppState.datosClienteInfo.edadBase < 60) {
-                edadParaCalculoBase = 60;
-                ageWarningEl.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>La edad del asegurado es ${AppState.datosClienteInfo.edadBase} años. Para el cálculo de la pensión base, se ha ajustado la edad a 60 años (mínima de retiro).`;
+            if (edadConsiderada < 60) {
+                ageWarningEl.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>La edad del asegurado (${edadObj.anos} años, ${edadObj.meses} meses) es menor a 60. Para el cálculo de la pensión base, se ha proyectado a 60 años.`;
                 ageWarningEl.style.display = 'block';
             } else {
                 ageWarningEl.style.display = 'none';
             }
+            
             let ultimaFechaBaja = null;
             if (AppState.fullHistoryPeriods.length > 0) {
                 const sortedPeriods = [...AppState.fullHistoryPeriods].sort((a, b) => b.fechaFin - a.fechaFin);
@@ -2271,7 +2302,15 @@ aaba
             // Update UI
             document.getElementById('res_sbcPromedio').textContent = '$' + formatNumber(sbcPromedioFinal);
             document.getElementById('res_semanasNetas').textContent = formatNumber(adjustedWeeks, 0);
-            document.getElementById('res_edadActual').textContent = `${AppState.datosClienteInfo.edadBase} años`;
+            
+            // ACTUALIZACIÓN DE VISUALIZACIÓN DE EDAD
+            document.getElementById('res_edadActual').innerHTML = `
+                ${edadObj.anos} años, ${edadObj.meses} meses
+                <span class="block text-sm font-normal text-green-700 mt-1 bg-green-50 rounded px-1 border border-green-100">
+                    Edad Pensión: <strong>${edadConsiderada} años</strong>
+                </span>
+            `;
+            
             document.getElementById('res_telefonoCliente').textContent = AppState.datosClienteInfo.telefono;
             renderSbcAnalysisTable();
             renderModalitySummary();
@@ -2285,10 +2324,10 @@ aaba
                 </tr>`;
             const daysWarningEl = document.getElementById('sbcDaysWarning');
             if (diasAcumuladosSBC < Constants.DIAS_PROMEDIO_PENSION) {
-                daysWarningEl.innerHTML = `<i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i>Se han utilizado <strong>${formatNumber(diasAcumuladosSBC, 0)} de ${Constants.DIAS_PROMEDIO_PENSION}</strong> días para el cálculo. El sistema completará los días faltantes con el último salario registrado para el promedio.`;
+                daysWarningEl.innerHTML = `<i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i>Se han utilizado <strong>${formatNumber(diasAcumuladosSBC, 0)}</strong> días para el cálculo. El sistema completará los faltantes con el último salario registrado.`;
                 daysWarningEl.className = 'mt-4 p-3 rounded-lg text-sm bg-yellow-50 border border-yellow-200 text-yellow-800';
             } else {
-                daysWarningEl.innerHTML = `<i class="fas fa-check-circle mr-2 text-green-500"></i>Se han recopilado los <strong>${Constants.DIAS_PROMEDIO_PENSION}</strong> días necesarios para el cálculo del Salario Promedio.`;
+                daysWarningEl.innerHTML = `<i class="fas fa-check-circle mr-2 text-green-500"></i>Se completaron los días necesarios para el cálculo del SBC Promedio.`;
                 daysWarningEl.className = 'mt-4 p-3 rounded-lg text-sm bg-green-50 border border-green-200 text-green-800';
             }
             daysWarningEl.style.display = 'block';
@@ -2448,23 +2487,45 @@ aaba
             let summaryHTML = `
                 <h4 class="font-semibold text-gray-700 mt-4 mb-2">Resumen de Modalidades</h4>
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-gray-100 p-3 rounded-lg">
-                        <p class="text-sm">Periodos en Modalidad 10 (R.O.):</p>
-                        <p class="font-bold text-lg">${mod10Count}</p>
+                    <div class="bg-gray-100 p-3 rounded-lg border border-gray-200">
+                        <p class="text-xs text-gray-500 uppercase tracking-wide">Régimen Obligatorio (Mod 10)</p>
+                        <p class="font-bold text-2xl text-gray-800">${mod10Count} <span class="text-sm font-normal text-gray-500">patrones</span></p>
                     </div>
-                    <div class="bg-gray-100 p-3 rounded-lg">
-                        <p class="text-sm">Periodos en Modalidad 40 (C.V.):</p>
-                        <p class="font-bold text-lg">${mod40Count}</p>
+                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                        <p class="text-xs text-blue-500 uppercase tracking-wide">Modalidad 40 (Mod 40)</p>
+                        <p class="font-bold text-2xl text-blue-800">${mod40Count} <span class="text-sm font-normal text-blue-500">periodos</span></p>
                     </div>
                 </div>
             `;
+            
+            // --- SECCIÓN MODIFICADA: ALERTA VISUALMENTE IMPACTANTE ---
             if (others.length > 0) {
                 summaryHTML += `
-                <div class="mt-4 p-3 rounded-lg text-sm bg-yellow-50 border border-yellow-200 text-yellow-800">
-                    <i class="fas fa-exclamation-triangle mr-2"></i><strong>Atención:</strong> Se encontraron registros patronales con terminaciones diferentes a '10' o '40' (${others.join(', ')}). Se recomienda una revisión detallada del historial laboral (SISEC).
+                <div class="mt-6 p-1 bg-red-600 rounded-xl shadow-lg animate-pulse">
+                    <div class="bg-white rounded-lg p-5 border-l-8 border-red-600">
+                        <div class="flex items-start gap-4">
+                            <div class="text-red-600 text-3xl">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-red-700 font-extrabold text-lg uppercase mb-1">¡Atención Requerida!</h3>
+                                <p class="text-gray-800 font-medium mb-2">
+                                    Se detectaron registros patronales con terminaciones inusuales (diferentes a '10' o '40').
+                                </p>
+                                <div class="bg-red-50 p-2 rounded border border-red-100 text-red-800 font-mono text-sm font-bold">
+                                    ${others.join(', ')}
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">
+                                    * Se recomienda revisar manualmente el historial (SISEC) para confirmar la validez de estos periodos.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
             }
+            // --- FIN SECCIÓN MODIFICADA ---
+
             container.innerHTML = summaryHTML;
         }
         async function calcularEscenarioM40Infografia() {
@@ -3009,7 +3070,7 @@ aaba
                 const saldoLabel = data.saldoFinal >= 0 ? 'SALDO FINAL A FAVOR' : 'DÉFICIT FINAL';
                 summaryContainer.innerHTML = `
                     <div class="p-4 rounded-lg bg-gray-50 border space-y-2">
-                        <div class="flex justify-between font-semibold text-gray-700"><span>(+) Cobertura Total</span><span>$${formatNumber(data.coberturaAfore + data.coberturaDeposito + data.coberturaExtra + data.prestamoRequerido)}</span></div>
+                        <div class="flex justify-between font-semibold text-gray-700"><span class="text-sm">(+) Recursos Disponibles al Pensionarse</span><span>$${formatNumber(data.coberturaAfore + data.coberturaDeposito + data.coberturaExtra + data.prestamoRequerido)}</span></div>
                         <div class="pl-4 text-xs text-gray-500 space-y-1 border-l-2 ml-1">
                             <div class="flex justify-between"><span>AFORE Actual:</span><span>$${formatNumber(data.coberturaAfore)}</span></div>
                             <div class="flex justify-between"><span>1er Depósito:</span><span>$${formatNumber(data.coberturaDeposito)}</span></div>
@@ -3405,7 +3466,7 @@ aaba
                     const saldoLabel = sc.saldoFinal >= 0 ? 'SALDO FINAL A FAVOR' : 'DÉFICIT FINAL';
                     const saldoColor = sc.saldoFinal >= 0 ? '#dcfce7' : '#fee2e2';
                     const financialBody = [
-                        [{ content: '(+) Cobertura Total', styles: { fontStyle: 'bold' } }, { content: `$${formatNumber(sc.coberturaAfore + sc.coberturaDeposito + sc.coberturaExtra + sc.prestamoRequerido)}`, styles: { fontStyle: 'bold' } }],
+                        [{ content: '(+) Recursos Disponibles al Pensionarse', styles: { fontStyle: 'bold' } }, { content: `$${formatNumber(sc.coberturaAfore + sc.coberturaDeposito + sc.coberturaExtra + sc.prestamoRequerido)}`, styles: { fontStyle: 'bold' } }],
                         [{ content: '     AFORE Actual:', styles: { cellPadding: { left: 15 } } }, `$${formatNumber(sc.coberturaAfore)}`],
                         [{ content: '     1er Depósito:', styles: { cellPadding: { left: 15 } } }, `$${formatNumber(sc.coberturaDeposito)}`],
                         [{ content: '     Extra de AFORE:', styles: { cellPadding: { left: 15 } } }, `$${formatNumber(sc.coberturaExtra)}`],
@@ -3919,11 +3980,11 @@ aaba
             if (today <= expirationDate) {
                 resultBox.className = 'p-6 rounded-2xl shadow-sm border md:col-span-3 bg-green-100 text-green-800';
                 resultText.textContent = 'VIGENTE';
-                resultSubText.textContent = `La conservación de derechos vence el ${formattedExpirationDate}. Calculado 5 años desde la última baja (real o proyectada): ${formattedReferenciaBaja}.`;
+                resultSubText.textContent = `La vigencia de derechos para modalidad 40 vence el ${formattedExpirationDate}. Calculado 5 años desde la última baja (real o proyectada): ${formattedReferenciaBaja}.`;
             } else {
                 resultBox.className = 'p-6 rounded-2xl shadow-sm border md:col-span-3 bg-red-100 text-red-800';
                 resultText.textContent = 'NO VIGENTE';
-                resultSubText.textContent = `La conservación de derechos venció el ${formattedExpirationDate}. Calculado 5 años desde la última baja (real o proyectada): ${formattedReferenciaBaja}.`;
+                resultSubText.textContent = `La vigencia de derechos para modalidad 40 venció el ${formattedExpirationDate}. Calculado 5 años desde la última baja (real o proyectada): ${formattedReferenciaBaja}.`;
             }
         }
 
@@ -4377,35 +4438,98 @@ aaba
                 showCustomAlert("Primero debe calcular un escenario para generar el resumen.", "Acción Requerida");
                 return;
             }
-            const sc1 = AppState.scenarioData[1];
-            const basePension = AppState.pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA;
-            const clientName = AppState.datosClienteInfo.nombre.split(' ')[0] || "Cliente";
-            const asesorName = "Asesor RGC"; // You can make this dynamic if needed
-            const optionsContainer = document.getElementById('whatsappOptionsContainer');
-            const textArea = document.getElementById('whatsAppSummaryText');
             
+            const sc1 = AppState.scenarioData[1];
+            const clientName = AppState.datosClienteInfo.nombre.split(' ')[0] || "Cliente";
+            
+            // --- LÓGICA FINANCIERA ESTRATÉGICA ---
+            const recursosGenerados = sc1.coberturaDeposito + sc1.coberturaExtra + sc1.prestamoRequerido;
+            const costoTotal = sc1.costoTotalContrato;
+            const inversionAfore = sc1.coberturaAfore;
+            const porcentajeCubierto = costoTotal > 0 ? (recursosGenerados / costoTotal) * 100 : 0;
+            
+            // --- NUEVA LÓGICA DE VENTAJAS ADICIONALES ---
+            const saldoFinal = sc1.saldoFinal;
+            const tieneSaldoFavor = saldoFinal > 0;
+            const costoReal = tieneSaldoFavor ? (inversionAfore - saldoFinal) : inversionAfore;
+            const tienePrestamo = sc1.prestamoRequerido > 0;
+            const usoPrestamo = sc1.porcentajeUsoPrestamo;
+
+            // Bloque de texto dinámico para Préstamos (MEJORADO)
+            let ventajasPrestamo = "";
+            if (tienePrestamo) {
+                ventajasPrestamo = `\n\n📌 *Dato Financiero Clave:*\nAl usar el préstamo, *tu economía personal mejora*:\n1️⃣ *Ganas vs Inflación:* Tu pago de préstamo es FIJO en pesos, pero tu pensión SUBE cada año con la inflación. ¡Cada año pagas "menos" en términos reales!\n2️⃣ *Aguinaldo Libre:* El descuento del préstamo NO toca tu aguinaldo. Ese dinero es 100% tuyo.\n3️⃣ *Flexibilidad Total:* Puedes abonar a capital cuando quieras para terminar de pagar antes.`;
+                
+                if (usoPrestamo < 29.5) {
+                    ventajasPrestamo += `\n\n✅ *Excelente Noticia:* Tu capacidad de crédito es alta. Solo necesitamos usar el *${usoPrestamo.toFixed(1)}%* de tu margen permitido (30%), dejándote mayor libertad financiera.`;
+                }
+            }
+
+            // Bloque de texto dinámico para Saldo a Favor / Costo Real (MEJORADO)
+            let ventajaCostoReal = "";
+            if (tieneSaldoFavor) {
+                ventajaCostoReal = `\n\n💎 *LA JOYA DE LA CORONA:* \nAl final del trámite, te sobra un saldo a favor de *$${formatNumber(saldoFinal)}*. \nEsto significa que el proyecto te costó *MENOS* de lo que ya tenías guardado en tu Afore. ¡Negocio redondo!`;
+            }
+
             const templates = [
                 {
-                    id: "formal",
-                    label: "Formal",
-                    text: `Estimado(a) ${clientName},\n\nLe comparto un resumen de la proyección de pensión que analizamos:\n\n- Pensión Base Actual: $${formatNumber(basePension)}\n- Pensión Proyectada con Estrategia: *$${formatNumber(sc1.pensionMensual)}*\n- Inversión Total Estimada: $${formatNumber(sc1.costoTotalContrato)}\n\nEsta estrategia representa una excelente oportunidad para optimizar su retiro. Quedo a su disposición para cualquier consulta.\n\nAtentamente,\n${asesorName}`
+                    id: "inversion_real",
+                    icon: "fas fa-piggy-bank",
+                    title: "Enfoque: Inversión Inteligente",
+                    desc: "Ideal para clientes conservadores. Destaca seguridad.",
+                    text: `Hola ${clientName}, te tengo excelentes noticias tras analizar tu proyección:\n\nAunque el *Precio de Venta* es de *$${formatNumber(costoTotal)}*, tú no desembolsas esa cantidad.\n\n🔑 *Tu Inversión Real:* Únicamente tu saldo actual de AFORE.\n\n🚀 *¿Y el resto?* Se paga solo. La estrategia genera *$${formatNumber(recursosGenerados)}* en recursos inmediatos (Retroactivo + Préstamo) que cubren la diferencia.\n\n*Tu Resultado:* Pensión vitalicia de *$${formatNumber(sc1.pensionMensual)}*.${ventajaCostoReal}${ventajasPrestamo}\n\n¿Te parece bien si comenzamos el trámite?`
+                },
+                {
+                    id: "financiero",
+                    icon: "fas fa-chart-line",
+                    title: "Enfoque: Estrategia Financiera",
+                    desc: "Para clientes analíticos. Muestra el apalancamiento.",
+                    text: `Estimado(a) ${clientName}, aquí el análisis financiero de tu retiro:\n\nHemos estructurado un *Autofinanciamiento Inteligente*.\n\n1. *Apalancamiento:* Usamos recursos futuros (Retroactivo y Préstamos por *$${formatNumber(recursosGenerados)}*) para pagar tu Modalidad 40 hoy.\n2. *Costo de Bolsillo:* CERO extra. Solo movemos tu AFORE actual.\n\n🎯 *Meta Asegurada:* Recibirás *$${formatNumber(sc1.pensionMensual)}* mes a mes.${ventajaCostoReal}${ventajasPrestamo}\n\nEs una decisión financiera impecable. Quedo atento a tus dudas.`
+                },
+                {
+                    id: "desglose",
+                    icon: "fas fa-list-ol",
+                    title: "Enfoque: Claridad Total",
+                    desc: "Desglose paso a paso para evitar dudas.",
+                    text: `Hola ${clientName}. Para que tengas total claridad, así se cubre tu inversión de *$${formatNumber(costoTotal)}*:\n\n💰 *Fuentes de Pago:*\n✅ *$${formatNumber(recursosGenerados)}* salen de la misma estrategia (Dinero recuperado).\n✅ *$${formatNumber(inversionAfore)}* salen de tu AFORE (Dinero que ya tienes).\n\nNo tienes que poner dinero adicional. Usamos lo que el sistema nos da para maximizar tu pensión a *$${formatNumber(sc1.pensionMensual)}*.${ventajaCostoReal}${ventajasPrestamo}\n\n¿Todo claro con los números?`
+                },
+                {
+                    id: "oportunidad",
+                    icon: "fas fa-hourglass-half",
+                    title: "Enfoque: Costo de Oportunidad",
+                    desc: "Urgency: Lo que pierden si no actúan.",
+                    text: `Hola ${clientName}. Reflexionando sobre tu caso: No hacer esta estrategia significa *perder* acceso a *$${formatNumber(recursosGenerados)}* que el sistema te ofrece hoy (Retroactivo + Préstamo).\n\nEse dinero está ahí para ayudarte a pagar tu pensión alta. Si no lo usamos, se pierde.\n\nTu riesgo es mínimo (tu AFORE ya existe) y el beneficio es enorme: Una pensión de *$${formatNumber(sc1.pensionMensual)}* de por vida.${ventajaCostoReal}\n\nNo dejemos pasar esta oportunidad.`
                 },
                 {
                     id: "directo",
-                    label: "Directo y Rápido",
-                    text: `¡Hola ${clientName}! Aquí el resumen:\n\n*Pensión Actual:* $${formatNumber(basePension)}\n*Pensión con Plan:* ¡$${formatNumber(sc1.pensionMensual)}!\n\nLa inversión total es de aprox. $${formatNumber(sc1.costoTotalContrato)}. ¡Es una gran mejora! Avísame si tienes dudas. Saludos, ${asesorName}.`
-                },
-                {
-                    id: "informativo",
-                    label: "Detallado",
-                    text: `Buen día ${clientName},\n\nSiguiendo nuestra conversación, aquí están los números clave de su proyección:\n\n*Situación Base:*\n- Pensión Mensual: $${formatNumber(basePension)}\n\n*Proyección con Inversión en M40:*\n- Meses de Inversión: ${sc1.meses}\n- Pensión Mensual Objetivo: $${formatNumber(sc1.pensionMensual)}\n- Inversión Requerida: $${formatNumber(sc1.costoTotalContrato)}\n\nComo puede ver, el incremento es significativo. Estoy para servirle.\n\n${asesorName}`
+                    icon: "fas fa-check-double",
+                    title: "Enfoque: Ejecutivo",
+                    desc: "Corto, directo y al punto.",
+                    text: `Resumen Ejecutivo para ${clientName}:\n\n🏁 *Objetivo:* Pensión de *$${formatNumber(sc1.pensionMensual)}*.\n\n📉 *Tu Costo:* Solo tu AFORE actual${tieneSaldoFavor ? " (¡y hasta te sobra saldo!)" : ""}.\n\n📈 *El Resto:* Lo paga la estrategia con recuperaciones y préstamos.${ventajasPrestamo}\n\nEs la mejor ruta matemática posible. ¿Procedemos con la firma?`
                 }
             ];
 
+            const optionsContainer = document.getElementById('whatsappOptionsContainer');
+            const textArea = document.getElementById('whatsAppSummaryText');
+            
+            // Renderizado de Tarjetas de Opción
             optionsContainer.innerHTML = templates.map((template, index) => `
-                <div class="flex items-center">
-                    <input type="radio" id="wa-opt-${template.id}" name="whatsapp_option" value="${index}" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500" ${index === 0 ? 'checked' : ''}>
-                    <label for="wa-opt-${template.id}" class="ml-2 block text-sm font-medium text-gray-700">${template.label}</label>
+                <div class="relative group">
+                    <input type="radio" id="wa-opt-${template.id}" name="whatsapp_option" value="${index}" class="peer sr-only" ${index === 0 ? 'checked' : ''}>
+                    <label for="wa-opt-${template.id}" class="block p-3 bg-white border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-blue-50 hover:border-blue-300 peer-checked:border-blue-600 peer-checked:bg-blue-50 transition-all shadow-sm">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1 p-2 bg-blue-100 rounded-lg text-blue-600">
+                                <i class="${template.icon} text-lg"></i>
+                            </div>
+                            <div class="ml-3">
+                                <span class="block text-sm font-bold text-gray-800">${template.title}</span>
+                                <span class="block text-xs text-gray-500 mt-1">${template.desc}</span>
+                            </div>
+                            <div class="absolute top-4 right-4 text-blue-600 opacity-0 peer-checked:opacity-100 transition-opacity">
+                                <i class="fas fa-check-circle text-lg"></i>
+                            </div>
+                        </div>
+                    </label>
                 </div>
             `).join('');
 
@@ -4416,11 +4540,11 @@ aaba
                 }
             };
             
-            document.querySelectorAll('input[name="whatsapp_option"]').forEach(radio => {
-                radio.addEventListener('change', updateTextArea);
+            optionsContainer.addEventListener('change', (e) => {
+                if(e.target.name === 'whatsapp_option') updateTextArea();
             });
 
-            updateTextArea(); // Set initial text
+            updateTextArea();
             showElement('whatsAppModal');
         }
 
