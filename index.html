@@ -1255,7 +1255,8 @@ aaba
                 PENSION_MENSUAL_ESTIMADA: 0,
                 AGUINALDO_ESTIMADO: 0
             },
-            pdfGenerated: false // Flag to control scenario visibility
+            pdfGenerated: false, // Flag to control scenario visibility
+            semanasNetasReales: 0 // NUEVO: Almacena el cálculo real (Base - QP + Proyecciones)
         };
         
         let employerColorCache = {};
@@ -2055,7 +2056,8 @@ aaba
         }
 
         // --- VALIDATION & DATA GATHERING ---
-        function validateAndSetClientBaseInfo() {
+        // MODIFICADO: Acepta parámetro preserveWeeks para respetar cálculo de QP
+        function validateAndSetClientBaseInfo(preserveWeeks = false) {
             const nombre = document.getElementById('info_nombreCompleto').value.trim();
             const curp = document.getElementById('info_curpCliente').value.trim();
             const telefono = document.getElementById('info_telefonoCliente').value.trim();
@@ -2084,22 +2086,33 @@ aaba
             const edadObj = calcularEdadExacta(fechaNacimiento, new Date());
             const edadActual = edadObj.anos;
 
+            // LÓGICA DE PRESERVACIÓN DE SEMANAS
+            // Si preserveWeeks es true y existe un cálculo real previo, úsalo. Si no, usa el input manual.
+            const weeksToSet = (preserveWeeks && AppState.semanasNetasReales > 0) ? AppState.semanasNetasReales : semanasManuales;
+
             AppState.datosClienteInfo = {
                 ...AppState.datosClienteInfo,
                 nombre,
                 curp,
                 telefono,
-                semanasCotizadasBase: semanasManuales,
+                semanasCotizadasBase: weeksToSet,
                 edadBase: edadActual,
                 edadObjCompleta: edadObj,
             };
+
+            // Si es un análisis fresco (Paso 1), reiniciamos la variable de seguridad
+            if (!preserveWeeks) {
+                AppState.semanasNetasReales = 0;
+            }
+
             return true;
         }
 
 
         // --- MAIN CALCULATION WORKFLOW ---
         function analizarYCalcularSBC() {
-            if (!validateAndSetClientBaseInfo()) return;
+            // Paso 1: No preservamos semanas, queremos recalcular todo desde cero
+            if (!validateAndSetClientBaseInfo(false)) return;
             
             employerColorCache = {};
             lastColorIndex = 0;
@@ -2239,6 +2252,7 @@ aaba
             if (!isValid) return;
 
             // --- APLICAR LA SUMA DE SEMANAS PROYECTADAS AL TOTAL BASE ---
+            // Nota: Aquí semanasCotizadasBase viene limpio del input manual gracias a validateAndSetClientBaseInfo(false)
             AppState.datosClienteInfo.semanasCotizadasBase += projectionWeeks;
 
             const totalQpDays = allParsedPeriods
@@ -2247,7 +2261,10 @@ aaba
 
             const weeksToSubtract = totalQpDays / 7.0;
             const adjustedWeeks = Math.floor(Math.max(0, AppState.datosClienteInfo.semanasCotizadasBase - weeksToSubtract));
-            AppState.datosClienteInfo.semanasCotizadasBase = adjustedWeeks; // Update the state
+            
+            // ACTUALIZACIÓN CRÍTICA: Guardar en ambas variables
+            AppState.datosClienteInfo.semanasCotizadasBase = adjustedWeeks; // Para visualización inmediata
+            AppState.semanasNetasReales = adjustedWeeks; // Para preservación futura (Paso 2)
 
             AppState.allParsedPeriodsForDisplay = allParsedPeriods;
             AppState.fullHistoryPeriods = allParsedPeriods.filter(p => !p.isQP);
@@ -2529,7 +2546,9 @@ aaba
             container.innerHTML = summaryHTML;
         }
         async function calcularEscenarioM40Infografia() {
-            if (!validateAndSetClientBaseInfo()) return;
+            // MODIFICADO: Usamos 'true' para preservar las semanas ajustadas (Base - QP + Proyección)
+            // Esto evita que se lean de nuevo las semanas crudas del input
+            if (!validateAndSetClientBaseInfo(true)) return;
 
             const inicioP1Str = getM40StartDate();
             const numMesesP1 = parseInt(document.getElementById('info_m40_p1_meses').value) || 0;
@@ -2829,7 +2848,11 @@ aaba
         function getScenarioInputs(scenarioNum) {
             const meses = parseInt(document.getElementById(`scenario_${scenarioNum}_meses`).value) || 0;
             const semanasAjuste = (document.getElementById(`scenario_${scenarioNum}_semanas_ajuste`)) ? (parseInt(document.getElementById(`scenario_${scenarioNum}_semanas_ajuste`).value) || 0) : 0;
-            const semanasBaseAjustadas = AppState.datosClienteInfo.semanasCotizadasBase + semanasAjuste;
+            
+            // MODIFICADO: Prioridad a semanasNetasReales si existe
+            const baseWeeks = AppState.semanasNetasReales > 0 ? AppState.semanasNetasReales : AppState.datosClienteInfo.semanasCotizadasBase;
+            
+            const semanasBaseAjustadas = baseWeeks + semanasAjuste;
             const semanas = Math.floor(semanasBaseAjustadas + (meses * (52.1429 / 12)));
             // This hidden input is not strictly necessary but can be useful for debugging
             const semanasHiddenInput = document.getElementById(`scenario_${scenarioNum}_semanas`);
