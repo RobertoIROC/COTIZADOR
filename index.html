@@ -1,4 +1,4 @@
-aaba
+anaa
 <!DOCTYPE html>
 <html lang="es">
 
@@ -2618,12 +2618,27 @@ aaba
             }
             const container = document.getElementById('scenariosContainer');
             const isFirstScenario = scenarioNum === 1;
+            
+            // --- CAMBIO: FORMATO DE TÍTULO POR DEFECTO ---
+            let defaultTitle = `${meses} MESES DE MOD 40`;
+            
+            // Agregar sufijos automáticamente si hay ajustes especiales detectados
+            if (semanasAjuste < 0) defaultTitle += " (PAGO DE AYUDA DESEMPLEO)";
+            if (semanasAjuste > 0) defaultTitle += " (CON PORTABILIDAD/RECUPERACIÓN)";
+            if (meses === 0 && !isFirstScenario) defaultTitle = "0 MESES (SIN ESTRATEGIA M40)";
+
             const cardHTML = `
                 <div class="bg-white p-6 rounded-2xl shadow-xl border-l-8 border-blue-800 scenario-card" id="scenario_card_${scenarioNum}">
                     <!-- CONTROLS -->
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-2xl font-bold text-blue-800">Escenario ${scenarioNum}</h3>
-                        ${!isFirstScenario ? `<button onclick="removeScenarioCard(${scenarioNum})" class="btn-danger-icon !w-9 !h-9"><i class="fas fa-times"></i></button>` : ''}
+                    <div class="flex justify-between items-start mb-4 gap-4">
+                        <div class="flex-grow">
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nombre del Escenario (Editable para PDF)</label>
+                            <input type="text" id="scenario_${scenarioNum}_title" value="${defaultTitle}" 
+                                   class="w-full text-xl font-bold text-blue-800 border-b border-transparent hover:border-blue-300 focus:border-blue-600 outline-none bg-transparent placeholder-blue-300 transition-colors" 
+                                   placeholder="Ej. 60 MESES DE MOD 40"
+                                   onchange="recalculateScenario(${scenarioNum})">
+                        </div>
+                        ${!isFirstScenario ? `<button onclick="removeScenarioCard(${scenarioNum})" class="btn-danger-icon !w-9 !h-9 flex-shrink-0"><i class="fas fa-times"></i></button>` : ''}
                     </div>
                     <div class="grid grid-cols-2 gap-4 mb-6 pb-4 border-b">
                         <div class="input-group">
@@ -2631,7 +2646,7 @@ aaba
                             <input type="number" id="scenario_${scenarioNum}_meses" value="${meses}" oninput="recalculateScenario(${scenarioNum})" class="w-full" ${isFirstScenario ? 'readonly' : ''}>
                         </div>
                         <div class="input-group">
-                            <label for="scenario_${scenarioNum}_semanas_ajuste">Ajuste de Semanas:</label>
+                            <label for="scenario_${scenarioNum}_semanas_ajuste">Ajuste de Semanas (+/-):</label>
                             <input type="number" id="scenario_${scenarioNum}_semanas_ajuste" value="${semanasAjuste}" oninput="recalculateScenario(${scenarioNum})" class="w-full" ${isFirstScenario ? 'readonly' : ''}>
                         </div>
                         <input type="hidden" id="scenario_${scenarioNum}_semanas" value="0">
@@ -2849,7 +2864,11 @@ aaba
             const meses = parseInt(document.getElementById(`scenario_${scenarioNum}_meses`).value) || 0;
             const semanasAjuste = (document.getElementById(`scenario_${scenarioNum}_semanas_ajuste`)) ? (parseInt(document.getElementById(`scenario_${scenarioNum}_semanas_ajuste`).value) || 0) : 0;
             
-            // MODIFICADO: Prioridad a semanasNetasReales si existe
+            // MODIFICADO: Leer el título personalizado o usar el default nuevo si está vacío
+            const titleInput = document.getElementById(`scenario_${scenarioNum}_title`);
+            const customTitle = titleInput ? titleInput.value : `${meses} MESES DE MOD 40`;
+
+            // Prioridad a semanasNetasReales si existe
             const baseWeeks = AppState.semanasNetasReales > 0 ? AppState.semanasNetasReales : AppState.datosClienteInfo.semanasCotizadasBase;
             
             const semanasBaseAjustadas = baseWeeks + semanasAjuste;
@@ -2858,6 +2877,7 @@ aaba
             const semanasHiddenInput = document.getElementById(`scenario_${scenarioNum}_semanas`);
             if (semanasHiddenInput) semanasHiddenInput.value = semanas;
             return {
+                customTitle, // Se guarda en el objeto de datos
                 meses,
                 semanas,
                 curp: document.getElementById('info_curpCliente').value,
@@ -3077,14 +3097,12 @@ aaba
             if(getEl('sbc_m40')) {
                 getEl('sbc_m40').textContent = data.sbcM40 > 0 ? '$' + formatNumber(data.sbcM40) : 'N/A';
             }
-            // FIN AÑADIDO
 
             getEl('semanas_finales').textContent = formatNumber(data.semanas, 0);
             getEl('edad_final').textContent = `${data.edadFinM40.anos}a, ${data.edadFinM40.meses}m`;
             
             getEl('fecha_fin_m40').textContent = data.meses > 0 ? formatDateDDMMYYYY(data.fechaFinM40Obj) : 'N/A';
             getEl('fecha_primer_deposito').textContent = data.meses > 0 ? formatDateDDMMYYYY(data.fechaPrimerDeposito) : 'N/A';
-
 
             // Update financial summary
             const summaryContainer = getEl('financial_summary');
@@ -3446,8 +3464,12 @@ aaba
                 doc.addPage();
                 addPageHeader();
                 
-                let sectionTitle = `Análisis del Escenario ${scenarioId}: ${sc.meses} Meses en Modalidad 40`;
-                if (sc.meses === 0) sectionTitle = `Análisis del Escenario ${scenarioId}: Sin Inversión M40 (Base)`;
+                // MODIFICADO: Usar el título personalizado en el PDF
+                // El título será: "TU TITULO PERSONALIZADO: X Meses..."
+                const scenarioTitleClean = sc.customTitle || `Escenario ${scenarioId}`;
+                let sectionTitle = `${scenarioTitleClean}: ${sc.meses} Meses en M40`;
+                if (sc.meses === 0) sectionTitle = `${scenarioTitleClean}: Sin Inversión M40`;
+                
                 finalY = addSectionTitle(sectionTitle, finalY);
                 
                 doc.setFontSize(9);
