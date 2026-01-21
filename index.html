@@ -1,4 +1,4 @@
-anaa
+axaa
 <!DOCTYPE html>
 <html lang="es">
 
@@ -3687,14 +3687,21 @@ anaa
                     const regMatch = block.match(/Registro Patronal\s+([A-Z0-9]+)/i);
                     if (regMatch) regPatronal = regMatch[1];
                     let fechaAlta = null;
-                    const altaMatch = block.match(/Fecha de alta\s+(\d{2}\/\d{2}\/\d{4})/i);
+                    // Corrección en Regex de Fechas para ser más robusto
+                    const altaMatch = block.match(/Fecha de alta[\s\S]*?(\d{2}\/\d{2}\/\d{4})/i);
                     if (altaMatch) fechaAlta = altaMatch[1];
                     let fechaBaja = 'Vigente';
-                    const bajaMatch = block.match(/Fecha de baja\s+([\d{2}\/\d{2}\/\d{4}]+|Vigente)/i);
+                    // Corrección en Regex de Baja para capturar bien la fecha o la palabra Vigente
+                    const bajaMatch = block.match(/Fecha de baja[\s\S]*?(\d{2}\/\d{2}\/\d{4}|Vigente)/i);
                     if (bajaMatch) fechaBaja = bajaMatch[1];
+                    
                     let sbc = '0.00';
-                    const sbcMatch = block.match(/Salario Base de Cotización \*\s+\$\s*([\d,]+\.?\d*)/i);
+                    // --- CORRECCIÓN CRÍTICA DE SALARIOS ---
+                    // Antes fallaba por el "*/". Ahora usa [\s\S]*? para saltar cualquier caracter (incluyendo */ y nuevas líneas)
+                    // hasta encontrar el signo de pesos $.
+                    const sbcMatch = block.match(/Salario Base de Cotización[\s\S]*?\$\s*([\d,]+\.?\d*)/i);
                     if (sbcMatch) sbc = sbcMatch[1];
+                    
                     if (nombrePatron !== 'No Encontrado' && fechaAlta) {
                         let movimientoTexto = `REINGRESO ${fechaAlta} $ ${sbc}\n`;
                         if (fechaBaja.toLowerCase() !== 'vigente') {
