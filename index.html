@@ -561,6 +561,14 @@ amaa
                                         <input type="text" id="info_curpCliente" placeholder="18 caracteres" maxlength="18" oninput="this.value = this.value.toUpperCase();" class="w-full input-with-icon peer">
                                     </div>
                                 </div>
+                                <!-- AÑADIDO: Campo NSS -->
+                                <div class="input-group">
+                                    <label for="info_nssCliente">NSS (Número de Seguridad Social)</label>
+                                    <div class="relative">
+                                        <i class="fas fa-hashtag absolute top-1/2 left-4 -translate-y-1/2 text-gray-400 pointer-events-none transition-colors peer-focus:text-amber-500"></i>
+                                        <input type="text" id="info_nssCliente" placeholder="11 dígitos" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '');" class="w-full input-with-icon peer font-mono">
+                                    </div>
+                                </div>
                                 <div class="input-group">
                                     <label for="info_telefonoCliente">Teléfono de Contacto</label>
                                     <div class="relative">
@@ -639,6 +647,9 @@ amaa
                     </button>
                 </div>
                 <div id="sbcAnalysisResultsContainer" class="mt-12 pt-8 border-t" style="display: none;">
+                    <!-- AÑADIDO: Contenedor para la Alerta LEY 97 -->
+                    <div id="ley97AlertContainer" style="display: none;"></div>
+                    
                     <h3 class="subsection-title">Resumen del Análisis</h3>
                     <div id="ageAdjustmentWarning" class="mb-4 p-3 rounded-lg text-sm bg-yellow-50 border border-yellow-200 text-yellow-800" style="display: none;"></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
@@ -1241,6 +1252,7 @@ amaa
             datosClienteInfo: {
                 nombre: '',
                 curp: '',
+                nss: '', // AÑADIDO: Guardar el NSS en el estado
                 telefono: '',
                 semanasCotizadasBase: 0,
                 edadBase: 0,
@@ -2060,11 +2072,18 @@ amaa
         function validateAndSetClientBaseInfo(preserveWeeks = false) {
             const nombre = document.getElementById('info_nombreCompleto').value.trim();
             const curp = document.getElementById('info_curpCliente').value.trim();
+            const nss = document.getElementById('info_nssCliente').value.trim(); // AÑADIDO
             const telefono = document.getElementById('info_telefonoCliente').value.trim();
             const semanasManuales = getNumeroInfo('info_semanasTotalesManual');
 
             if (!nombre || !/^[A-ZÑ&]{4}\d{6}[HM][A-Z]{5}[A-Z\d]\d$/.test(curp)) {
                 showCustomAlert("Por favor, complete la información del asegurado (Nombre y CURP válido) en el Paso 1.", "Validación de Datos");
+                return false;
+            }
+
+            // AÑADIDO: Validación estricta de NSS
+            if (!nss || nss.length !== 11) {
+                showCustomAlert("El NSS es obligatorio y debe contener exactamente 11 dígitos. Es vital para verificar si el cliente es Ley 73 o Ley 97.", "Validación de NSS Requerida");
                 return false;
             }
 
@@ -2094,6 +2113,7 @@ amaa
                 ...AppState.datosClienteInfo,
                 nombre,
                 curp,
+                nss, // AÑADIDO
                 telefono,
                 semanasCotizadasBase: weeksToSet,
                 edadBase: edadActual,
@@ -2312,6 +2332,11 @@ amaa
                 const sortedPeriods = [...AppState.fullHistoryPeriods].sort((a, b) => b.fechaFin - a.fechaFin);
                 ultimaFechaBaja = sortedPeriods[0].fechaFin;
             }
+            
+            // --- AÑADIDO: VERIFICACIÓN LEY 97 VS NSS ---
+            verificarRegimenLey97(AppState.datosClienteInfo.nss, AppState.fullHistoryPeriods);
+            // --- FIN AÑADIDO ---
+
             // Update state with calculation results
             AppState.datosClienteInfo.sbcPromedioBase = sbcPromedioFinal;
             AppState.datosClienteInfo.ultimaFechaBaja = ultimaFechaBaja;
@@ -2401,9 +2426,85 @@ amaa
             document.getElementById('res_base_aguinaldo').textContent = '$' + formatNumber(pensionData.AGUINALDO_ESTIMADO);
             document.getElementById('res_base_ingresoAnual').textContent = '$' + formatNumber((pensionData.PENSION_MENSUAL_ESTIMADA * 12) + pensionData.AGUINALDO_ESTIMADO);
             showElement('basePensionResultsContainer');
-            showCustomAlert("Análisis completado. El SBC Promedio y la pensión base han sido calculados.", "Análisis Exitoso");
+            
+            // Si NO es Ley 97, mostramos la alerta de éxito, si sí es, evitamos tapar el mensaje de error masivo
+            const alertContainer = document.getElementById('ley97AlertContainer');
+            if (!alertContainer.innerHTML.includes('Ley 97')) {
+                showCustomAlert("Análisis completado. El SBC Promedio y la pensión base han sido calculados.", "Análisis Exitoso");
+            }
         }
 
+        // --- AÑADIDO: FUNCIÓN DE VERIFICACIÓN LEY 97 ---
+        function verificarRegimenLey97(nss, periodos) {
+            const alertContainer = document.getElementById('ley97AlertContainer');
+            alertContainer.style.display = 'none';
+            alertContainer.innerHTML = '';
+
+            if (!nss || nss.length !== 11 || !periodos || periodos.length === 0) return;
+
+            // 1. Extraer año del NSS (Dígitos 3 y 4)
+            const nssYearStr = nss.substring(2, 4);
+            const nssYearNum = parseInt(nssYearStr, 10);
+            const currentYearTwoDigits = new Date().getFullYear() % 100;
+            const nssFullYear = nssYearNum > (currentYearTwoDigits + 5) ? 1900 + nssYearNum : 2000 + nssYearNum;
+
+            // 2. Extraer fecha de primera alta del SISEC
+            const oldestPeriod = [...periodos].sort((a, b) => a.fechaInicio - b.fechaInicio)[0];
+            const firstAltaDate = oldestPeriod.fechaInicio;
+            const firstAltaYear = firstAltaDate.getUTCFullYear();
+
+            // 3. Verificación Legal: ¿Es fecha posterior al 1 de Julio de 1997?
+            const ley97Date = new Date(Date.UTC(1997, 6, 1)); // Mes 6 = Julio (0-indexed)
+            const isLey97Date = firstAltaDate >= ley97Date;
+
+            let discrepancias = [];
+            // Tolerancia de 1 año por posibles trámites lentos de afiliación
+            if (Math.abs(nssFullYear - firstAltaYear) > 1) {
+                discrepancias.push(`El año de afiliación que indica el NSS (<strong>${nssFullYear}</strong>) no coincide con la primera alta laboral encontrada en el SISEC (<strong>${firstAltaYear}</strong>).`);
+            }
+
+            if (isLey97Date) {
+                // ALARMA MASIVA LEY 97
+                alertContainer.innerHTML = `
+                    <div class="bg-red-600 text-white p-8 rounded-2xl shadow-2xl border-4 border-red-900 animate-pulse mb-8 relative overflow-hidden">
+                        <div class="absolute -right-10 -top-10 opacity-20 pointer-events-none">
+                            <i class="fas fa-skull-crossbones" style="font-size: 18rem;"></i>
+                        </div>
+                        <div class="relative z-10 flex flex-col md:flex-row items-center gap-6">
+                            <div class="bg-white text-red-600 rounded-full p-6 shadow-lg">
+                                <i class="fas fa-ban text-6xl"></i>
+                            </div>
+                            <div class="text-center md:text-left">
+                                <h3 class="text-3xl md:text-4xl font-black uppercase tracking-widest mb-2 drop-shadow-md">¡Alerta Crítica: Ley 97!</h3>
+                                <p class="text-xl font-medium mb-3">La primera cotización de este cliente es del <strong class="bg-red-800 px-2 py-1 rounded text-white">${formatDateDDMMYYYY(firstAltaDate)}</strong>.</p>
+                                <p class="text-lg mt-2 font-bold bg-white text-red-700 px-4 py-2 rounded-lg inline-block border-2 border-red-200 shadow-sm">
+                                    ⚠️ Este cliente NO es elegible para pensión bajo la Ley 73. Esta calculadora y estrategia NO APLICAN para su régimen.
+                                </p>
+                                ${discrepancias.length > 0 ? `<p class="text-sm mt-4 bg-red-900/50 p-3 rounded-lg text-red-100"><strong><i class="fas fa-search"></i> Discrepancia Adicional:</strong> ${discrepancias[0]}</p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                alertContainer.style.display = 'block';
+                setTimeout(() => alertContainer.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+            } else if (discrepancias.length > 0) {
+                // ADVERTENCIA DE AUDITORÍA (No es Ley 97, pero el NSS es raro)
+                alertContainer.innerHTML = `
+                    <div class="bg-amber-100 text-amber-900 p-5 rounded-xl border-l-8 border-amber-500 mb-6 shadow-sm">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-search-dollar text-3xl mt-1 text-amber-600"></i>
+                            <div>
+                                <h4 class="font-bold text-lg uppercase tracking-wide">Observación de Auditoría</h4>
+                                <p class="text-base mt-1">${discrepancias[0]}</p>
+                                <p class="text-sm mt-2 text-amber-700">El sistema asume la fecha real del SISEC (<strong>${formatDateDDMMYYYY(firstAltaDate)}</strong>). Confirma que el cliente es Ley 73, pero se sugiere revisar el expediente físico para entender la discrepancia.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                alertContainer.style.display = 'block';
+            }
+        }
+        // --- FIN AÑADIDO ---
 
         // Renders the SBC analysis table based on checkbox states
         function renderSbcAnalysisTable() {
@@ -3752,14 +3853,27 @@ amaa
                     return;
                 }
                 // 1. Extract Personal Data
-                const datosPersonalesRegex = /Estimado\(a\),\s*([A-Z\s,ÑÁÉÍÓÚ]+)\s*NSS:\s*[\w\d]+\s*CURP:\s*(\w{18})/i;
-                const datosPersonalesMatch = textoCompleto.match(datosPersonalesRegex);
-                if (datosPersonalesMatch && datosPersonalesMatch[1] && datosPersonalesMatch[2]) {
-                    document.getElementById('info_nombreCompleto').value = datosPersonalesMatch[1].trim();
-                    document.getElementById('info_curpCliente').value = datosPersonalesMatch[2].trim();
-                } else {
-                    showCustomAlert("No fue posible extraer el Nombre y CURP del texto. Verifique que el formato sea correcto.", "Datos Faltantes");
-                    return;
+                // MODIFICADO: Regex mejorada para atrapar Nombre, CURP y NSS
+                const nombreMatch = textoCompleto.match(/Estimado\(a\),\s*([A-Z\s,ÑÁÉÍÓÚ]+)/i);
+                const curpMatch = textoCompleto.match(/CURP:\s*([A-Z0-9]{18})/i);
+                const nssMatch = textoCompleto.match(/NSS:\s*([\d\s-]{11,15})/i);
+
+                if (nombreMatch && nombreMatch[1]) {
+                    document.getElementById('info_nombreCompleto').value = nombreMatch[1].trim();
+                }
+                if (curpMatch && curpMatch[1]) {
+                    document.getElementById('info_curpCliente').value = curpMatch[1].trim();
+                }
+                // AÑADIDO: Extracción y llenado de NSS
+                if (nssMatch && nssMatch[1]) {
+                    const nssLimpio = nssMatch[1].replace(/[^0-9]/g, '');
+                    if(nssLimpio.length === 11) {
+                        document.getElementById('info_nssCliente').value = nssLimpio;
+                    }
+                }
+                
+                if (!nombreMatch || !curpMatch) {
+                    showCustomAlert("No fue posible extraer automáticamente el Nombre o CURP del texto. Verifique el formato.", "Revisión Manual Sugerida");
                 }
                 // 2. Extract Weeks Data
                 let totalSemanasCalculadas = 0;
