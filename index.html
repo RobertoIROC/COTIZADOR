@@ -2164,7 +2164,8 @@
                 }
             }
             if (daysRemaining > 0) {
-                const historicalPeriods = [...AppState.fullHistoryPeriods].sort((a, b) => b.fechaFin - a.fechaFin);
+                // CORRECCIÓN: Se utiliza timelinePeriods (fusionados) en lugar de fullHistoryPeriods para evitar doble conteo
+                const historicalPeriods = [...AppState.timelinePeriods].sort((a, b) => b.fechaFin - a.fechaFin);
                 for (const p of historicalPeriods) {
                     if (daysRemaining <= 0) break;
                     const diasDelPeriodo = Math.round((p.fechaFin - p.fechaInicio) / (1000 * 60 * 60 * 24)) + 1;
@@ -2977,7 +2978,9 @@
             const fechaInicioPeriodoRevision = new Date(fechaReferenciaBaja);
             fechaInicioPeriodoRevision.setUTCFullYear(fechaInicioPeriodoRevision.getUTCFullYear() - 5);
             let diasCotizadosUltimos5Anos = 0;
-            AppState.fullHistoryPeriods.forEach(period => {
+            
+            // CORRECCIÓN: Se utiliza timelinePeriods en lugar de fullHistoryPeriods para no duplicar días de trabajos traslapados en la evaluación de Vigencia
+            AppState.timelinePeriods.forEach(period => {
                 const startOverlap = Math.max(period.fechaInicio.getTime(), fechaInicioPeriodoRevision.getTime());
                 const endOverlap = Math.min(period.fechaFin.getTime(), fechaReferenciaBaja.getTime());
                 if (startOverlap <= endOverlap) {
@@ -2986,6 +2989,7 @@
                 }
             });
             diasCotizadosUltimos5Anos = Math.round(diasCotizadosUltimos5Anos);
+            
             if (diasCotizadosUltimos5Anos < 365) {
                 resultBox.className = 'p-6 rounded-2xl shadow-sm border md:col-span-3 bg-red-100 text-red-800';
                 resultText.textContent = 'NO VIGENTE';
