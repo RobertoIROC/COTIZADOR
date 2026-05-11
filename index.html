@@ -1375,10 +1375,34 @@
             `;
             container.insertAdjacentHTML('beforeend', cardHTML);
             document.getElementById('employmentCardsContainer').style.display = 'block';
-            setTimeout(() => {
-                const newCard = document.getElementById(`empCard_${cardId}`);
-                if(newCard) { const firstInput = newCard.querySelector('.emp_manual_start'); if(firstInput) firstInput.focus(); }
-            }, 100);
+            
+            // Mascarilla para autocompletar DD/MM/AAAA
+            const newCard = document.getElementById(`empCard_${cardId}`);
+            if (newCard) { 
+                const startInput = newCard.querySelector('.emp_manual_start');
+                const endInput = newCard.querySelector('.emp_manual_end');
+                
+                const applyDateMask = (e) => {
+                    if (e.inputType === 'deleteContentBackward') return; // Permite usar la tecla "borrar" normalmente
+                    
+                    let v = e.target.value.replace(/\D/g, ''); // Limpia y deja solo números
+                    if (v.length > 8) v = v.substring(0, 8); // Limita a 8 dígitos máximo
+                    
+                    if (v.length >= 5) {
+                        e.target.value = `${v.substring(0, 2)}/${v.substring(2, 4)}/${v.substring(4, 8)}`;
+                    } else if (v.length >= 3) {
+                        e.target.value = `${v.substring(0, 2)}/${v.substring(2, 4)}`;
+                    } else {
+                        e.target.value = v;
+                    }
+                };
+
+                if (startInput) startInput.addEventListener('input', applyDateMask);
+                if (endInput) endInput.addEventListener('input', applyDateMask);
+
+                // Dar focus al primer input automáticamente
+                setTimeout(() => { if (startInput) startInput.focus(); }, 100);
+            }
         }
 
         function parseDateDDMMYYYY(dateStr) {
