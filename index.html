@@ -408,6 +408,29 @@
                             <p id="vigenciaResultText" class="text-3xl font-bold">--</p>
                             <p id="vigenciaResultSubText" class="text-base mt-2">--</p>
                         </div>
+                        
+                        <!-- NUEVO MÓDULO: RECUPERACIÓN DE DERECHOS ART. 151 -->
+                        <div id="derechosRecoveryModule" class="md:col-span-2 lg:col-span-4 mt-6" style="display: none;">
+                            <div class="bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden">
+                                <div class="bg-blue-50 border-b border-blue-100 p-4">
+                                    <h3 class="font-bold text-blue-900 text-lg flex items-center">
+                                        <i class="fas fa-shield-alt text-blue-600 mr-2 text-xl"></i> 
+                                        Diagnóstico de Consolidación de Derechos (Art. 151)
+                                    </h3>
+                                    <p class="text-sm text-blue-700 mt-1">Rastreo paso a paso desde la última baja vigente para determinar el estado real de conservación.</p>
+                                </div>
+                                <div class="p-6">
+                                    <div id="derechosLogContainer" class="space-y-0">
+                                        <!-- Los pasos dinámicos se insertan aquí -->
+                                    </div>
+                                    <div id="derechosVerdictBox" class="mt-6 p-4 rounded-xl text-center text-lg font-bold shadow-sm">
+                                        <!-- Veredicto Final -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- FIN NUEVO MÓDULO -->
+
                     </div>
                     <div class="mt-10 overflow-x-auto">
                         <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
@@ -1718,6 +1741,9 @@
             
             renderSbcAnalysisTable(); renderModalitySummary(); toggleFullHistoryTimeline(); checkVigencia();
 
+            // EJECUTAR EL NUEVO MÓDULO DE DERECHOS
+            analizarRecuperacionDerechos();
+
             document.getElementById('sbcAnalysisTableFooter').innerHTML = '';
             const daysWarningEl = document.getElementById('sbcDaysWarning');
             if (diasAcumuladosSBC < Constants.DIAS_PROMEDIO_PENSION) {
@@ -2723,16 +2749,22 @@
             AppState.isSisecNoDetallado = document.getElementById('isSisecNoDetallado').checked;
             document.getElementById('employmentCardsContainer').innerHTML = '';
             AppState.employmentCardIdCounter = 0;
+            
+            // Regex ultra-tolerante (ignora si "patrón" perdió el acento en la conversión PDF a Word)
+            const regexPatron = /Nombre\s+del\s+patr/gi;
+            
             if (AppState.isSisecNoDetallado) {
-                const employerBlocks = textoCompleto.split(/Nombre del patrón/gi).slice(1);
-                if (employerBlocks.length === 0) { showCustomAlert("No se encontraron registros de empleadores en el formato de SISEC no detallado.", "Error de Formato"); return; }
+                const employerBlocks = textoCompleto.split(regexPatron).slice(1);
+                if (employerBlocks.length === 0) { showCustomAlert("No se encontraron registros de empleadores en el formato de SISEC no detallado. Verifique que el texto contenga la frase 'Nombre del patrón'.", "Error de Formato"); return; }
                 employerBlocks.forEach(block => {
-                    const lines = block.trim().split('\n').map(l => l.trim()).filter(l => l);
+                    // CORRECCIÓN: Limpiar cualquier residuo de "ón", "on", ":" o "-" que haya quedado tras el corte
+                    const lines = block.trim().replace(/^(?:[oó]n|on)?\s*[:\-]*\s*/i, '').split('\n').map(l => l.trim()).filter(l => l);
                     const nombrePatron = lines[0] || 'No Encontrado'; let regPatronal = 'No Encontrado';
                     const regMatch = block.match(/Registro Patronal\s+([A-Z0-9]+)/i); if (regMatch) regPatronal = regMatch[1];
                     let fechaAlta = null; const altaMatch = block.match(/Fecha de alta[\s\S]*?(\d{2}\/\d{2}\/\d{4})/i); if (altaMatch) fechaAlta = altaMatch[1];
                     let fechaBaja = 'Vigente'; const bajaMatch = block.match(/Fecha de baja[\s\S]*?(\d{2}\/\d{2}\/\d{4}|Vigente)/i); if (bajaMatch) fechaBaja = bajaMatch[1];
-                    let sbc = '0.00'; const sbcMatch = block.match(/Salario Base de Cotización[\s\S]*?\$\s*([\d,]+\.?\d*)/i); if (sbcMatch) sbc = sbcMatch[1];
+                    // Tolerante a pérdida de acento en Cotización
+                    let sbc = '0.00'; const sbcMatch = block.match(/Salario Base de Cotizaci[\s\S]*?\$\s*([\d,]+\.?\d*)/i); if (sbcMatch) sbc = sbcMatch[1];
                     if (nombrePatron !== 'No Encontrado' && fechaAlta) {
                         let movimientoTexto = `REINGRESO ${fechaAlta} $ ${sbc}\n`;
                         if (fechaBaja.toLowerCase() !== 'vigente') movimientoTexto += `BAJA ${fechaBaja}`;
@@ -2740,19 +2772,21 @@
                     }
                 });
             } else { 
-                const employerBlocks = textoCompleto.split(/Nombre\s+del\s+patrón/gi).slice(1);
-                if (employerBlocks.length === 0) { showCustomAlert("No se encontraron registros de empleadores en el texto. Verifique que el texto contenga la frase 'Nombre del patrón'.", "Error de Formato"); return; }
+                const employerBlocks = textoCompleto.split(regexPatron).slice(1);
+                if (employerBlocks.length === 0) { showCustomAlert("No se encontraron registros de empleadores en el texto. Verifique que el texto contenga la frase 'Nombre del patrón' o revise si la conversión PDF a Word perdió formato.", "Error de Formato"); return; }
                 employerBlocks.forEach(block => {
-                    const lines = block.trim().split('\n').map(l => l.trim()).filter(l => l);
+                    // CORRECCIÓN: Limpiar cualquier residuo de "ón", "on", ":" o "-" que haya quedado tras el corte
+                    const lines = block.trim().replace(/^(?:[oó]n|on)?\s*[:\-]*\s*/i, '').split('\n').map(l => l.trim()).filter(l => l);
                     const nombrePatron = lines[0] || 'No Encontrado'; let regPatronal = 'No Encontrado';
                     const regPatronalMatch = block.match(/Registro\s+Patronal\s+([A-Z0-9]+)/i); if (regPatronalMatch && regPatronalMatch[1]) regPatronal = regPatronalMatch[1];
-                    const movimientoRegex = /(REINGRESO|MODIFICACION\s*DE\s*SALARIO|BAJA|ALTA)\s+(\d{2}\/\d{2}\/\d{4})(?:\s*\$\s*([\d,]+\.?\d*))?/i;
+                    // Tolerante a MODIFICACION sin O o con caracteres raros tras la conversión
+                    const movimientoRegex = /(REINGRESO|MODIFICACI[\s\S]?N\s*DE\s*SALARIO|BAJA|ALTA)\s+(\d{2}\/\d{2}\/\d{4})(?:\s*\$\s*([\d,]+\.?\d*))?/i;
                     let movimientosEncontrados = [];
                     for (const linea of lines) {
                         const lineaLimpia = linea.trim().replace(/\s+/g, ' ');
                         if (movimientoRegex.test(lineaLimpia)) movimientosEncontrados.push(lineaLimpia);
                     }
-                    if (movimientosEncontrados.length > 0) addEmploymentCard(nombrePatron, regPatronal, movimientosEncontrados.join('\n'));
+                        if (movimientosEncontrados.length > 0) addEmploymentCard(nombrePatron, regPatronal, movimientosEncontrados.join('\n'));
                 });
             }
             showElement('toggleCardsBtn', 'inline-flex'); showCustomAlert("Datos extraídos correctamente. Iniciando análisis...", "Proceso Iniciado");
@@ -3009,6 +3043,346 @@
                 resultSubText.textContent = `La vigencia de derechos para modalidad 40 venció el ${formattedExpirationDate}. Calculado 5 años desde la última baja (real o proyectada): ${formattedReferenciaBaja}.`;
             }
         }
+
+        // --- NUEVAS FUNCIONES: RECUPERACIÓN DE DERECHOS (ART. 151) ---
+        function analizarRecuperacionDerechos() {
+            const module = document.getElementById('derechosRecoveryModule');
+            if (!AppState.fullHistoryPeriods || AppState.fullHistoryPeriods.length === 0) {
+                module.style.display = 'none';
+                return;
+            }
+
+            // EXTRAER EDAD Y CURP PARA REGLA DE LOS 60 AÑOS (Blindaje Vitalicio)
+            const curp = AppState.datosClienteInfo.curp;
+            const fechaNacimiento = curp ? extraerFechaNacimientoCURP(curp) : null;
+            let fechaCumple60 = null;
+            if (fechaNacimiento) {
+                fechaCumple60 = new Date(fechaNacimiento);
+                fechaCumple60.setUTCFullYear(fechaCumple60.getUTCFullYear() + 60);
+            }
+
+            // Ordenamos historial base (crudo, sin fusionar) cronológicamente
+            const rawPeriods = [...AppState.fullHistoryPeriods].sort((a, b) => a.fechaInicio - b.fechaInicio);
+
+            // 1. Crear macro-bloques de cotización continuos (fusionando periodos que son consecutivos, 
+            // ignorando completamente los cambios de SBC para no romper la continuidad de los días cotizados)
+            const continuousBlocks = [];
+            let currentBlock = { 
+                fechaInicio: new Date(rawPeriods[0].fechaInicio), 
+                fechaFin: new Date(rawPeriods[0].fechaFin), 
+                employers: new Set([rawPeriods[0].nombrePatron]) 
+            };
+
+            for (let i = 1; i < rawPeriods.length; i++) {
+                const p = rawPeriods[i];
+                const diffDays = (p.fechaInicio - currentBlock.fechaFin) / (1000 * 60 * 60 * 24);
+                
+                // Si el siguiente periodo inicia 1 día después de la baja o el mismo día (es decir, es un trabajo continuo)
+                if (diffDays <= 1) { 
+                    currentBlock.fechaFin = new Date(Math.max(currentBlock.fechaFin, p.fechaFin));
+                    currentBlock.employers.add(p.nombrePatron);
+                } else {
+                    // Cerramos el bloque porque hubo una interrupción real (gap)
+                    currentBlock.dias = Math.round((currentBlock.fechaFin - currentBlock.fechaInicio) / (1000 * 60 * 60 * 24)) + 1;
+                    currentBlock.nombrePatron = Array.from(currentBlock.employers).join(' + ');
+                    continuousBlocks.push(currentBlock);
+                    
+                    // Iniciamos el conteo de un nuevo bloque
+                    currentBlock = { 
+                        fechaInicio: new Date(p.fechaInicio), 
+                        fechaFin: new Date(p.fechaFin), 
+                        employers: new Set([p.nombrePatron]) 
+                    };
+                }
+            }
+            // Guardar el último bloque que se estaba evaluando
+            currentBlock.dias = Math.round((currentBlock.fechaFin - currentBlock.fechaInicio) / (1000 * 60 * 60 * 24)) + 1;
+            currentBlock.nombrePatron = Array.from(currentBlock.employers).join(' + ');
+            continuousBlocks.push(currentBlock);
+
+            let anchorIndex = -1;
+            // 2. Encontrar el bloque "Ancla" (Buscando hacia atrás el más reciente de >= 52 semanas continuas)
+            for (let i = continuousBlocks.length - 1; i >= 0; i--) {
+                if (continuousBlocks[i].dias >= 364) {
+                    anchorIndex = i;
+                    break;
+                }
+            }
+
+            const log = [];
+            let ultimaBajaVigente; // La base legal para medir el hueco (26 o 52 semanas)
+            let estadoActual = 'VIGENTE';
+            let deudaSemanas = 0;
+
+            if (anchorIndex === -1) {
+                log.push({ tipo: 'error', title: 'Sin Empleo Base Claro (Consolidación)', text: 'No se encontró ningún periodo continuo de 52 semanas (1 año). La evaluación partirá desde el primer periodo registrado en el historial.' });
+                anchorIndex = 0;
+                ultimaBajaVigente = continuousBlocks[0].fechaFin;
+                estadoActual = 'VIGENTE';
+            } else {
+                const p = continuousBlocks[anchorIndex];
+                const anchorObj = calcularEdadExacta(p.fechaInicio, p.fechaFin);
+                let anchorTimeStrParts = [];
+                if (anchorObj.anos > 0) anchorTimeStrParts.push(`${anchorObj.anos} ${anchorObj.anos === 1 ? 'año' : 'años'}`);
+                if (anchorObj.meses > 0) anchorTimeStrParts.push(`${anchorObj.meses} ${anchorObj.meses === 1 ? 'mes' : 'meses'}`);
+                if (anchorObj.dias > 0 || anchorTimeStrParts.length === 0) anchorTimeStrParts.push(`${anchorObj.dias} ${anchorObj.dias === 1 ? 'día' : 'días'}`);
+                let anchorTimeString = anchorTimeStrParts.length > 1 ? anchorTimeStrParts.slice(0, -1).join(', ') + ' y ' + anchorTimeStrParts[anchorTimeStrParts.length - 1] : anchorTimeStrParts[0];
+
+                log.push({ tipo: 'anchor', title: 'CONSOLIDACIÓN DE DERECHOS', text: `Periodo base: <strong>${p.nombrePatron}</strong> (${anchorTimeString} sin interrupción).<br>Fecha de baja: <strong>${formatDateDDMMYYYY(p.fechaFin)}</strong>. Al momento de esta baja, los derechos estaban plenamente vigentes.`});
+                ultimaBajaVigente = p.fechaFin;
+            }
+
+            // 3. Analizar saltos de tiempo hacia adelante usando los macro-bloques
+            for (let i = anchorIndex + 1; i < continuousBlocks.length; i++) {
+                const currentPeriod = continuousBlocks[i];
+                
+                // GAP PRINCIPAL: Desde la última baja VIGENTE hasta la nueva alta (Determina si son 26 o 52 semanas)
+                const gapDesdeVigenteDays = (currentPeriod.fechaInicio - ultimaBajaVigente) / (1000 * 60 * 60 * 24);
+                const gapDesdeVigenteYears = gapDesdeVigenteDays / 365.25;
+                const gapDesdeVigenteObj = calcularEdadExacta(ultimaBajaVigente, currentPeriod.fechaInicio);
+
+                // 3b. Determinar nueva deuda usando el hueco desde la última baja VIGENTE
+                let retoPorEsteHueco = 0;
+                if (gapDesdeVigenteYears > 6) retoPorEsteHueco = 52;
+                else if (gapDesdeVigenteYears > 3) retoPorEsteHueco = 26;
+
+                // 3c. Aplicar regla de oro: La deuda no baja si no se ha saldado
+                if (estadoActual === 'VIGENTE') {
+                    deudaSemanas = retoPorEsteHueco;
+                    if (deudaSemanas > 0) estadoActual = 'PERDIDOS';
+                } else {
+                    deudaSemanas = Math.max(deudaSemanas, retoPorEsteHueco);
+                }
+
+                let timeStrParts = [];
+                if (gapDesdeVigenteObj.anos > 0) timeStrParts.push(`${gapDesdeVigenteObj.anos} ${gapDesdeVigenteObj.anos === 1 ? 'año' : 'años'}`);
+                if (gapDesdeVigenteObj.meses > 0) timeStrParts.push(`${gapDesdeVigenteObj.meses} ${gapDesdeVigenteObj.meses === 1 ? 'mes' : 'meses'}`);
+                if (gapDesdeVigenteObj.dias > 0 || timeStrParts.length === 0) timeStrParts.push(`${gapDesdeVigenteObj.dias} ${gapDesdeVigenteObj.dias === 1 ? 'día' : 'días'}`);
+                let timeString = timeStrParts.length > 1 ? timeStrParts.slice(0, -1).join(', ') + ' y ' + timeStrParts[timeStrParts.length - 1] : timeStrParts[0];
+
+                let gapText = `Pasaron <strong>${timeString}</strong> desde tu última baja vigente (${formatDateDDMMYYYY(ultimaBajaVigente)}) hasta este nuevo ingreso (${formatDateDDMMYYYY(currentPeriod.fechaInicio)}).<br>`;
+                
+                if (estadoActual === 'VIGENTE') {
+                    gapText += `Al ser menor a 3 años, conservaste tus derechos vigentes.`;
+                } else {
+                    if (retoPorEsteHueco === 0 && deudaSemanas > 0) {
+                        gapText += `Arrastras una deuda anterior. El IMSS requiere completar <strong>${deudaSemanas} semanas ininterrumpidas</strong>.`;
+                    } else {
+                        gapText += `El IMSS requiere cotizar <strong>${deudaSemanas} semanas ininterrumpidas</strong> para recuperar el historial.`;
+                    }
+                }
+
+                log.push({ tipo: 'gap', title: 'Periodo de Interrupción', text: gapText });
+
+                const weeksWorked = currentPeriod.dias / 7;
+                const jobObj = calcularEdadExacta(currentPeriod.fechaInicio, currentPeriod.fechaFin);
+                let jobTimeStrParts = [];
+                if (jobObj.anos > 0) jobTimeStrParts.push(`${jobObj.anos} ${jobObj.anos === 1 ? 'año' : 'años'}`);
+                if (jobObj.meses > 0) jobTimeStrParts.push(`${jobObj.meses} ${jobObj.meses === 1 ? 'mes' : 'meses'}`);
+                if (jobObj.dias > 0 || jobTimeStrParts.length === 0) jobTimeStrParts.push(`${jobObj.dias} ${jobObj.dias === 1 ? 'día' : 'días'}`);
+                let jobTimeString = jobTimeStrParts.length > 1 ? jobTimeStrParts.slice(0, -1).join(', ') + ' y ' + jobTimeStrParts[jobTimeStrParts.length - 1] : jobTimeStrParts[0];
+
+                if (estadoActual === 'PERDIDOS') {
+                    if (weeksWorked >= deudaSemanas) {
+                        estadoActual = 'VIGENTE';
+                        deudaSemanas = 0;
+                        ultimaBajaVigente = currentPeriod.fechaFin; // ¡ÉXITO! Esta es la nueva baja vigente
+                        log.push({
+                            tipo: 'job', status: 'success', title: 'Reingreso Laboral (Recuperación Exitosa)',
+                            text: `Alta en: <strong>${currentPeriod.nombrePatron}</strong> por <strong>${jobTimeString}</strong>.<br><span class="text-green-700 font-bold">¡Cotizaste ${weeksWorked.toFixed(1)} semanas ininterrumpidas! Derechos recuperados.</span> La nueva baja vigente es ${formatDateDDMMYYYY(ultimaBajaVigente)}.`
+                        });
+                    } else {
+                        log.push({
+                            tipo: 'job', status: 'fail', title: 'Reingreso Laboral (Tiempo Insuficiente)',
+                            text: `Alta en: <strong>${currentPeriod.nombrePatron}</strong>. Duró solo <strong>${jobTimeString}</strong> (${weeksWorked.toFixed(1)} sem).<br><span class="text-red-600 font-semibold">Los derechos siguen inactivos.</span>`
+                        });
+                        // NO actualizamos ultimaBajaVigente porque no cumplió el objetivo
+                    }
+                } else {
+                    ultimaBajaVigente = currentPeriod.fechaFin; // Sigue vigente, actualizamos
+                    log.push({
+                        tipo: 'job', status: 'success', title: 'Reingreso Laboral',
+                        text: `Alta en: <strong>${currentPeriod.nombrePatron}</strong> por <strong>${jobTimeString}</strong>.<br>Derechos vigentes conservados. La nueva baja vigente es ${formatDateDDMMYYYY(ultimaBajaVigente)}.`
+                    });
+                }
+            }
+
+            // 4. Calcular Conservación de Derechos (Art. 150)
+            let totalDiasHastaBaja = 0;
+            rawPeriods.forEach(p => {
+                if (p.fechaInicio <= ultimaBajaVigente) {
+                    const finEfectivo = p.fechaFin > ultimaBajaVigente ? ultimaBajaVigente : p.fechaFin;
+                    totalDiasHastaBaja += Math.round((finEfectivo - p.fechaInicio) / (1000 * 60 * 60 * 24)) + 1;
+                }
+            });
+            const totalSemanasHastaBaja = totalDiasHastaBaja / 7;
+            const semanasConservacion = totalSemanasHastaBaja / 4;
+            const diasConservacion = semanasConservacion * 7;
+            const fechaPerdidaDerechos = new Date(ultimaBajaVigente.getTime());
+            fechaPerdidaDerechos.setUTCDate(fechaPerdidaDerechos.getUTCDate() + Math.round(diasConservacion));
+            const anosConservacion = (semanasConservacion / 52.14).toFixed(1);
+
+            log.push({ 
+                tipo: 'conservacion', 
+                title: 'Periodo de Conservación (Art. 150)', 
+                text: `Al momento de tu última baja vigente (${formatDateDDMMYYYY(ultimaBajaVigente)}), contabas con <strong>${totalSemanasHastaBaja.toFixed(1)} semanas</strong> cotizadas en toda tu vida laboral.<br>
+                La ley te otorga una gracia de la cuarta parte de ese tiempo para mantener tus derechos vivos sin cotizar.
+                <div class="mt-4 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200 shadow-inner">
+                    <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+                        <div class="bg-white p-3 rounded-lg border border-gray-100 shadow-sm text-center">
+                            <span class="block text-gray-500 text-[0.65rem] uppercase font-bold mb-1 tracking-wider">Cuarta Parte (Gracia)</span>
+                            <span class="font-black text-indigo-700 text-xl">${semanasConservacion.toFixed(1)}</span> <span class="text-xs text-gray-600 font-medium block">Semanas (~${anosConservacion} años)</span>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border border-gray-100 shadow-sm text-center relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-1 bg-red-500"></div>
+                            <span class="block text-gray-500 text-[0.65rem] uppercase font-bold mb-1 mt-1 tracking-wider">Fecha de Vencimiento</span>
+                            <span class="font-black text-red-600 text-lg">${formatDateDDMMYYYY(fechaPerdidaDerechos)}</span> <span class="text-xs text-gray-600 font-medium block">Pérdida de Derechos</span>
+                        </div>
+                    </div>
+                </div>`
+            });
+
+            // 5. Evaluar brecha final desde la última baja VIGENTE hasta HOY
+            const today = new Date();
+            let isVigentePorConservacion = today <= fechaPerdidaDerechos;
+            let derechosVitalicios = false;
+
+            // REGLA DE ORO: Si cumple 60 años antes de que expire la conservación, los derechos NUNCA SE PIERDEN.
+            if (fechaCumple60 && fechaCumple60 <= fechaPerdidaDerechos) {
+                isVigentePorConservacion = true;
+                derechosVitalicios = true;
+            }
+
+            const finalGapDesdeVigenteDays = (today - ultimaBajaVigente) / (1000 * 60 * 60 * 24);
+            const finalGapDesdeVigenteYears = finalGapDesdeVigenteDays / 365.25;
+            const finalGapDesdeVigenteObj = calcularEdadExacta(ultimaBajaVigente, today);
+
+            let finalTimeStrParts = [];
+            if (finalGapDesdeVigenteObj.anos > 0) finalTimeStrParts.push(`${finalGapDesdeVigenteObj.anos} ${finalGapDesdeVigenteObj.anos === 1 ? 'año' : 'años'}`);
+            if (finalGapDesdeVigenteObj.meses > 0) finalTimeStrParts.push(`${finalGapDesdeVigenteObj.meses} ${finalGapDesdeVigenteObj.meses === 1 ? 'mes' : 'meses'}`);
+            if (finalGapDesdeVigenteObj.dias > 0 || finalTimeStrParts.length === 0) finalTimeStrParts.push(`${finalGapDesdeVigenteObj.dias} ${finalGapDesdeVigenteObj.dias === 1 ? 'día' : 'días'}`);
+            let finalTimeString = finalTimeStrParts.length > 1 ? finalTimeStrParts.slice(0, -1).join(', ') + ' y ' + finalTimeStrParts[finalTimeStrParts.length - 1] : finalTimeStrParts[0];
+
+            let finalGapText = `Desde tu última baja vigente (${formatDateDDMMYYYY(ultimaBajaVigente)}) hasta hoy han pasado <strong>${finalTimeString}</strong>.<br>`;
+            
+            if (derechosVitalicios) {
+                estadoActual = 'VIGENTE';
+                deudaSemanas = 0;
+                finalGapText += `<span class="text-green-700 font-bold mt-3 block p-3 bg-green-50 rounded-lg border border-green-200 shadow-sm"><i class="fas fa-crown mr-2 text-xl align-middle text-yellow-500"></i> <span class="align-middle">Alcanzó los 60 años dentro de su periodo de conservación. <strong>Sus derechos son vitalicios.</strong></span></span>`;
+            } else if (isVigentePorConservacion) {
+                estadoActual = 'VIGENTE';
+                deudaSemanas = 0;
+                finalGapText += `<span class="text-green-700 font-bold mt-3 block p-3 bg-green-50 rounded-lg border border-green-200 shadow-sm"><i class="fas fa-shield-alt mr-2 text-xl align-middle"></i> <span class="align-middle">Aún no se alcanza la fecha de vencimiento. Tus derechos están activos.</span></span>`;
+            } else {
+                estadoActual = 'PERDIDOS';
+                if (finalGapDesdeVigenteYears > 6) deudaSemanas = 52;
+                else if (finalGapDesdeVigenteYears > 3) deudaSemanas = 26;
+                else deudaSemanas = 26; // Mínimo 26 semanas de reinscripción
+
+                finalGapText += `<span class="text-red-700 font-bold mt-3 block p-3 bg-red-50 rounded-lg border border-red-200 shadow-sm"><i class="fas fa-times-circle mr-2 text-xl align-middle"></i> <span class="align-middle">Has superado la fecha límite de conservación. Se necesita un nuevo alta patronal por al menos <strong>${deudaSemanas} semanas ininterrumpidas</strong> para reactivarte.</span></span>`;
+            }
+
+            log.push({ tipo: 'final', title: 'Diagnóstico a la Fecha Actual', text: finalGapText });
+
+            // 6. Determinar Veredicto Visual
+            let veredictoInfo = {};
+            let leftVeredicto = '';
+            let rightVeredicto = '';
+
+            if (estadoActual === 'VIGENTE') {
+                veredictoInfo = { bgClass: 'bg-green-100', textClass: 'text-green-800 border-green-400' };
+                leftVeredicto = `<div class="flex items-center gap-4"><i class="fas fa-check-circle text-4xl"></i><div class="text-left"><span class="block text-xl md:text-2xl uppercase tracking-wider font-black">Derechos Vigentes</span><span class="block text-sm font-medium mt-1 text-green-900">El cliente está listo para contratar Modalidad 40 o tramitar Pensión.</span></div></div>`;
+            } else {
+                veredictoInfo = { bgClass: 'bg-red-50', textClass: 'text-red-800 border-red-400' };
+                leftVeredicto = `<div class="flex items-center gap-4"><i class="fas fa-exclamation-triangle text-4xl"></i><div class="text-left"><span class="block text-xl md:text-2xl uppercase tracking-wider font-black">Derechos Inactivos</span><span class="block text-sm font-medium mt-1 text-red-900">Requiere cotizar <strong>${deudaSemanas} semanas ininterrumpidas</strong> obligatoriamente.</span></div></div>`;
+            }
+
+            if (fechaCumple60) {
+                rightVeredicto = `
+                    <div class="md:border-l-2 md:border-t-0 border-t-2 md:pl-6 pt-4 md:pt-0 mt-4 md:mt-0 border-opacity-30 ${estadoActual === 'VIGENTE' ? 'border-green-500' : 'border-red-300'} text-left flex flex-col justify-center min-w-[220px]">
+                        <span class="text-[0.70rem] uppercase tracking-wider opacity-80 font-bold mb-1">Cumple 60 años el:</span>
+                        <span class="text-xl font-black ${derechosVitalicios ? 'text-yellow-600' : ''}"><i class="fas fa-birthday-cake mr-2"></i>${formatDateDDMMYYYY(fechaCumple60)}</span>
+                        <span class="text-xs font-medium leading-tight mt-1 opacity-90">${derechosVitalicios ? '<i class="fas fa-lock mr-1"></i> Blindaje Vitalicio Activado' : 'Sin blindaje vitalicio al llegar a 60.'}</span>
+                    </div>
+                `;
+            }
+
+            veredictoInfo.text = `
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6 p-2">
+                    <div class="flex-1">
+                        ${leftVeredicto}
+                    </div>
+                    ${rightVeredicto}
+                </div>
+            `;
+
+            renderDerechosRecovery(log, veredictoInfo);
+        }
+
+        function renderDerechosRecovery(log, veredictoInfo) {
+            const module = document.getElementById('derechosRecoveryModule');
+            const container = document.getElementById('derechosLogContainer');
+            const verdictBox = document.getElementById('derechosVerdictBox');
+
+            container.innerHTML = '';
+            module.style.display = 'block';
+
+            log.forEach((item, index) => {
+                let icon = ''; let colorClass = ''; let bgClass = ''; let borderClass = '';
+                if (item.tipo === 'anchor') {
+                    icon = 'fa-anchor'; colorClass = 'text-blue-600'; bgClass = 'bg-blue-100'; borderClass = 'border-blue-200';
+                } else if (item.tipo === 'gap') {
+                    icon = 'fa-history'; colorClass = 'text-amber-600'; bgClass = 'bg-amber-100'; borderClass = 'border-amber-200';
+                } else if (item.tipo === 'job') {
+                    if (item.status === 'success') {
+                        icon = 'fa-briefcase'; colorClass = 'text-green-600'; bgClass = 'bg-green-100'; borderClass = 'border-green-300';
+                    } else {
+                        icon = 'fa-briefcase'; colorClass = 'text-red-500'; bgClass = 'bg-red-100'; borderClass = 'border-red-300';
+                    }
+                } else if (item.tipo === 'conservacion') {
+                    icon = 'fa-hourglass-half'; colorClass = 'text-indigo-600'; bgClass = 'bg-indigo-100'; borderClass = 'border-indigo-300';
+                } else if (item.tipo === 'final') {
+                    icon = 'fa-flag-checkered'; colorClass = 'text-purple-600'; bgClass = 'bg-purple-100'; borderClass = 'border-purple-300';
+                } else if (item.tipo === 'error') {
+                    icon = 'fa-exclamation-triangle'; colorClass = 'text-red-600'; bgClass = 'bg-red-100'; borderClass = 'border-red-300';
+                }
+
+                const isLast = index === log.length - 1;
+
+                // Rediseño visual usando un Layout de Línea de Tiempo (Stepper) más limpio y moderno
+                const html = `
+                    <div class="relative flex items-start group">
+                        <!-- Línea vertical conectora -->
+                        ${!isLast ? `<div class="absolute top-12 left-[1.4rem] -bottom-4 w-1 bg-gray-200 group-hover:bg-blue-300 transition-colors z-0"></div>` : ''}
+
+                        <!-- Nodo de Ícono -->
+                        <div class="relative z-10 flex items-center justify-center w-12 h-12 rounded-full ${bgClass} ${colorClass} border-2 ${borderClass} shadow-sm flex-shrink-0 mt-1 bg-white">
+                            <i class="fas ${icon} text-lg"></i>
+                        </div>
+
+                        <!-- Tarjeta de Contenido -->
+                        <div class="ml-6 flex-1 mb-8">
+                            <div class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative">
+                                <!-- Triangulito decorativo -->
+                                <div class="absolute top-5 -left-2 w-4 h-4 bg-white border-l border-b border-gray-200 transform rotate-45"></div>
+                                
+                                <h4 class="text-base font-extrabold text-gray-800 mb-2 tracking-wide uppercase">
+                                    ${item.title}
+                                </h4>
+                                <p class="text-[0.95rem] text-gray-700 leading-relaxed font-medium">
+                                    ${item.text}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+
+            verdictBox.className = `mt-4 p-5 rounded-2xl text-center text-lg font-bold shadow-md border-2 ${veredictoInfo.bgClass} ${veredictoInfo.textClass}`;
+            verdictBox.innerHTML = veredictoInfo.text;
+        }
+        // --- FIN NUEVAS FUNCIONES ---
 
         function drawCoveragePieChart(scenarioNum) {
             const data = AppState.scenarioData[scenarioNum];
