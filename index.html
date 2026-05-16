@@ -663,6 +663,12 @@
                         <button onclick="startComprehensiveReportProcess()" class="btn btn-blue text-lg">
                             <i class="fas fa-file-invoice"></i> Reporte Detallado a PDF
                         </button>
+                        <button onclick="showExcelDataModal()" class="btn !bg-green-700 hover:!bg-green-800 !text-white text-lg">
+                            <i class="fas fa-table"></i> Ver Datos para Excel
+                        </button>
+                        <button onclick="openOriginalExcelModal()" class="btn !bg-yellow-600 hover:!bg-yellow-700 !text-white text-lg">
+                            <i class="fas fa-lock"></i> Calculadora Original
+                        </button>
                     </div>
                 </div>
 
@@ -768,6 +774,45 @@
             </div>
             <div class="text-center mt-6">
                 <button onclick="hideElement('paymentBreakdownModal')" class="btn btn-secondary">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NUEVO MODAL: VER DATOS PARA EXCEL EN PANTALLA -->
+    <div id="excelDataModal" class="modal-overlay">
+        <div class="modal-content relative !max-w-4xl">
+            <button onclick="hideElement('excelDataModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"><i class="fas fa-times fa-2x"></i></button>
+            <h2 class="text-center"><i class="fas fa-file-excel text-green-600 mr-2"></i>Datos para Calculadora Excel</h2>
+            <p class="text-center text-sm mb-6 text-gray-600">Copie estos datos para pegarlos en su archivo "CALCULO PENSION.xlsx" original.</p>
+            
+            <div class="overflow-x-auto border rounded-lg shadow-sm">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-green-50 text-green-900 border-b-2 border-green-200">
+                        <tr>
+                            <th class="p-3 font-bold">Celda / Concepto</th>
+                            <th class="p-3 font-bold text-center border-l border-green-200">Escenario Base (Sin M40)</th>
+                            <th class="p-3 font-bold text-center border-l border-green-200">Escenario con M40</th>
+                        </tr>
+                    </thead>
+                    <tbody id="excelDataModalBody" class="bg-white">
+                        <!-- Los datos se llenan por JS -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="text-center mt-8">
+                <button onclick="hideElement('excelDataModal')" class="btn btn-blue px-8">Aceptar y Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NUEVO MODAL: IFRAME EXCEL PROTEGIDO -->
+    <div id="iframeExcelModal" class="modal-overlay">
+        <div class="modal-content relative !max-w-7xl !w-[95vw] !h-[90vh] flex flex-col p-6">
+            <button onclick="hideElement('iframeExcelModal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 focus:outline-none z-10"><i class="fas fa-times fa-2x"></i></button>
+            <h2 class="text-center mb-4 mt-2 !pb-2 !text-2xl"><i class="fas fa-file-excel text-green-600 mr-2"></i>Calculadora Original (Google Sheets)</h2>
+            <div class="flex-grow w-full border border-gray-300 rounded-xl overflow-hidden shadow-inner bg-gray-50">
+                <iframe src="https://docs.google.com/spreadsheets/d/1J8595CqL5Z4IXU1O-cO4kA1dzjJ4wcz5/edit?usp=sharing&rm=minimal" class="w-full h-full border-0"></iframe>
             </div>
         </div>
     </div>
@@ -885,10 +930,13 @@
                 hideElement('adminPanel');
                 timerDisplay.classList.remove('hidden'); 
                 
-                const DURATION_MINUTES = 30;
-                let timeRemaining = DURATION_MINUTES * 60; 
+                const DURATION_MINUTES = 10;
+                const expirationTime = Date.now() + DURATION_MINUTES * 60 * 1000;
 
                 const updateTimer = () => {
+                    const timeRemainingMs = expirationTime - Date.now();
+                    const timeRemaining = Math.max(0, Math.floor(timeRemainingMs / 1000));
+                    
                     const minutes = Math.floor(timeRemaining / 60);
                     const seconds = timeRemaining % 60;
                     
@@ -907,7 +955,6 @@
                         showCustomAlert("Su sesión ha expirado por límite de tiempo.", "Sesión Terminada");
                         setTimeout(handleLogout, 3000);
                     }
-                    timeRemaining--;
                 };
 
                 updateTimer(); 
@@ -2418,7 +2465,7 @@
                         <div class="flex justify-between font-semibold text-gray-700"><span class="text-sm">(+) Recursos Disponibles al Pensionarse</span><span>$${formatNumber(data.coberturaAfore + data.coberturaDeposito + data.coberturaExtra + data.prestamoRequerido)}</span></div>
                         <div class="pl-4 text-xs text-gray-500 space-y-1 border-l-2 ml-1">
                             <div class="flex justify-between"><span>AFORE Actual:</span><span>$${formatNumber(data.coberturaAfore)}</span></div>
-                            <div class="flex justify-between"><span>1er Depósito:</span><span>$${formatNumber(data.coberturaDeposito)}</span></div>
+                            <div class="flex justify-between"><span>1er Depósito (${data.mesesPrimerDeposito} meses):</span><span>$${formatNumber(data.coberturaDeposito)}</span></div>
                             <div class="flex justify-between"><span>Extra AFORE:</span><span>$${formatNumber(data.coberturaExtra)}</span></div>
                             <div class="flex justify-between"><span>Préstamo Requerido:</span><span>$${formatNumber(data.prestamoRequerido)}</span></div>
                         </div>
@@ -2506,7 +2553,22 @@
             const anio = String(now.getFullYear()).slice(-2); const hora = String(now.getHours()).padStart(2, '0');
             const minuto = String(now.getMinutes()).padStart(2, '0');
             const iniciales = nombreParaIniciales.split(' ').filter(n => n).map(n => n[0]).join('').toUpperCase();
-            return `${anio}${iniciales}${dia}${hora}${mes}${minuto}`;
+            
+            const currentUser = (sessionStorage.getItem('rgc_currentUser') || '').toLowerCase();
+            let sufijo = '';
+            if (currentUser === 'roberto ortiz' || currentUser === 'admin') {
+                sufijo = '-R.O.';
+            } else if (currentUser.replace(/\s+/g, '') === 'rgc1') {
+                sufijo = '-RGC1';
+            } else if (currentUser.replace(/\s+/g, '') === 'rgc2') {
+                sufijo = '-RGC2';
+            } else if (currentUser.replace(/\s+/g, '') === 'rgc3') {
+                sufijo = '-RGC3';
+            } else if (currentUser) {
+                sufijo = '-' + currentUser.replace(/\s+/g, '').toUpperCase().substring(0, 4);
+            }
+            
+            return `${anio}${iniciales}${dia}${hora}${mes}${minuto}${sufijo}`;
         }
 
         async function startComprehensiveReportProcess() {
@@ -2544,6 +2606,20 @@
             let finalY = 0; const margin = 40; const contentWidth = pageWidth - (margin * 2);
             const cliente = AppState.datosClienteInfo; const generationDate = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
         
+            const currentUserForFooter = (sessionStorage.getItem('rgc_currentUser') || '').toLowerCase();
+            let sufijoFooter = '';
+            if (currentUserForFooter === 'roberto ortiz' || currentUserForFooter === 'admin') {
+                sufijoFooter = '-R.O.';
+            } else if (currentUserForFooter.replace(/\s+/g, '') === 'rgc1') {
+                sufijoFooter = '-RGC1';
+            } else if (currentUserForFooter.replace(/\s+/g, '') === 'rgc2') {
+                sufijoFooter = '-RGC2';
+            } else if (currentUserForFooter.replace(/\s+/g, '') === 'rgc3') {
+                sufijoFooter = '-RGC3';
+            } else if (currentUserForFooter) {
+                sufijoFooter = '-' + currentUserForFooter.replace(/\s+/g, '').toUpperCase().substring(0, 4);
+            }
+
             const RGC_BLUE = '#003366'; const RGC_GOLD = '#D4AF37'; const TEXT_DARK = '#1A202C'; const TEXT_MEDIUM = '#4A5568'; const BORDER_COLOR = '#E2E8F0';
             doc.setFont('helvetica');
 
@@ -2564,7 +2640,7 @@
                     doc.setDrawColor(BORDER_COLOR); doc.setLineWidth(0.5); doc.line(margin, footerY, pageWidth - margin, footerY);
                     doc.text(`Reporte para: ${cliente.nombre}`, margin, footerY + 15);
                     doc.text("Eje Central Lázaro Cárdenas 555, Narvarte Poniente, Benito Juárez, 03023 Ciudad de México, CDMX", margin, footerY + 25);
-                    doc.text("Creado por: Ivan Roberto Ortiz Cano", margin, footerY + 35);
+                    doc.text(`Creado por: Ivan Roberto Ortiz Cano ${sufijoFooter}`, margin, footerY + 35);
                     doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, footerY + 15, { align: 'right' });
                 }
             };
@@ -2666,7 +2742,7 @@
                     const financialBody = [
                         [{ content: '(+) Recursos Disponibles al Pensionarse', styles: { fontStyle: 'bold' } }, { content: `$${formatNumber(sc.coberturaAfore + sc.coberturaDeposito + sc.coberturaExtra + sc.prestamoRequerido)}`, styles: { fontStyle: 'bold' } }],
                         [{ content: '     AFORE Actual:', styles: { cellPadding: { left: 15 } } }, `$${formatNumber(sc.coberturaAfore)}`],
-                        [{ content: '     1er Depósito:', styles: { cellPadding: { left: 15 } } }, `$${formatNumber(sc.coberturaDeposito)}`],
+                        [{ content: `     1er Depósito (${sc.mesesPrimerDeposito} meses):`, styles: { cellPadding: { left: 15 } } }, `$${formatNumber(sc.coberturaDeposito)}`],
                         [{ content: '     Extra de AFORE:', styles: { cellPadding: { left: 15 } } }, `$${formatNumber(sc.coberturaExtra)}`],
                         [{ content: '     Préstamo Requerido:', styles: { cellPadding: { left: 15 } } }, `$${formatNumber(sc.prestamoRequerido)}`],
                         [{ content: '(-) Costo Total del Proyecto', styles: { fontStyle: 'bold' } }, { content: `$${formatNumber(sc.costoTotalContrato)}`, styles: { fontStyle: 'bold' } }],
@@ -3838,6 +3914,54 @@
             showCustomAlert("El texto ha sido copiado al portapapeles.", "Completado");
         }
 
+        // NUEVA FUNCIÓN: Mostrar Modal de Datos Excel
+        function showExcelDataModal() {
+            const scBase = AppState.pensionBaseResultadosInfo;
+            const sc1 = AppState.scenarioData[1];
+
+            if (!sc1 || !scBase) {
+                showCustomAlert("Primero debe calcular un escenario en el Paso 2 para ver los datos.", "Acción Requerida");
+                return;
+            }
+
+            let edadBase = AppState.datosClienteInfo.edadBase;
+            if (AppState.datosClienteInfo.edadObjCompleta.meses > 6) edadBase++;
+            edadBase = Math.max(60, edadBase);
+
+            const tbody = document.getElementById('excelDataModalBody');
+            tbody.innerHTML = `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-3 font-semibold text-gray-700 bg-gray-50">No. Semanas Cotizadas (Celda C4)</td>
+                    <td class="p-3 text-center text-lg font-bold border-l border-gray-100">${formatNumber(AppState.datosClienteInfo.semanasCotizadasBase, 0)}</td>
+                    <td class="p-3 text-center text-lg font-bold text-blue-700 border-l border-gray-100">${formatNumber(sc1.semanas, 0)}</td>
+                </tr>
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-3 font-semibold text-gray-700 bg-gray-50">SBC Promedio (Celda C5)</td>
+                    <td class="p-3 text-center text-lg font-bold border-l border-gray-100">$${formatNumber(AppState.datosClienteInfo.sbcPromedioBase, 2)}</td>
+                    <td class="p-3 text-center text-lg font-bold text-blue-700 border-l border-gray-100">$${formatNumber(sc1.sbcPromedio, 2)}</td>
+                </tr>
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-3 font-semibold text-gray-700 bg-gray-50">Edad Pensión (Celda C9)</td>
+                    <td class="p-3 text-center text-lg font-bold border-l border-gray-100">${edadBase}</td>
+                    <td class="p-3 text-center text-lg font-bold text-blue-700 border-l border-gray-100">${sc1.edadFinM40.anos}</td>
+                </tr>
+                <tr class="hover:bg-gray-50 bg-green-50/30">
+                    <td class="p-3 font-semibold text-gray-700 bg-gray-50 italic text-xs">*Referencia de Pensión (Celda D10)</td>
+                    <td class="p-3 text-center text-sm font-semibold border-l border-gray-100 text-gray-500">$${formatNumber(scBase.PENSION_MENSUAL_ESTIMADA, 2)}</td>
+                    <td class="p-3 text-center text-sm font-semibold border-l border-gray-100 text-gray-500">$${formatNumber(sc1.pensionMensual, 2)}</td>
+                </tr>
+            `;
+
+            showElement('excelDataModal');
+        }
+
+        // NUEVA FUNCIÓN: Mostrar Calculadora Original (Google Sheets) con contraseña
+        function openOriginalExcelModal() {
+            promptForPassword(() => {
+                showElement('iframeExcelModal');
+            });
+        }
+
         function handlePMGSelection() {
             const select = document.getElementById('info_pensionMinimaSelect');
             const customInput = document.getElementById('info_pensionMinima');
@@ -4049,6 +4173,8 @@
         window.toggleAutoCards = toggleAutoCards;
         window.showWhatsAppModal = showWhatsAppModal;
         window.copyWhatsAppText = copyWhatsAppText;
+        window.showExcelDataModal = showExcelDataModal;
+        window.openOriginalExcelModal = openOriginalExcelModal;
         window.generateROIMatrix = generateROIMatrix;
         window.toggleQPCardStyle = toggleQPCardStyle;
     </script>
