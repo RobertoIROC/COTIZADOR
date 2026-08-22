@@ -2433,6 +2433,24 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
 
         /* menos texto de corrido: en vertical se lee poco */
+
+        .lt-botones { display: flex; gap: .4rem; flex-wrap: wrap; }
+        .lt-boton { display: inline-flex; align-items: center; gap: .4rem; cursor: pointer;
+                    background: var(--superficie); border: 1px solid var(--linea);
+                    border-radius: 9999px; padding: .35rem .8rem;
+                    font-size: .78rem; font-weight: 700; color: var(--tinta-2); transition: all .18s ease; }
+        .lt-boton:hover { border-color: var(--azul-500); color: var(--azul-700); }
+        .lt-boton.is-on { background: var(--azul-900); border-color: var(--azul-900); color: #fff; }
+        .lt-hueco-txt { font-size: 9px; font-weight: 800; fill: #64748B; }
+        .lt-capa-txt { font-size: 10px; font-weight: 800; }
+        .lt-capa-txt--azul { fill: #2E6FB7; }
+        .lt-capa-txt--oro { fill: #A8861F; }
+
+        .lt-capa-sub { font-size: 9px; font-weight: 700; }
+        .lt-capa-txt--rojo { fill: #DC2626; }
+
+        .lt-limite { font-size: 17px; font-weight: 900; letter-spacing: -.01em; }
+        .lt-hoy-txt { font-size: 10px; font-weight: 900; fill: #DC2626; }
     </style>
 </head>
 
@@ -2870,8 +2888,19 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 <div id="timelineSection" class="mt-12 pt-8 border-t" style="display: none;">
                     <div class="flex justify-between items-center mb-2 flex-wrap gap-y-2">
                         <h3 id="timelineTitle" class="subsection-title !mb-0">Línea de Tiempo del Historial Laboral</h3>
+                        <div class="lt-botones">
+                            <button type="button" id="btnLt250" class="lt-boton" onclick="toggleCapaTimeline('c250')">
+                                <i class="fas fa-highlighter"></i> SBC promedio
+                            </button>
+                            <button type="button" id="btnLtM40" class="lt-boton" onclick="toggleCapaTimeline('cM40')">
+                                <i class="fas fa-door-open"></i> Ventana de Modalidad 40
+                            </button>
+                            <button type="button" id="btnLtHuecos" class="lt-boton is-on" onclick="toggleCapaTimeline('cHuecos')">
+                                <i class="fas fa-scissors"></i> Huecos sin cotizar
+                            </button>
+                        </div>
                     </div>
-                    <div id="timeline-container" class="w-full h-96 overflow-x-auto bg-gray-50 p-4 rounded-xl border"><svg id="timeline-svg"></svg></div>
+                    <div id="timeline-container" class="w-full bg-gray-50 p-3 rounded-xl border" style="height:23rem; overflow-x:auto; overflow-y:hidden;"><svg id="timeline-svg"></svg></div>
                     <div class="flex justify-end mt-3">
                         <label for="showFullTimelineHistory" class="timeline-toggle">
                             <input type="checkbox" id="showFullTimelineHistory" onchange="toggleFullHistoryTimeline()" checked class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
@@ -3586,6 +3615,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             isSisecNoDetallado: false,
             desgloseSemanas: null, // { imss, descontadas, reintegradas, reintegrar }
             modoPresentacion: true,   // censura activa de arranque
+            capasTimeline: { c250: false, cM40: false, cHuecos: true },
             vigencia: { detectado: false, opcion: 'baja', fechaHasta: null, diasExtra: 0, mesesExtra: 0, semanasExtra: 0 },
 
             fechaEmisionConstancia: null, // FIX: fecha de emision leida del documento
@@ -9048,6 +9078,25 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             actualizarTextoBotonTarjetas();
         }
 
+        // Capas que se pueden encender sobre la linea de tiempo.
+        function toggleCapaTimeline(capa) {
+            AppState.capasTimeline[capa] = !AppState.capasTimeline[capa];
+            const botones = { c250: 'btnLt250', cM40: 'btnLtM40', cHuecos: 'btnLtHuecos' };
+            const b = document.getElementById(botones[capa]);
+            if (b) b.classList.toggle('is-on', AppState.capasTimeline[capa]);
+            if (capa === 'cM40') {
+                // el eje cambia de largo, hay que volver a dibujar
+                toggleFullHistoryTimeline();
+                return;
+            }
+            const clases = { c250: '.capa-250', cM40: '.capa-m40', cHuecos: '.capa-huecos' };
+            // solo se afecta la grafica principal; las de los escenarios no cambian
+            const principal = document.getElementById('timeline-svg');
+            if (principal) principal.querySelectorAll(clases[capa]).forEach(g => {
+                g.style.display = AppState.capasTimeline[capa] ? '' : 'none';
+            });
+        }
+
         function toggleFullHistoryTimeline() {
             const showFull = document.getElementById('showFullTimelineHistory').checked;
             let dataToShow;
@@ -9147,22 +9196,53 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         }
 
         function drawScenarioTimeline(svgId, legendId, timelineData, titleId = null) {
+            // En las graficas de los escenarios la ventana de las 250 semanas va
+            // siempre visible: es la que explica de donde sale el SBC promedio.
+            const esEscenario = svgId !== 'timeline-svg';
             const container = d3.select(`#${svgId}`).node() ? d3.select(`#${svgId}`).node().parentNode : null;
             if (!container) return;
             const svg = d3.select(`#${svgId}`); svg.selectAll("*").remove();
             const timelineTooltip = d3.select("#timeline-tooltip");
             if (!timelineData || timelineData.length === 0) return;
             const filteredData = [...timelineData]; if (filteredData.length === 0) return;
-            const containerWidth = container.getBoundingClientRect().width;
-            const containerHeight = container.getBoundingClientRect().height;
-            const margin = { top: 20, right: 30, bottom: 65, left: 70 }; 
-            const height = Math.max(containerHeight, 250) - margin.top - margin.bottom;
+            // Se descuenta el relleno del contenedor: si no, el dibujo queda mas
+            // alto que su caja y aparece una barra vertical que corta las barras.
+            const estilo = window.getComputedStyle(container);
+            const relleneX = parseFloat(estilo.paddingLeft || 0) + parseFloat(estilo.paddingRight || 0);
+            const relleneY = parseFloat(estilo.paddingTop || 0) + parseFloat(estilo.paddingBottom || 0);
+            const containerWidth = container.clientWidth - relleneX;
+            const containerHeight = container.clientHeight - relleneY;
+            const margin = { top: 26, right: 24, bottom: 44, left: 58 };
+            const height = Math.max(containerHeight, 240) - margin.top - margin.bottom;
             
-            const minDate = d3.min(filteredData, d => d.fechaInicio); const maxDate = d3.max(filteredData, d => d.fechaFin);
+            const minDate = d3.min(filteredData, d => d.fechaInicio);
+            let maxDate = d3.max(filteredData, d => d.fechaFin);
+            // Si la capa de Modalidad 40 esta encendida, el eje se estira hasta
+            // el limite de los 5 anios para que la ventana se vea completa.
+            if (!esEscenario && AppState.capasTimeline.cM40 && maxDate) {
+                const limite = new Date(maxDate.getTime());
+                limite.setUTCFullYear(limite.getUTCFullYear() + 5);
+                maxDate = limite;
+            }
             const yearsDifference = (maxDate - minDate) / (1000 * 60 * 60 * 24 * 365.25);
-            const widthPerYear = 50; const minWidth = containerWidth > 0 ? containerWidth - margin.left - margin.right : 500;
-            let calculatedWidth = yearsDifference * widthPerYear; const width = Math.max(minWidth, calculatedWidth); 
+            // Ancho adaptable: primero se intenta que quepa completa. Solo si el
+            // historial es muy largo se extiende, y con menos pixeles por anio,
+            // para que un caso de 2,600 semanas (50 anios) siga siendo manejable.
+            const minWidth = containerWidth > 0 ? containerWidth - margin.left - margin.right : 500;
+            const pxPorAnio = yearsDifference <= 25 ? 46
+                            : yearsDifference <= 40 ? 34
+                            : yearsDifference <= 55 ? 26 : 20;
+            let calculatedWidth = yearsDifference * pxPorAnio;
+            const width = Math.max(minWidth, calculatedWidth); 
             svg.attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom);
+            const defs = svg.append("defs");
+            const pat = defs.append("pattern").attr("id", "rayadoHueco")
+                .attr("width", 7).attr("height", 7).attr("patternUnits", "userSpaceOnUse")
+                .attr("patternTransform", "rotate(45)");
+            pat.append("rect").attr("width", 7).attr("height", 7).attr("fill", "rgba(148,163,184,.16)");
+            pat.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", 7)
+                .attr("stroke", "rgba(100,116,139,.55)").attr("stroke-width", 2.5);
+
             const chart = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
             const x = d3.scaleTime().domain([minDate, maxDate]).range([0, width]);
             const y = d3.scaleLinear().domain([0, d3.max(filteredData, d => d.sbc) * 1.1 || 4000]).range([height, 0]).nice();
@@ -9173,9 +9253,107 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             const uniqueEmployers = [...new Map(filteredData.flatMap(d => d.originalPeriods || [d]).map(p => [p.regPatronal, p])).values()];
             const color = d3.scaleOrdinal(d3.schemeTableau10).domain(uniqueEmployers.map(e => e.regPatronal));
             color("Modalidad 40"); color("Traslape");
+            // ---- capas de fondo, debajo de las barras ----
+            const capas = chart.append("g").attr("class", "lt-capas");
+
+            // huecos: tramos sin cotizar entre un empleo y el siguiente
+            const orden = [...filteredData].sort((a, b) => a.fechaInicio - b.fechaInicio);
+            const huecos = [];
+            let tope = null;
+            orden.forEach(pe => {
+                if (tope && pe.fechaInicio > tope) {
+                    const dias = Math.round((pe.fechaInicio - tope) / 86400000);
+                    if (dias >= 30) huecos.push({ ini: new Date(tope), fin: new Date(pe.fechaInicio), dias });
+                }
+                if (!tope || pe.fechaFin > tope) tope = pe.fechaFin;
+            });
+            const gHuecos = capas.append("g").attr("class", "capa-huecos")
+                .style("display", AppState.capasTimeline.cHuecos ? null : "none");
+            gHuecos.selectAll("rect").data(huecos).enter().append("rect")
+                .attr("x", d => x(d.ini)).attr("y", 0)
+                .attr("width", d => Math.max(1, x(d.fin) - x(d.ini))).attr("height", height)
+                .attr("fill", "url(#rayadoHueco)")
+                .on("mouseover", (ev, d) => {
+                    timelineTooltip.style("opacity", 1).html(
+                        `<strong>Sin cotizar</strong><br/>${formatDateDDMMYYYY(d.ini)} al ${formatDateDDMMYYYY(d.fin)}` +
+                        `<br/>${d.dias} d\u00edas &middot; ${formatNumber(d.dias / 7, 0)} semanas perdidas`);
+                })
+                .on("mousemove", (ev) => timelineTooltip.style("left", (ev.pageX + 15) + "px").style("top", (ev.pageY - 28) + "px"))
+                .on("mouseout", () => timelineTooltip.style("opacity", 0));
+
+            gHuecos.selectAll("text").data(huecos.filter(h => (x(h.fin) - x(h.ini)) > 34)).enter().append("text")
+                .attr("x", d => (x(d.ini) + x(d.fin)) / 2).attr("y", 14)
+                .attr("text-anchor", "middle").attr("class", "lt-hueco-txt")
+                .text(d => d.dias >= 365 ? `${(d.dias / 365).toFixed(1)} a\u00f1os` : `${Math.round(d.dias / 30.44)} m`);
+
+            // ultimas 250 semanas y ventana de 5 anios para entrar a M40
+            const ultima = orden.length ? orden[orden.length - 1].fechaFin : null;
+            if (ultima) {
+                const ini250 = new Date(ultima.getTime() - 250 * 7 * 86400000);
+                const desde250 = ini250 < minDate ? minDate : ini250;
+                const g250 = capas.append("g").attr("class", "capa-250")
+                    .style("display", (esEscenario || AppState.capasTimeline.c250) ? null : "none");
+                g250.append("rect")
+                    .attr("x", x(desde250)).attr("y", 0)
+                    .attr("width", Math.max(1, x(ultima) - x(desde250))).attr("height", height)
+                    .attr("fill", "rgba(46,111,183,.13)")
+                    .attr("stroke", "#2E6FB7").attr("stroke-dasharray", "4 3");
+                g250.append("text").attr("x", x(ultima) - 6).attr("y", 14)
+                    .attr("text-anchor", "end").attr("class", "lt-capa-txt lt-capa-txt--azul")
+                    .text("SBC promedio \u00b7 250 semanas");
+
+                const finM40 = new Date(ultima.getTime());
+                finM40.setUTCFullYear(finM40.getUTCFullYear() + 5);
+                // En los escenarios la ventana de M40 no aplica: ahi el periodo
+                // ya esta contratado, y ademas estiraria el eje sin necesidad.
+                const gM40 = capas.append("g").attr("class", "capa-m40")
+                    .style("display", (!esEscenario && AppState.capasTimeline.cM40) ? null : "none");
+                const xFin = Math.min(x(finM40), width);
+                const vencida = finM40 < new Date();
+                gM40.append("rect").attr("x", x(ultima)).attr("y", 0)
+                    .attr("width", Math.max(0, xFin - x(ultima))).attr("height", height)
+                    .attr("fill", vencida ? "rgba(220,38,38,.13)" : "rgba(201,162,39,.16)")
+                    .attr("stroke", vencida ? "#DC2626" : "#C9A227").attr("stroke-dasharray", "4 3");
+
+                // rotulo con las fechas y el estado de la ventana
+                const anios = finM40.getUTCFullYear() - ultima.getUTCFullYear();
+                const hoy = new Date();
+                const meses = Math.round((finM40 - hoy) / 86400000 / 30.44);
+                const estado = vencida
+                    ? `venci\u00f3 hace ${formatNumber(Math.abs(meses) / 12, 1)} a\u00f1os`
+                    : (meses > 0 ? `quedan ${meses} meses` : 'vence este mes');
+                const centro = (x(ultima) + xFin) / 2;
+                const tono = vencida ? "lt-capa-txt--rojo" : "lt-capa-txt--oro";
+                gM40.append("text").attr("x", centro).attr("y", 14).attr("text-anchor", "middle")
+                    .attr("class", "lt-capa-sub " + tono)
+                    .text(`Ventana de Modalidad 40 \u00b7 ${anios} a\u00f1os`);
+                // la fecha limite es el dato que importa: va en grande
+                gM40.append("text").attr("x", centro).attr("y", 40).attr("text-anchor", "middle")
+                    .attr("class", "lt-limite " + tono)
+                    .text(formatDateDDMMYYYY(finM40));
+                gM40.append("text").attr("x", centro).attr("y", 56).attr("text-anchor", "middle")
+                    .attr("class", "lt-capa-txt " + tono)
+                    .text(estado);
+                // linea gruesa justo en el vencimiento
+                gM40.append("line").attr("x1", xFin).attr("x2", xFin).attr("y1", 0).attr("y2", height)
+                    .attr("stroke", vencida ? "#DC2626" : "#C9A227").attr("stroke-width", 3);
+            }
+
+            // ---- el dia de hoy, para ubicarse en la linea ----
+            const ahora = new Date();
+            if (ahora >= minDate && ahora <= maxDate) {
+                const gHoy = capas.append("g").attr("class", "capa-hoy");
+                gHoy.append("line").attr("x1", x(ahora)).attr("x2", x(ahora))
+                    .attr("y1", -6).attr("y2", height)
+                    .attr("stroke", "#DC2626").attr("stroke-width", 2).attr("stroke-dasharray", "5 3");
+                gHoy.append("circle").attr("cx", x(ahora)).attr("cy", -6).attr("r", 3.5).attr("fill", "#DC2626");
+                gHoy.append("text").attr("x", x(ahora) + 5).attr("y", height - 4)
+                    .attr("class", "lt-hoy-txt").text("hoy");
+            }
+
             chart.selectAll(".bar").data(filteredData).enter().append("rect").attr("class", "bar")
                 .attr("x", d => x(d.fechaInicio)).attr("y", d => y(d.sbc))
-                .attr("width", d => Math.max(1, x(d.fechaFin) - x(d.fechaInicio))).attr("height", d => height - y(d.sbc))
+                .attr("width", d => Math.max(1.2, x(d.fechaFin) - x(d.fechaInicio) + 0.6)).attr("height", d => height - y(d.sbc))
                 .attr("fill", d => {
                     if (d.nombrePatron === 'Modalidad 40') return '#f97316';
                     if (d.isOverlapped) return "#A855F7";
