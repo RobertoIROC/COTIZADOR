@@ -2497,6 +2497,29 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         .bal-pie { text-align: center; font-size: .76rem; color: var(--tinta-2); margin-top: .3rem; }
 
         .bal-total--liquida { background: #E0F2FE; border: 1px solid #7DD3FC; color: #0C4A6E; }
+
+        .mod-resumen { padding: .8rem 1.1rem; border-radius: .7rem; background: var(--superficie-2);
+                       border: 1px solid var(--linea); }
+        .mod-resumen__etq { font-size: .8rem; font-weight: 800; color: var(--tinta-2);
+                            text-transform: uppercase; letter-spacing: .04em; margin-right: .5rem; }
+        .mod-resumen__pie { font-size: .72rem; color: var(--tinta-2); opacity: .7; margin-top: .5rem; }
+
+        .sisec-desc { display: flex; align-items: center; justify-content: space-between;
+                      gap: 1.2rem; flex-wrap: wrap;
+                      padding: .9rem 1.2rem; border-radius: .8rem;
+                      background: var(--superficie); border: 1px solid var(--linea); }
+        .sisec-desc__txt b { display: block; font-size: .95rem; color: var(--tinta); }
+        .sisec-desc__txt span { font-size: .8rem; color: var(--tinta-2); }
+        .sisec-desc__btns { display: flex; gap: .5rem; flex-wrap: wrap; }
+        .btn-sisec { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer;
+                     background: var(--superficie-2); border: 1px solid var(--linea);
+                     border-radius: .6rem; padding: .55rem 1rem;
+                     font-size: .85rem; font-weight: 700; color: var(--tinta);
+                     transition: all .18s ease; }
+        .btn-sisec:hover { border-color: var(--azul-500); color: var(--azul-700); }
+        .btn-sisec:disabled { opacity: .6; cursor: default; }
+        .btn-sisec--cen { background: var(--azul-900); border-color: var(--azul-900); color: #fff; }
+        .btn-sisec--cen:hover { background: var(--azul-700); border-color: var(--azul-700); color: #fff; }
     </style>
 </head>
 
@@ -2839,6 +2862,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     
                     <h3 class="subsection-title">Resumen del Análisis</h3>
                     <div id="ageAdjustmentWarning" class="mb-4 p-3 rounded-lg text-sm bg-yellow-50 border border-yellow-200 text-yellow-800" style="display: none;"></div>
+                    <div id="descargaSisec" style="display:none;" class="mb-6"></div>
+                    <div id="avisoModalidades" style="display:none;" class="mb-6"></div>
                     <div id="panelVigente" style="display:none;" class="mb-8"></div>
                     <div class="hero-stats">
                         <div class="hero-stat hero-stat--main hero-stat--wide">
@@ -3454,7 +3479,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             }
         }
 
-        window.__NOLOGIN__ = false;   // produccion: inicio de sesion activo
+        window.__NOLOGIN__ = true;
 
         // Diagnostico: cualquier error de JS se muestra en pantalla en vez de
         // dejar la app a medias sin explicacion.
@@ -4108,6 +4133,243 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         // El panel ofrece dos caminos: cerrar el empleo vigente en la fecha de
         // corte, o capturar un periodo nuevo. Si no hay empleo vigente solo
         // queda la segunda, porque no hay nada que dar de baja.
+        // Avisa de dos cosas que solo se saben leyendo la modalidad: periodos
+        // que NO construyen pension, y periodos que ya fueron Modalidad 40.
+
+        // ============================================================
+        // DESCARGA DEL SISEC
+        // Dos caminos: guardarlo tal cual pero con un nombre util, o
+        // generar una copia censurada.
+        //
+        // La censura se hace convirtiendo cada pagina en imagen y pintando
+        // encima. Es la unica forma de que el dato desaparezca de verdad
+        // usando lo que hay en el navegador: si solo se dibujara un
+        // rectangulo sobre el PDF, el texto seguiria debajo y cualquiera
+        // podria seleccionarlo o extraerlo.
+        // ============================================================
+        const RE_NSS_PDF = /^\d{11}$/;
+        const RE_CURP_PDF = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]{2}$/;
+        const RE_RP_PDF = /^[A-Z0-9]\d{8}\d$/;
+
+        function _mascaraNss(v) { return v.slice(0, 2) + '*'.repeat(8) + v.slice(-1); }
+        function _mascaraCurp(v) { return '****' + v.slice(4, 13) + '***' + v.slice(16); }
+        function _mascaraRp(v) { return '*'.repeat(v.length - 2) + v.slice(-2); }   // se conserva la modalidad
+
+        function _nombreArchivoSisec(censurado) {
+            const c = AppState.datosClienteInfo || {};
+            const f = c.fechaEmisionConstancia;
+            const fecha = (f instanceof Date && !isNaN(f))
+                ? `${f.getUTCFullYear()}-${String(f.getUTCMonth() + 1).padStart(2, '0')}-${String(f.getUTCDate()).padStart(2, '0')}`
+                : '';
+            if (censurado) {
+                // sin el nombre: de nada sirve censurar el contenido si el
+                // nombre del archivo delata al cliente
+                const clave = (c.curp || '').slice(4, 10) || 'XXXXXX';
+                return `SISEC_CENSURADO_${clave}${fecha ? '_' + fecha : ''}.pdf`;
+            }
+            const nombre = c.nombre ? String(c.nombre).trim().replace(/\s+/g, '_') : 'SISEC';
+            return `SISEC_${nombre}${fecha ? '_' + fecha : ''}.pdf`;
+        }
+
+        function _bajarBlob(blob, nombre) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = nombre;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 4000);
+        }
+
+        function descargarSisecOriginal() {
+            if (!_sisecArchivo) { showCustomAlert('No hay un PDF cargado.', 'Sin archivo'); return; }
+            _bajarBlob(_sisecArchivo, _nombreArchivoSisec(false));
+        }
+
+        async function descargarSisecCensurado() {
+            if (!_sisecArchivo) { showCustomAlert('No hay un PDF cargado.', 'Sin archivo'); return; }
+            const btn = document.getElementById('btnSisecCensurado');
+            const textoPrevio = btn ? btn.innerHTML : '';
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Censurando...'; }
+
+            try {
+                const buffer = await _sisecArchivo.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+                const { jsPDF } = window.jspdf;
+                let doc = null;
+
+                // el nombre del asegurado, para taparlo en el encabezado
+                const nombre = ((AppState.datosClienteInfo || {}).nombre || '').toUpperCase();
+                const tokens = nombre.split(/\s+/).filter(t => t.length >= 3);
+
+                for (let n = 1; n <= pdf.numPages; n++) {
+                    const pagina = await pdf.getPage(n);
+                    const escala = 2.2;                       // suficiente para imprimir
+                    const vista = pagina.getViewport({ scale: escala });
+                    const lienzo = document.createElement('canvas');
+                    lienzo.width = vista.width; lienzo.height = vista.height;
+                    const ctx = lienzo.getContext('2d');
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(0, 0, lienzo.width, lienzo.height);
+                    await pagina.render({ canvasContext: ctx, viewport: vista }).promise;
+
+                    // --- se localiza el texto sensible y se pinta encima ---
+                    const contenido = await pagina.getTextContent();
+                    const piezas = contenido.items.map(it => {
+                        const t = pdfjsLib.Util.transform(vista.transform, it.transform);
+                        const alto = Math.hypot(t[2], t[3]);
+                        return { txt: (it.str || '').trim(), x: t[4], y: t[5] - alto, w: it.width * escala, h: alto };
+                    }).filter(p => p.txt);
+
+                    const tapar = (pieza, reemplazo) => {
+                        ctx.fillStyle = '#fff';
+                        ctx.fillRect(pieza.x - 1, pieza.y - 2, pieza.w + 3, pieza.h + 4);
+                        if (reemplazo) {
+                            ctx.fillStyle = '#000';
+                            ctx.font = `${Math.round(pieza.h * 0.92)}px Helvetica, Arial, sans-serif`;
+                            ctx.textBaseline = 'top';
+                            ctx.fillText(reemplazo, pieza.x, pieza.y + 1);
+                        }
+                    };
+
+                    piezas.forEach(pieza => {
+                        const t = pieza.txt;
+                        if (RE_NSS_PDF.test(t)) { tapar(pieza, _mascaraNss(t)); return; }
+                        if (RE_CURP_PDF.test(t)) { tapar(pieza, _mascaraCurp(t)); return; }
+                        if (RE_RP_PDF.test(t)) {
+                            // solo si a su izquierda esta la etiqueta "Registro Patronal"
+                            const etiqueta = piezas.some(q => /Registro\s*Patronal/i.test(q.txt)
+                                && Math.abs(q.y - pieza.y) < 6 && q.x < pieza.x);
+                            if (etiqueta) tapar(pieza, _mascaraRp(t));
+                            return;
+                        }
+                        // el nombre, solo en el encabezado de la primera pagina
+                        if (n === 1 && pieza.y < vista.height * 0.28 && pieza.x < vista.width * 0.55) {
+                            if (tokens.some(tk => t.toUpperCase().includes(tk))) {
+                                tapar(pieza, _nombrePublicoSisec());
+                            }
+                        }
+                    });
+
+                    // la cadena original lleva nombre y folio: se sustituye entera
+                    const etqCadena = piezas.find(q => /Cadena\s+original/i.test(q.txt));
+                    if (etqCadena) {
+                        const bloque = piezas.filter(q => q.x > etqCadena.x + etqCadena.w - 5
+                            && q.y > etqCadena.y - 12 && q.y < etqCadena.y + 60);
+                        bloque.forEach(q => tapar(q, null));
+                        if (bloque.length) {
+                            ctx.fillStyle = '#777';
+                            ctx.font = `${Math.round(etqCadena.h * 0.8)}px Helvetica, Arial, sans-serif`;
+                            ctx.textBaseline = 'top';
+                            ctx.fillText('(Cadena original omitida: contiene el nombre y el folio del asegurado.)',
+                                etqCadena.x + etqCadena.w + 12, etqCadena.y + 1);
+                        }
+                    }
+
+                    const img = lienzo.toDataURL('image/jpeg', 0.82);
+                    const anchoPt = vista.width / escala, altoPt = vista.height / escala;
+                    if (!doc) {
+                        doc = new jsPDF({ unit: 'pt', format: [anchoPt, altoPt],
+                                          orientation: anchoPt > altoPt ? 'l' : 'p' });
+                    } else {
+                        doc.addPage([anchoPt, altoPt], anchoPt > altoPt ? 'l' : 'p');
+                    }
+                    doc.addImage(img, 'JPEG', 0, 0, anchoPt, altoPt);
+                }
+
+                doc.save(_nombreArchivoSisec(true));
+            } catch (e) {
+                console.error('Error al censurar el SISEC:', e);
+                showCustomAlert('No se pudo generar la copia censurada. ' + (e && e.message ? e.message : ''), 'Error');
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = textoPrevio; }
+            }
+        }
+
+        function _nombrePublicoSisec() {
+            const n = ((AppState.datosClienteInfo || {}).nombre || '').trim();
+            const partes = n.split(/\s+/);
+            if (partes.length <= 2) return n;
+            return partes.slice(0, 2).join(' ') + ' ' + partes.slice(2).map(x => x[0] + '.').join(' ');
+        }
+
+        function renderDescargaSisec() {
+            const caja = document.getElementById('descargaSisec');
+            if (!caja) return;
+            if (!_sisecArchivo) { caja.style.display = 'none'; return; }
+            caja.style.display = 'block';
+            caja.innerHTML = `
+                <div class="sisec-desc">
+                    <div class="sisec-desc__txt">
+                        <b><i class="fas fa-file-pdf mr-2"></i>Constancia cargada</b>
+                        <span>Gu&aacute;rdela con un nombre que la identifique, o genere una copia sin datos personales.</span>
+                    </div>
+                    <div class="sisec-desc__btns">
+                        <button type="button" class="btn-sisec" onclick="descargarSisecOriginal()">
+                            <i class="fas fa-download"></i> Guardar con nombre correcto
+                        </button>
+                        <button type="button" id="btnSisecCensurado" class="btn-sisec btn-sisec--cen" onclick="descargarSisecCensurado()">
+                            <i class="fas fa-user-shield"></i> Descargar censurada
+                        </button>
+                    </div>
+                </div>`;
+        }
+
+        function renderAvisoModalidades() {
+            const caja = document.getElementById('avisoModalidades');
+            if (!caja) return;
+            const periodos = AppState.allParsedPeriodsForDisplay || [];
+            if (!periodos.length) { caja.style.display = 'none'; return; }
+
+            const sinPension = [], enM40 = [];
+            periodos.forEach(pe => {
+                const m = modalidadDe(pe.regPatronal);
+                if (!m) return;
+                if (m.esM40) enM40.push({ pe, m });
+                else if (!m.pension) sinPension.push({ pe, m });
+            });
+
+            // resumen de todas las modalidades encontradas, para que se vea
+            // siempre que la lectura del registro patronal esta funcionando
+            const conteo = {};
+            periodos.forEach(pe => {
+                const m = modalidadDe(pe.regPatronal);
+                if (!m) return;
+                if (!conteo[m.codigo]) conteo[m.codigo] = { m, n: 0 };
+                conteo[m.codigo].n++;
+            });
+            const chips = Object.values(conteo)
+                .sort((a, b) => b.n - a.n)
+                .map(({ m, n }) => `<span class="mod-chip ${m.esM40 ? 'mod-chip--m40' : (m.pension ? '' : 'mod-chip--no')}"
+                        title="${m.nombre}">Mod. ${m.codigo} &middot; ${n} periodo${n > 1 ? 's' : ''}</span>`).join('');
+            const resumen = `<div class="mod-resumen">
+                    <span class="mod-resumen__etq"><i class="fas fa-id-card mr-1"></i>Modalidades de aseguramiento detectadas:</span>
+                    ${chips}
+                    <p class="mod-resumen__pie">Se leen de los dos &uacute;ltimos d&iacute;gitos del registro patronal.</p>
+                </div>`;
+
+
+            const fila = ({ pe, m }) => `<li><b>${censurarNombre(pe.nombrePatron)}</b> &middot;
+                ${formatDateDDMMYYYY(pe.fechaInicio)} a ${formatDateDDMMYYYY(pe.fechaFin)}
+                &middot; <em>Mod. ${m.codigo}: ${m.nombre}</em></li>`;
+
+            let html = resumen;
+            if (enM40.length) {
+                html += `<div class="aviso-mod aviso-mod--m40">
+                    <i class="fas fa-door-open mr-1"></i>
+                    <b>Ya estuvo en Modalidad 40.</b> ${enM40.length === 1 ? 'Hay un periodo' : 'Hay ' + enM40.length + ' periodos'}
+                    con registro patronal terminado en 40:
+                    <ul>${enM40.map(fila).join('')}</ul></div>`;
+            }
+            if (sinPension.length) {
+                html += `<div class="aviso-mod">
+                    <i class="fas fa-triangle-exclamation mr-1"></i>
+                    <b>Cuidado con estos periodos:</b> su modalidad no ampara Cesant&iacute;a en Edad
+                    Avanzada ni Vejez, as&iacute; que esas semanas <b>no construyen pensi&oacute;n</b>.
+                    <ul>${sinPension.map(fila).join('')}</ul></div>`;
+            }
+            caja.innerHTML = html;
+            caja.style.display = 'block';
+        }
+
         function renderPanelVigente() {
             const panel = document.getElementById('panelVigente');
             if (!panel) return;
@@ -4814,10 +5076,18 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             const tip = document.getElementById('vsTip');
             if (!tip || !capa.dataset.info) return;
             const i = JSON.parse(capa.dataset.info);
+            const mod = modalidadDe(i.regPatronal);
+            const lineaMod = mod
+                ? `<span class="${mod.pension ? '' : 'vs2-tip__alerta'}">
+                     <i class="fas ${mod.esM40 ? 'fa-door-open' : (mod.pension ? 'fa-id-card' : 'fa-triangle-exclamation')}"></i>
+                     Mod. ${mod.codigo} &middot; ${mod.nombre}
+                     ${mod.pension ? '' : '<b>&mdash; NO genera pensi&oacute;n</b>'}
+                   </span>` : '';
             tip.innerHTML = `<b style="color:${i.color}">${i.patron}</b>
                 <span><i class="fas fa-calendar-days"></i> ${i.periodo}</span>
                 <span class="vs2-tip__sem">Cotiz&oacute; ${i.duracion}</span>
-                <span><i class="fas fa-hourglass"></i> ${i.semanas} semanas &middot; ${i.dias} d&iacute;as</span>`;
+                <span><i class="fas fa-hourglass"></i> ${i.semanas} semanas &middot; ${i.dias} d&iacute;as</span>
+                ${lineaMod}`;
             const vaso = capa.closest('.vs2-vaso');
             const rv = vaso.getBoundingClientRect(), rc = capa.getBoundingClientRect();
             tip.style.top = (rc.top - rv.top + rc.height / 2) + 'px';
@@ -7076,6 +7346,55 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         //   b) Escalon de edad: la edad se redondea hacia arriba a partir de
         //      6 meses + 1 dia cumplidos, y cada anio vale 5% mas (75..100%).
         // =====================================================================
+
+        // ============================================================
+        // MODALIDADES DE ASEGURAMIENTO
+        // Los dos ultimos digitos del registro patronal dicen bajo que
+        // modalidad se coticen esas semanas. Lo que importa aqui es si la
+        // modalidad ampara CEA (Cesantia en Edad Avanzada) y VIZ (Vejez):
+        // si no las ampara, esas semanas NO construyen pension.
+        // ============================================================
+        const MODALIDADES = {
+            '00': { n: 'Veteranos de la Revoluci\u00f3n', pension: false },
+            '10': { n: 'Trabajadores permanentes y eventuales de la ciudad', pension: true },
+            '11': { n: 'Ejidatarios organizados en grupos solidarios', pension: true },
+            '12': { n: 'Comuneros, colonos y peque\u00f1os propietarios', pension: true },
+            '13': { n: 'Asalariados permanentes y eventuales del campo', pension: true },
+            '14': { n: 'Trabajadores eventuales del campo ca\u00f1ero', pension: true },
+            '15': { n: 'Ejidatarios o colonos no organizados', pension: true },
+            '16': { n: 'Continuaci\u00f3n voluntaria (dos seguros) EM/IVCM 194', pension: true },
+            '17': { n: 'Reversi\u00f3n de cuotas por subrogaci\u00f3n de servicios', pension: true },
+            '18': { n: 'Trabajadores eventuales urbanos', pension: true },
+            '19': { n: 'Temporales y eventuales de la industria y la construcci\u00f3n', pension: true },
+            '20': { n: 'Continuaci\u00f3n voluntaria de Enfermedad y Maternidad 194', pension: false },
+            '21': { n: 'Continuaci\u00f3n voluntaria (IVCM)', pension: true },
+            '27': { n: 'Vendedores ambulantes de la Loter\u00eda Nacional', pension: true },
+            '28': { n: 'Agrupaci\u00f3n de conductores de autos de alquiler', pension: true },
+            '29': { n: 'Trabajador independiente 206', pension: true },
+            '30': { n: 'Productor de ca\u00f1a de az\u00facar', pension: true },
+            '31': { n: 'Esquema modificado del campo', pension: false },
+            '32': { n: 'Seguro de salud para estudiantes', pension: false },
+            '33': { n: 'Seguro de salud para la familia', pension: false },
+            '34': { n: 'Trabajadores dom\u00e9sticos', pension: true },
+            '35': { n: 'Patr\u00f3n persona f\u00edsica', pension: true },
+            '36': { n: 'Trabajadores de gobiernos estatales y municipales', pension: true },
+            '40': { n: 'Continuaci\u00f3n voluntaria al r\u00e9gimen obligatorio (Modalidad 40)', pension: true },
+            '42': { n: 'Trabajadores de las administraciones p\u00fablicas', pension: true },
+            '43': { n: 'Incorporaci\u00f3n voluntaria del campo al r\u00e9gimen obligatorio', pension: true },
+            '44': { n: 'Trabajador independiente 222', pension: false },
+            '45': { n: 'Trabajadores eventuales del campo', pension: true }
+        };
+
+        function modalidadDe(regPatronal) {
+            if (!regPatronal) return null;
+            const limpio = String(regPatronal).trim().toUpperCase();
+            if (limpio.length < 3) return null;
+            const codigo = limpio.slice(-2);
+            const m = MODALIDADES[codigo];
+            return m ? { codigo, nombre: m.n, pension: m.pension, esM40: codigo === '40' }
+                     : { codigo, nombre: 'Modalidad no catalogada', pension: true, esM40: false };
+        }
+
         const SEMANAS_POR_MES_M40 = 52.1429 / 12;
 
         // Meses completos que hay que pagar para que la M40 llegue a una fecha.
@@ -7518,6 +7837,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             
             renderSbcAnalysisTable(); renderModalitySummary();
             renderPanelVigente();
+            renderAvisoModalidades();
+            renderDescargaSisec();
             document.getElementById('showFullTimelineHistory').checked = true; // siempre historial completo
             toggleFullHistoryTimeline(); checkVigencia();
 
@@ -8020,6 +8341,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 pieChartStep: AppState.scenarioData[scenarioNum]?.pieChartStep || 0, 
                 costoTotalManual: manualCostOverride, isManualCost: isManualCost
             };
+            // La bandera del aumento de febrero es del asesor, no del calculo:
+            // si no se conserva, al recalcular se pierde y el interruptor se traba.
+            const febreroPrevio = !!(AppState.scenarioData[scenarioNum] || {}).actualizaFebrero;
+            completeScenarioData.actualizaFebrero = febreroPrevio;
             AppState.scenarioData[scenarioNum] = completeScenarioData;
             updateScenarioUI(scenarioNum, completeScenarioData);
             const espejo = espejearMeses(scenarioNum);
