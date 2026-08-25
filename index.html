@@ -2451,6 +2451,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
         .lt-limite { font-size: 17px; font-weight: 900; letter-spacing: -.01em; }
         .lt-hoy-txt { font-size: 10px; font-weight: 900; fill: #DC2626; }
+
+        .reintegro-caja { grid-column: 1 / -1; margin-top: .3rem; padding: .8rem 1rem;
+                          background: #FFFBEB; border: 1px solid #FCD34D; border-radius: .7rem; }
+        .reintegro-switch { display: flex; align-items: center; gap: .8rem; cursor: pointer;
+                            font-size: .9rem; font-weight: 700; color: #92400E; }
+        .reintegro-switch input { display: none; }
+        .reintegro-switch b { color: var(--azul-700); font-size: 1rem; }
+        .reintegro-switch .switch-track { width: 46px; height: 26px; flex-shrink: 0; }
+        .reintegro-switch .switch-knob { width: 20px; height: 20px; }
+        .reintegro-switch input:checked + .switch-track .switch-knob { transform: translateX(20px); }
+        .reintegro-nota { font-size: .76rem; color: #92400E; margin-top: .4rem; opacity: .85; }
     </style>
 </head>
 
@@ -3457,16 +3468,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 const b = document.getElementById(id);
                 if (b) b.style.display = admin ? '' : 'none';
             });
-            // El asesor trabaja con el cliente enfrente: ve los datos reales.
-            // La censura existe para las transmisiones, y esas las hace el admin.
-            AppState.modoPresentacion = admin;
+            // Nadie arranca con los datos ocultos: se enciende a proposito.
+            AppState.modoPresentacion = false;
             if (typeof aplicarCensuraCampos === 'function') aplicarCensuraCampos();
             const b = document.getElementById('btnPresentacion');
             if (b) {
-                b.classList.toggle('is-on', admin);
-                b.innerHTML = admin
-                    ? '<i class="fas fa-eye-slash"></i> Datos ocultos'
-                    : '<i class="fas fa-user-secret"></i> Modo presentaci\u00f3n';
+                b.classList.remove('is-on');
+                b.innerHTML = '<i class="fas fa-user-secret"></i> Modo presentaci\u00f3n';
             }
         }
 
@@ -3614,7 +3622,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             activeScenarios: 0,
             isSisecNoDetallado: false,
             desgloseSemanas: null, // { imss, descontadas, reintegradas, reintegrar }
-            modoPresentacion: true,   // censura activa de arranque
+            modoPresentacion: false,  // se enciende a mano, con el boton
+            parReintegro: null,
             capasTimeline: { c250: false, cM40: false, cHuecos: true },
             vigencia: { detectado: false, opcion: 'baja', fechaHasta: null, diasExtra: 0, mesesExtra: 0, semanasExtra: 0 },
 
@@ -6488,18 +6497,52 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             return getFechaCorteVigente();
         }
 
-        // Anios excedentes sobre las 500 semanas, segun la regla elegida.
-        function aniosExcedentes(semanas) {
-            if (!semanas || semanas <= 500) return 0;
-            const bruto = (semanas - 500) / 52;
-            return Constants.REGLA_EXCEDENTES === 'truncar' ? Math.floor(bruto) : Math.round(bruto);
+        // ANIOS EXCEDENTES (Art. 167)
+        // No es un redondeo: el IMSS separa los anios COMPLETOS y convierte las
+        // semanas de residuo con una tabla. Deducido del Excel de RGC y
+        // verificado contra cinco resoluciones reales:
+        //   2359->36 | 1446->18 | 2710->42.5 | 1475->19 | 761->5 | 1514->19.5 | 1933->28
+        // Tabla del Excel de RGC, tal cual. Se busca el ultimo renglon cuyo
+        // "desde" no supere al residuo (busqueda aproximada, como el BUSCARV).
+        const TABLA_ANIOS_RESIDUO = [
+            { desde: 0,    anios: 0   },
+            { desde: 13,   anios: 0.5 },
+            { desde: 26.1, anios: 1   }
+        ];
+
+        function aniosResiduo(semanasResiduo) {
+            let valor = 0;
+            for (const fila of TABLA_ANIOS_RESIDUO) {
+                if (semanasResiduo >= fila.desde) valor = fila.anios;
+            }
+            return valor;
         }
 
-        // Semanas necesarias para alcanzar n anios excedentes con la regla vigente.
+        function aniosExcedentes(semanas) {
+            if (!semanas || semanas <= 500) return 0;
+            const exceso = semanas - 500;
+            const completos = Math.floor(exceso / 52);
+            if (Constants.REGLA_EXCEDENTES === 'truncar') return completos;
+            return completos + aniosResiduo(exceso - completos * 52);
+        }
+
+        // Semanas necesarias para alcanzar n anios excedentes (n puede ser .5).
+        // Al redondear al medio punto, el salto ocurre en n - 0.25.
+        // Semanas minimas para alcanzar n anios excedentes con la tabla anterior:
+        //   n entero  -> el residuo debe llegar a 27 del anio previo
+        //   n con .5   -> el residuo debe llegar a 13
         function semanasParaAnios(n) {
-            return Constants.REGLA_EXCEDENTES === 'truncar'
-                ? 500 + n * 52
-                : Math.ceil(500 + 52 * (n - 0.5));
+            if (Constants.REGLA_EXCEDENTES === 'truncar') return 500 + n * 52;
+            const enteros = Math.floor(n);
+            const mitad = n - enteros >= 0.5;
+            return mitad
+                ? 500 + enteros * 52 + 13
+                : 500 + (enteros - 1) * 52 + 27;
+        }
+
+        // Muestra 19.5 o 20 segun corresponda, sin decimales de mas.
+        function formatoAnios(n) {
+            return (n % 1 === 0) ? String(n) : n.toFixed(1);
         }
 
         function getFechaCorteVigente() {
@@ -7052,6 +7095,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         // =====================================================================
         const SEMANAS_POR_MES_M40 = 52.1429 / 12;
 
+        // Meses completos que hay que pagar para que la M40 llegue a una fecha.
+        // Se cuenta por calendario: dividir dias entre 30.4375 se queda corto y
+        // recomendaba 17 meses donde en realidad hacen falta 18.
+        function mesesHastaFecha(inicio, meta) {
+            if (!(inicio instanceof Date) || !(meta instanceof Date)) return 0;
+            let n = (meta.getUTCFullYear() - inicio.getUTCFullYear()) * 12
+                  + (meta.getUTCMonth() - inicio.getUTCMonth());
+            n = Math.max(0, n);
+            // el mes de M40 cierra el ultimo dia; se suman meses hasta cubrir la meta
+            const fin = (k) => new Date(Date.UTC(inicio.getUTCFullYear(), inicio.getUTCMonth() + k, 0));
+            while (fin(n) < meta && n < 240) n++;
+            return Math.max(1, n);
+        }
+
+
         function calcularHitosM40() {
             const inicioStr = getM40StartDate();
             const curp = document.getElementById('info_curpCliente').value;
@@ -7069,28 +7127,28 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
             // (a) siguiente anualidad completa
             const excedentesHoy = aniosExcedentes(base);
-            const umbral = semanasParaAnios(excedentesHoy + 1);
+            const umbral = semanasParaAnios(excedentesHoy + 0.5);
             const faltanSemanas = umbral - base;
             if (faltanSemanas > 0) {
                 const meses = Math.ceil(faltanSemanas / SEMANAS_POR_MES_M40);
                 hitos.push({
                     tipo: 'anualidad', meses,
-                    titulo: `Pasar de ${excedentesHoy} a ${excedentesHoy + 1} a&ntilde;os excedentes`,
+                    titulo: `Pasar de ${formatoAnios(excedentesHoy)} a ${formatoAnios(excedentesHoy + 0.5)} a&ntilde;os excedentes`,
                     texto: `Hoy tiene <strong>${excedentesHoy} a&ntilde;os excedentes</strong> y le sobran ${Math.round((base - 500) % 52)} semanas que no cuentan. `
                          + `Con <strong>${meses} meses</strong> llega a <strong>${umbral} semanas</strong> (le faltan ${Math.ceil(faltanSemanas)}) `
                          + `y el IMSS le reconoce el a&ntilde;o n&uacute;mero ${excedentesHoy + 1}. Antes de esas ${umbral} semanas no sube nada: `
                          + `los incrementos son por a&ntilde;o completo de 52 semanas.`
                 });
                 // Escalones siguientes: uno por cada anualidad completa adicional
-                for (let k = 2; k <= 4; k++) {
-                    const faltanK = semanasParaAnios(excedentesHoy + k) - base;
+                for (let k = 2; k <= 6; k++) {
+                    const faltanK = semanasParaAnios(excedentesHoy + k * 0.5) - base;
                     const mesesK = Math.ceil(faltanK / SEMANAS_POR_MES_M40);
                     if (mesesK > 72) break;
                     hitos.push({
                         tipo: 'anualidad', meses: mesesK,
-                        titulo: `Pasar de ${excedentesHoy} a ${excedentesHoy + k} a&ntilde;os excedentes`,
-                        texto: `Con <strong>${mesesK} meses</strong> alcanza <strong>${semanasParaAnios(excedentesHoy + k)} semanas</strong>, `
-                             + `es decir <strong>${excedentesHoy + k} a&ntilde;os excedentes</strong> contra los ${excedentesHoy} que tiene hoy.`
+                        titulo: `Pasar de ${formatoAnios(excedentesHoy)} a ${formatoAnios(excedentesHoy + k * 0.5)} a&ntilde;os excedentes`,
+                        texto: `Con <strong>${mesesK} meses</strong> alcanza <strong>${semanasParaAnios(excedentesHoy + k * 0.5)} semanas</strong>, `
+                             + `es decir <strong>${formatoAnios(excedentesHoy + k * 0.5)} a&ntilde;os excedentes</strong> contra los ${formatoAnios(excedentesHoy)} que tiene hoy.`
                     });
                 }
             }
@@ -7100,9 +7158,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             // nadie se pensiona a los 59 anios 6 meses. Se usa el cumpleanios real.
             const cumple60 = new Date(Date.UTC(fechaNac.getUTCFullYear() + 60, fechaNac.getUTCMonth(), fechaNac.getUTCDate()));
             if (cumple60 > inicio) {
-                const diasA60 = Math.round((cumple60 - inicio) / 86400000);
                 hitos.push({
-                    tipo: 'edad', meses: Math.max(1, Math.ceil(diasA60 / 30.4375)),
+                    tipo: 'edad', meses: mesesHastaFecha(inicio, cumple60),
                     titulo: 'Cumple 60 a&ntilde;os: edad m&iacute;nima para pensionarse',
                     texto: `Hasta el <strong>${formatDateDDMMYYYY(cumple60)}</strong> no puede solicitar la pensi&oacute;n por cesant&iacute;a. `
                          + `No hay redondeo aqu&iacute;: los 60 a&ntilde;os deben estar cumplidos. A partir de esa fecha le corresponde el <strong>75%</strong>.`
@@ -7114,8 +7171,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 if (corte <= inicio) continue;
                 const edadRedondeada = n + 1;
                 if (edadRedondeada < 61 || edadRedondeada > 65) continue; // el 60 ya se trato aparte
-                const dias = Math.round((corte - inicio) / 86400000);
-                const meses = Math.max(1, Math.ceil(dias / 30.4375));
+                const meses = mesesHastaFecha(inicio, corte);
                 const pct = { 60: 75, 61: 80, 62: 85, 63: 90, 64: 95, 65: 100 };
                 hitos.push({
                     tipo: 'edad', meses,
@@ -7728,10 +7784,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             AppState.pdfGenerated = true;
             document.getElementById('scenariosContainer').innerHTML = '';
             AppState.activeScenarios = 0; AppState.scenarioData = {};
+            AppState.parReintegro = null;
 
             if (AppState.semanasAyudaDesempleo > 0) {
                  showCustomAlert(`Detectada Ayuda por Desempleo. Creando escenarios comparativos con y sin reintegración de ${AppState.semanasAyudaDesempleo} semanas.`, "Análisis Automático");
-                addScenarioCard(1, numMesesP1, 0); addScenarioCard(2, numMesesP1, AppState.semanasAyudaDesempleo);
+                // El par queda espejeado: mismos meses, misma fecha, mismo SBC.
+                // Lo unico que cambia entre uno y otro es el reintegro.
+                AppState.parReintegro = { base: 1, espejo: 2, semanas: AppState.semanasAyudaDesempleo };
+                addScenarioCard(1, numMesesP1, 0);
+                addScenarioCard(2, numMesesP1, AppState.semanasAyudaDesempleo);
             } else {
                 addScenarioCard(1, numMesesP1, 0);
             }
@@ -7761,8 +7822,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             const isFirstScenario = scenarioNum === 1;
             
             let defaultTitle = `${meses} MESES DE MOD 40`;
-            if (semanasAjuste < 0) defaultTitle += " (PAGO DE AYUDA DESEMPLEO)";
-            if (semanasAjuste > 0) defaultTitle += " (CON PORTABILIDAD/RECUPERACIÓN)";
+            const parT = AppState.parReintegro;
+            if (parT && (scenarioNum === parT.base || scenarioNum === parT.espejo)) {
+                // el par se nombra por su estrategia, no por el ajuste
+                defaultTitle = meses > 0
+                    ? `${meses} MESES M40 ${scenarioNum === parT.espejo ? '+ REINTEGRO DE ' + parT.semanas + ' SEM' : 'SIN REINTEGRO'}`
+                    : (scenarioNum === parT.espejo ? 'CON REINTEGRO' : 'SIN REINTEGRO');
+            } else {
+                if (semanasAjuste < 0) defaultTitle += " (PAGO DE AYUDA DESEMPLEO)";
+                if (semanasAjuste > 0) defaultTitle += " (CON PORTABILIDAD/RECUPERACIÓN)";
+            }
             if (meses === 0 && !isFirstScenario) defaultTitle = "0 MESES (SIN ESTRATEGIA M40)";
 
             const cardHTML = `
@@ -7789,6 +7858,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                             <input type="number" id="scenario_${scenarioNum}_semanas_ajuste" value="${semanasAjuste}" oninput="recalculateScenario(${scenarioNum})" class="w-full" ${isFirstScenario ? 'readonly' : ''}>
                         </div>
                         <input type="hidden" id="scenario_${scenarioNum}_semanas" value="0">
+                        <div id="scenario_${scenarioNum}_reintegro" class="reintegro-caja" style="display:none;"></div>
                     </div>
                     <div id="scenario_${scenarioNum}_results" class="mt-6 space-y-6">
                         <!-- PENSION & PARAMS -->
@@ -7880,6 +7950,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             if (!titulo || !mesesEl) return;
             if (titulo.dataset.manual === '1') return; // el usuario lo escribi\u00f3, respetamos
             const m = parseInt(mesesEl.value) || 0;
+            const par = AppState.parReintegro;
+            if (par && (scenarioNum === par.base || scenarioNum === par.espejo)) {
+                const conReintegro = scenarioNum === par.espejo;
+                titulo.value = m > 0
+                    ? `${m} MESES M40 ${conReintegro ? '+ REINTEGRO DE ' + par.semanas + ' SEM' : 'SIN REINTEGRO'}`
+                    : (conReintegro ? 'CON REINTEGRO' : 'SIN REINTEGRO');
+                return;
+            }
             titulo.value = m > 0 ? `${m} MESES DE MOD 40` : 'ESCENARIO SIN MESES';
         }
 
@@ -7898,7 +7976,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             }
         }
 
+        // Si el escenario forma parte del par de reintegro, el espejo copia los
+        // meses del principal: la unica diferencia debe ser el reintegro.
+        function espejearMeses(scenarioNum) {
+            const par = AppState.parReintegro;
+            if (!par || scenarioNum !== par.base) return null;
+            const origen = document.getElementById(`scenario_${par.base}_meses`);
+            const destino = document.getElementById(`scenario_${par.espejo}_meses`);
+            if (!origen || !destino || destino.value === origen.value) return null;
+            destino.value = origen.value;
+            sincronizarTituloEscenario(par.espejo);
+            return par.espejo;
+        }
+
         async function recalculateScenario(scenarioNum) {
+            sincronizarTituloEscenario(scenarioNum);
             const inputs = getScenarioInputs(scenarioNum);
             if (inputs.meses < 0 || !inputs.semanas || inputs.semanas < 500) {
                 clearScenarioUI(scenarioNum); AppState.scenarioData[scenarioNum] = {}; return;
@@ -7947,6 +8039,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             };
             AppState.scenarioData[scenarioNum] = completeScenarioData;
             updateScenarioUI(scenarioNum, completeScenarioData);
+            const espejo = espejearMeses(scenarioNum);
+            if (espejo) recalculateScenario(espejo);
             drawCoveragePieChart(scenarioNum); renderPieControls(scenarioNum); 
         }
 
@@ -8001,7 +8095,18 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             }
             const baseWeeks = AppState.semanasNetasReales > 0 ? AppState.semanasNetasReales : AppState.datosClienteInfo.semanasCotizadasBase;
             const semanasBaseAjustadas = baseWeeks + semanasAjuste;
-            const semanas = Math.floor(semanasBaseAjustadas + (meses * (52.1429 / 12)));
+            // Las semanas de Modalidad 40 salen de los DIAS reales del periodo,
+            // no de multiplicar meses por 4.3452. Con 17 meses la formula daba 73
+            // y los dias reales son 74: esa semana puede mover un anio excedente.
+            const inicioStr = getM40StartDate();
+            let diasM40 = 0;
+            if (meses > 0 && inicioStr) {
+                const [aI, mI, dI] = inicioStr.split('-').map(Number);
+                const iniM40 = new Date(Date.UTC(aI, mI - 1, dI));
+                const finM40 = calcularFechaFinDesdeMeses(inicioStr, meses);
+                if (finM40) diasM40 = Math.round((finM40 - iniM40) / 86400000) + 1;
+            }
+            const semanas = Math.floor(semanasBaseAjustadas + (diasM40 / 7));
             
             const semanasHiddenInput = document.getElementById(`scenario_${scenarioNum}_semanas`);
             if (semanasHiddenInput) semanasHiddenInput.value = semanas;
@@ -8156,6 +8261,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             const getEl = (suffix) => document.getElementById(`scenario_${scenarioNum}_${suffix}`);
             animarNumero(getEl('pension'), data.pensionMensual, '$');
             actualizarAvisoPMG(scenarioNum, data.pensionMensual);
+            renderReintegroEscenario(scenarioNum);
             mostrarAvisoTope(`scenario_${scenarioNum}_tope`, data.pensionResult || data);
             preguntarActualizacionFebrero(scenarioNum, data);
             animarNumero(getEl('aguinaldo'), data.aguinaldo, '$');
@@ -9026,6 +9132,41 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         // El IMSS descuenta semanas cuando el asegurado dispuso de recursos.
         // El asesor decide si el cliente las reintegrara (devolver el retiro).
         // =====================================================================
+        // El reintegro se decide POR ESCENARIO: asi se puede comparar en la
+        // misma pantalla como queda con reintegro y como queda sin el.
+        function renderReintegroEscenario(scenarioNum) {
+            const caja = document.getElementById(`scenario_${scenarioNum}_reintegro`);
+            const d = AppState.desgloseSemanas;
+            if (!caja) return;
+            if (!d || !d.descontadas) { caja.style.display = 'none'; return; }
+            const pendientes = Math.max(0, d.descontadas - d.reintegradas);
+            if (pendientes <= 0) { caja.style.display = 'none'; return; }
+
+            const ajuste = getNumeroInfo(`scenario_${scenarioNum}_semanas_ajuste`);
+            const activo = ajuste >= pendientes;
+            caja.style.display = 'block';
+            caja.innerHTML = `
+                <label class="reintegro-switch">
+                    <input type="checkbox" ${activo ? 'checked' : ''}
+                           onchange="aplicarReintegroEscenario(${scenarioNum}, this.checked)">
+                    <span class="switch-track"><span class="switch-knob"></span></span>
+                    <span>Reintegra las <b>${pendientes}</b> semanas del retiro por desempleo</span>
+                </label>
+                <p class="reintegro-nota">${activo
+                    ? '<i class="fas fa-circle-check mr-1"></i>Este escenario las suma. Los dem&aacute;s no cambian.'
+                    : '<i class="fas fa-circle-info mr-1"></i>Este escenario va sin reintegro.'}</p>`;
+        }
+
+        function aplicarReintegroEscenario(scenarioNum, activo) {
+            const d = AppState.desgloseSemanas;
+            if (!d) return;
+            const pendientes = Math.max(0, d.descontadas - d.reintegradas);
+            const campo = document.getElementById(`scenario_${scenarioNum}_semanas_ajuste`);
+            if (campo) campo.value = activo ? pendientes : 0;
+            recalculateScenario(scenarioNum);
+            renderReintegroEscenario(scenarioNum);
+        }
+
         function renderPanelSemanas() {
             const panel = document.getElementById('panelSemanasAjuste');
             const d = AppState.desgloseSemanas;
@@ -9050,15 +9191,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     <div class="semanas-chip"><div class="valor text-green-600">${d.reintegradas}</div><div class="etiqueta">Ya reintegradas</div></div>
                     <div class="semanas-chip" style="border-color:#1e40af;border-width:2px;background:#eff6ff;"><div class="valor text-blue-900">${total}</div><div class="etiqueta">Total a usar</div></div>
                 </div>
-                <label class="switch-wrap">
-                    <input type="checkbox" id="switchReintegrar" class="hidden" ${d.reintegrar ? 'checked' : ''} onchange="toggleReintegroSemanas(this.checked)">
-                    <span class="switch-track"><span class="switch-knob"></span></span>
-                    <span class="font-bold text-lg" style="color:var(--tinta)">El cliente S&Iacute; reintegrar&aacute; las ${pendientes} semanas pendientes</span>
-                </label>
+                <p class="text-sm font-bold text-amber-900 mt-1">
+                    <i class="fas fa-arrow-turn-down mr-1"></i>
+                    El reintegro de las <b>${pendientes}</b> semanas pendientes se activa
+                    <b>en cada escenario del Paso 4</b>, para comparar con y sin \u00e9l en la misma pantalla.
+                </p>
                 <p class="text-sm text-amber-900 mt-3 font-semibold">
-                    ${d.reintegrar
-                        ? `<i class="fas fa-circle-check mr-1"></i>Sumando ${pendientes} semanas. De las ${d.descontadas} descontadas ya devolvi&oacute; ${d.reintegradas}; el tope son las ${d.imss} cotizadas.`
-                        : `<i class="fas fa-circle-info mr-1"></i>C&aacute;lculo conservador, sin reintegro. Active el interruptor para mostrarle cu&aacute;nto sube su pensi&oacute;n.`}
+                    <i class="fas fa-circle-info mr-1"></i>De las ${d.descontadas} descontadas ya devolvi&oacute; ${d.reintegradas}.
+                    La pensi&oacute;n base se calcula sin reintegro.
                 </p>`;
             panel.style.display = 'block';
             document.getElementById('info_semanasTotalesManual').value = total;
