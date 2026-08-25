@@ -2495,6 +2495,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         .bal-total--ok { background: #DCFCE7; border: 1px solid #86EFAC; color: #14532D; }
         .bal-total--mal { background: #FEE2E2; border: 1px solid #FCA5A5; color: #7F1D1D; }
         .bal-pie { text-align: center; font-size: .76rem; color: var(--tinta-2); margin-top: .3rem; }
+
+        .bal-total--liquida { background: #E0F2FE; border: 1px solid #7DD3FC; color: #0C4A6E; }
     </style>
 </head>
 
@@ -6772,16 +6774,20 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 </label>`;
         }
 
+        // Factor acumulado de los aumentos de febrero que alcanza el escenario.
+        function factorActualizacionFebrero(scenarioNum) {
+            const d = AppState.scenarioData[scenarioNum];
+            if (!d) return 1;
+            const pasos = actualizacionesFebrero(d.fechaFinM40Obj, d.fechaPrimerDeposito);
+            return pasos.reduce((f, p) => f * (1 + p.pct / 100), 1);
+        }
+
         function aplicarFebrero(scenarioNum, valor) {
             if (!AppState.scenarioData[scenarioNum]) return;
             AppState.scenarioData[scenarioNum].actualizaFebrero = !!valor;
-            const d = AppState.scenarioData[scenarioNum];
-            const pasos = actualizacionesFebrero(d.fechaFinM40Obj, d.fechaPrimerDeposito);
-            const factor = valor ? pasos.reduce((f, p) => f * (1 + p.pct / 100), 1) : 1;
-            const getEl = (k) => document.getElementById(`scenario_${scenarioNum}_${k}`);
-            animarNumero(getEl('pension'), (d.pensionMensual || 0) * factor, '$');
-            animarNumero(getEl('aguinaldo'), (d.aguinaldo || 0) * factor, '$');
-            preguntarActualizacionFebrero(scenarioNum, d);
+            // El aumento no es solo cosmetico: mueve el primer deposito, la
+            // capacidad de prestamo y con ello todo el balance del proyecto.
+            recalculateScenario(scenarioNum);
         }
 
         function mostrarAvisoTope(idContenedor, datos) {
@@ -8093,7 +8099,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 inicioM40Str: getM40StartDate(), sbcM40: getNumeroInfo('info_m40_p1_sbc'),
                 aforeActual: getNumeroInfo('info_aforeActual'), mesesPrimerDeposito: parseInt(document.getElementById('info_mesesPrimerDeposito').value) || 8,
                 comisionExcedente: getNumeroInfo('info_comisionExcedente'), comisionExcedenteConcepto: document.getElementById('info_comisionExcedente_concepto').value.trim(),
-                pensionManualOverride: AppState.scenarioData[scenarioNum]?.pensionManualOverride // AÑADIDO: Extraer override
+                pensionManualOverride: AppState.scenarioData[scenarioNum]?.pensionManualOverride,
+                factorFebrero: AppState.scenarioData[scenarioNum]?.actualizaFebrero
+                    ? factorActualizacionFebrero(scenarioNum) : 1 // AÑADIDO: Extraer override
             };
         }
 
@@ -8198,11 +8206,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             const comision = costoM40 * Constants.COMISION_BASE_M40;
             const factorMultiplicador = costoM40 * Constants.FACTOR_MULTIPLICADOR_COSTO;
             const costoTotalContrato = (costoM40 + factorMultiplicador + Constants.COSTO_FIJO_ADICIONAL + comision + inputs.comisionExcedente) + Constants.AJUSTE_FINAL_CONTRATO;
-            const primerDeposito = pensionData.pensionMensual * inputs.mesesPrimerDeposito;
+            // Con el aumento de febrero activado, el primer deposito y la
+            // capacidad de prestamo se calculan con la pension YA actualizada:
+            // es la que el cliente va a cobrar de verdad.
+            const pensionCobrada = pensionData.pensionMensual * (inputs.factorFebrero || 1);
+            const primerDeposito = pensionCobrada * inputs.mesesPrimerDeposito;
             const extraAfore = pensionData.diasEnM40 * inputs.sbcM40 * 0.02;
             const subtotalCobertura = inputs.aforeActual + primerDeposito + extraAfore;
             const deficit = costoTotalContrato - subtotalCobertura;
-            const descuentoMaximoPermitido = pensionData.pensionMensual * 0.30;
+            const descuentoMaximoPermitido = pensionCobrada * 0.30;
             const slopePrestamo = (Constants.PRESTAMO_PUNTO_B_MONTO - Constants.PRESTAMO_PUNTO_A_MONTO) / (Constants.PRESTAMO_PUNTO_B_DESCUENTO - Constants.PRESTAMO_PUNTO_A_DESCUENTO);
             let prestamoAlcanzable = slopePrestamo * (descuentoMaximoPermitido - Constants.PRESTAMO_PUNTO_A_DESCUENTO) + Constants.PRESTAMO_PUNTO_A_MONTO;
             prestamoAlcanzable = Math.max(0, prestamoAlcanzable);
@@ -8219,7 +8231,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             return {
                 costoM40, totalActualizacion, totalRecargos, comision, factorMultiplicador, costoTotalContrato,
                 coberturaAfore: inputs.aforeActual, coberturaDeposito: primerDeposito, coberturaExtra: extraAfore,
-                prestamoRequerido, saldoFinal, descuentoMensual, deficit, desgloseM40, porcentajeUsoPrestamo
+                prestamoRequerido, saldoFinal, descuentoMensual, deficit, desgloseM40, porcentajeUsoPrestamo,
+                pensionCobrada, factorFebrero: inputs.factorFebrero || 1
             };
         }
 
@@ -8236,12 +8249,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
         function updateScenarioUI(scenarioNum, data) {
             const getEl = (suffix) => document.getElementById(`scenario_${scenarioNum}_${suffix}`);
-            animarNumero(getEl('pension'), data.pensionMensual, '$');
+            // la cifra grande es la que va a cobrar: ya con el aumento de febrero
+            const fFeb = data.factorFebrero || 1;
+            animarNumero(getEl('pension'), data.pensionMensual * fFeb, '$');
             actualizarAvisoPMG(scenarioNum, data.pensionMensual);
             renderReintegroEscenario(scenarioNum);
             mostrarAvisoTope(`scenario_${scenarioNum}_tope`, data.pensionResult || data);
             preguntarActualizacionFebrero(scenarioNum, data);
-            animarNumero(getEl('aguinaldo'), data.aguinaldo, '$');
+            animarNumero(getEl('aguinaldo'), data.aguinaldo * fFeb, '$');
             animarNumero(getEl('sbc_final'), data.sbcPromedio, '$');
             
             if (getEl('sbc_m40')) {
@@ -8291,25 +8306,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                         </div>
 
                         <div class="bal-fila bal-fila--suma">
-                            <span>Con lo que ya tiene, cubre</span>
+                            <span>EL CLIENTE UNA VEZ PENSIONADO TENDR&Aacute;:</span>
                             <b>$${formatNumber(data.coberturaAfore + data.coberturaDeposito + data.coberturaExtra)}</b>
                         </div>
 
                         ${data.prestamoRequerido > 0 ? `
                         <div class="bal-fila bal-fila--deficit">
-                            <span>Le falta</span><b>$${formatNumber(data.prestamoRequerido)}</b>
+                            <span>D&Eacute;FICIT:</span><b>$${formatNumber(data.deficit)}</b>
                         </div>
                         <div class="bal-fila bal-fila--pmo">
-                            <span>+ Pr&eacute;stamo requerido</span><b>$${formatNumber(data.prestamoRequerido)}</b>
+                            <span>(+) PR&Eacute;STAMO REQUERIDO:</span><b>$${formatNumber(data.prestamoRequerido)}</b>
                         </div>` : ''}
 
-                        <div class="bal-total ${data.saldoFinal >= 0 ? 'bal-total--ok' : 'bal-total--mal'}">
-                            <span>${data.saldoFinal >= 0 ? 'SALDO FINAL A FAVOR' : 'D\u00c9FICIT FINAL'}</span>
+                        <div class="bal-total ${data.saldoFinal < -0.005 ? 'bal-total--mal' : (data.saldoFinal > 0.005 ? 'bal-total--ok' : 'bal-total--liquida')}">
+                            <span>${data.saldoFinal < -0.005 ? 'D\u00c9FICIT FINAL:'
+                                    : (data.saldoFinal > 0.005 ? 'SALDO A FAVOR:' : 'LIQUIDA')}</span>
                             <b>$${formatNumber(Math.abs(data.saldoFinal))}</b>
                         </div>
 
                         ${data.prestamoRequerido > 0 ? `
-                        <p class="bal-pie">Usa el <b>${formatNumber(data.porcentajeUsoPrestamo, 1)}%</b> del l&iacute;mite de pr&eacute;stamo disponible.</p>` : ''}
+                        <p class="bal-pie">Utiliza el <b>${formatNumber(data.porcentajeUsoPrestamo, 1)}%</b> del l&iacute;mite de pr&eacute;stamo disponible.</p>` : ''}
                     </div>
                 `;
             }
@@ -8595,21 +8611,45 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     [{ content: 'SBC Inscripción M40:', styles: { fontStyle: 'bold' }}, sc.sbcM40 > 0 ? `$${formatNumber(sc.sbcM40)}` : 'N/A'],
                     [{ content: 'Semanas Finales:', styles: { fontStyle: 'bold' }}, formatNumber(sc.semanas, 0)],
                     [{ content: 'Edad al Finalizar:', styles: { fontStyle: 'bold' }}, `${sc.edadFinM40.anos}a, ${sc.edadFinM40.meses}m`],
-                    [{ content: 'Pensión Mensual:', styles: { fontStyle: 'bold', fillColor: '#e0f2fe', textColor: '#0c4a6e' }}, { content: `$${formatNumber(sc.pensionMensual)}`, styles: { fontStyle: 'bold', fillColor: '#e0f2fe', textColor: '#0c4a6e' }}],
-                    [{ content: 'Aguinaldo:', styles: { fontStyle: 'bold' }}, `$${formatNumber(sc.aguinaldo)}`],
+                    [{ content: 'Pensi\u00f3n Mensual:', styles: { fontStyle: 'bold', fillColor: '#e0f2fe', textColor: '#0c4a6e' }},
+                     { content: `$${formatNumber((sc.pensionMensual || 0) * (sc.factorFebrero || 1))}` +
+                                ((sc.factorFebrero && sc.factorFebrero > 1)
+                                  ? `\n(ya actualizada: $${formatNumber(sc.pensionMensual)} + ${formatNumber((sc.factorFebrero - 1) * 100, 2)}% de febrero)`
+                                  : ''),
+                       styles: { fontStyle: 'bold', fillColor: '#e0f2fe', textColor: '#0c4a6e', halign: 'right', fontSize: 11 } }],
+                    [{ content: 'Aguinaldo:', styles: { fontStyle: 'bold' }}, `$${formatNumber((sc.aguinaldo || 0) * (sc.factorFebrero || 1))}`],
                 ];
                 
                 doc.autoTable({
                     startY: tableStartY, head: [['Resultados de Pensión', '']], body: pensionBody,
-                    theme: 'grid', headStyles: { fillColor: RGC_BLUE }, styles: { fontSize: 8, cellPadding: 3 }, // OPTIMIZADO
+                    theme: 'grid', headStyles: { fillColor: RGC_BLUE }, styles: { fontSize: 8, cellPadding: 3 },
                     margin: { left: margin }, tableWidth: halfContentWidth,
-                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 'auto' }, 1: { halign: 'right' } }
+                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 'auto' }, 1: { halign: 'right' } },
+                    didParseCell: (d) => {
+                        const t = typeof d.cell.raw === 'object' ? String(d.cell.raw.content || '') : String(d.cell.raw || '');
+                        if (t.includes('(ya actualizada')) d.cell.styles.minCellHeight = 15;
+                    },
+                    didDrawCell: (d) => {
+                        // la cifra actualizada en grande, la nota en chico debajo
+                        const lineas = Array.isArray(d.cell.text) ? d.cell.text : [];
+                        const iNota = lineas.findIndex(x => x.includes('(ya actualizada'));
+                        if (iNota < 1) return;
+                        doc.setFillColor(224, 242, 254);
+                        doc.rect(d.cell.x + 0.4, d.cell.y + 0.4, d.cell.width - 0.8, d.cell.height - 0.8, 'F');
+                        const der = d.cell.x + d.cell.width - 3;
+                        doc.setTextColor(12, 74, 110); doc.setFontSize(13); doc.setFont(undefined, 'bold');
+                        doc.text(lineas[0], der, d.cell.y + 7, { align: 'right' });
+                        doc.setTextColor(100, 116, 139); doc.setFontSize(5.5); doc.setFont(undefined, 'normal');
+                        doc.text(lineas.slice(iNota).join(' '), der, d.cell.y + 12, { align: 'right' });
+                    }
                 });
                 table1FinalY = doc.autoTable.previous.finalY;
 
                 if (sc.meses > 0) {
-                    const saldoLabel = sc.saldoFinal >= 0 ? 'SALDO FINAL A FAVOR' : 'DÉFICIT FINAL';
-                    const saldoColor = sc.saldoFinal >= 0 ? '#dcfce7' : '#fee2e2';
+                    const saldoLabel = sc.saldoFinal < -0.005 ? 'DÉFICIT FINAL:'
+                                     : (sc.saldoFinal > 0.005 ? 'SALDO A FAVOR:' : 'LIQUIDA');
+                    const saldoColor = sc.saldoFinal < -0.005 ? '#fee2e2'
+                                     : (sc.saldoFinal > 0.005 ? '#dcfce7' : '#e0f2fe');
                     const cobertura = sc.coberturaAfore + sc.coberturaDeposito + sc.coberturaExtra;
                     const financialBody = [
                         [{ content: 'Costo total del proyecto', styles: { fontStyle: 'bold' } },
@@ -8617,15 +8657,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                         [{ content: '   (-) AFORE actual', styles: { cellPadding: { left: 10 } } }, `$${formatNumber(sc.coberturaAfore)}`],
                         [{ content: `   (-) 1er dep\u00f3sito (${sc.mesesPrimerDeposito} meses)`, styles: { cellPadding: { left: 10 } } }, `$${formatNumber(sc.coberturaDeposito)}`],
                         [{ content: '   (-) Extra de AFORE', styles: { cellPadding: { left: 10 } } }, `$${formatNumber(sc.coberturaExtra)}`],
-                        [{ content: 'Con lo que ya tiene, cubre', styles: { fontStyle: 'bold', fillColor: '#F1F5F9' } },
+                        [{ content: 'EL CLIENTE UNA VEZ PENSIONADO TENDR\u00c1:', styles: { fontStyle: 'bold', fillColor: '#F1F5F9' } },
                          { content: `$${formatNumber(cobertura)}`, styles: { fontStyle: 'bold', halign: 'right', fillColor: '#F1F5F9' } }],
                     ];
 
                     if (sc.prestamoRequerido > 0) {
                         financialBody.push(
-                            [{ content: 'Le falta', styles: { textColor: '#B91C1C' } },
-                             { content: `$${formatNumber(sc.prestamoRequerido)}`, styles: { halign: 'right', textColor: '#B91C1C' } }],
-                            [{ content: '(+) Pr\u00e9stamo requerido', styles: { fontStyle: 'bold', fillColor: '#EFF6FF' } },
+                            [{ content: 'D\u00c9FICIT:', styles: { fontStyle: 'bold', textColor: '#B91C1C' } },
+                             { content: `$${formatNumber(sc.deficit)}`, styles: { halign: 'right', textColor: '#B91C1C' } }],
+                            [{ content: '(+) PR\u00c9STAMO REQUERIDO:', styles: { fontStyle: 'bold', fillColor: '#EFF6FF' } },
                              { content: `$${formatNumber(sc.prestamoRequerido)}`, styles: { fontStyle: 'bold', halign: 'right', fillColor: '#EFF6FF' } }]
                         );
                     }
@@ -8636,7 +8676,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     );
                     if (sc.prestamoRequerido > 0) {
                         financialBody.push(
-                            [{ content: '% l\u00edmite de pr\u00e9stamo usado' },
+                            [{ content: '% L\u00cdMITE DE PR\u00c9STAMO UTILIZADO' },
                              { content: `${formatNumber(sc.porcentajeUsoPrestamo, 1)}%`, styles: { halign: 'right' } }]
                         );
                     }
