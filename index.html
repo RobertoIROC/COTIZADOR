@@ -2462,6 +2462,39 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         .reintegro-switch .switch-knob { width: 20px; height: 20px; }
         .reintegro-switch input:checked + .switch-track .switch-knob { transform: translateX(20px); }
         .reintegro-nota { font-size: .76rem; color: #92400E; margin-top: .4rem; opacity: .85; }
+
+        /* ===== BALANCE DEL PROYECTO ===== */
+        .bal { display: flex; flex-direction: column; gap: .25rem; }
+        .bal-fila { display: flex; justify-content: space-between; align-items: baseline;
+                    padding: .55rem .8rem; border-radius: .5rem; font-size: .9rem; gap: .6rem; }
+        .bal-fila b { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .bal-fila em { font-style: normal; opacity: .7; font-size: .8rem; }
+
+        .bal-fila--costo { background: var(--azul-900); color: #fff; font-size: 1rem; }
+        .bal-fila--costo b { font-size: 1.15rem; color: #fff; }
+        .bal-etq { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+        .bal-lapiz { color: rgba(255,255,255,.7); font-size: .75rem; }
+        .bal-lapiz:hover { color: var(--oro-300); }
+        .bal-manual { background: var(--oro-500); color: #0A2540; font-size: .62rem;
+                      font-weight: 800; padding: .1rem .5rem; border-radius: 9999px; }
+        .bal-desglose { color: var(--oro-300); font-size: .72rem; font-weight: 700; text-decoration: underline; }
+
+        .bal-grupo { border-left: 3px solid var(--linea); margin-left: .8rem; padding-left: .3rem; }
+        .bal-fila--resta { color: var(--tinta-2); padding-top: .35rem; padding-bottom: .35rem; }
+        .bal-fila--resta b { color: var(--tinta); }
+
+        .bal-fila--suma { background: var(--superficie-2); border-top: 2px solid var(--linea);
+                          font-weight: 700; color: var(--tinta); }
+        .bal-fila--deficit { color: var(--danger-color); font-weight: 700; }
+        .bal-fila--pmo { background: rgba(46,111,183,.10); color: var(--azul-700); font-weight: 700; }
+
+        .bal-total { display: flex; justify-content: space-between; align-items: center;
+                     margin-top: .35rem; padding: .8rem 1rem; border-radius: .6rem;
+                     font-weight: 900; font-size: 1rem; }
+        .bal-total b { font-size: 1.2rem; }
+        .bal-total--ok { background: #DCFCE7; border: 1px solid #86EFAC; color: #14532D; }
+        .bal-total--mal { background: #FEE2E2; border: 1px solid #FCA5A5; color: #7F1D1D; }
+        .bal-pie { text-align: center; font-size: .76rem; color: var(--tinta-2); margin-top: .3rem; }
     </style>
 </head>
 
@@ -4070,56 +4103,47 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         // =====================================================================
         // EMPLEO VIGENTE: el asegurado sigue dado de alta. Tres caminos posibles.
         // =====================================================================
+        // El panel ofrece dos caminos: cerrar el empleo vigente en la fecha de
+        // corte, o capturar un periodo nuevo. Si no hay empleo vigente solo
+        // queda la segunda, porque no hay nada que dar de baja.
         function renderPanelVigente() {
             const panel = document.getElementById('panelVigente');
             if (!panel) return;
-            if (!AppState.vigencia.detectado) { panel.style.display = 'none'; return; }
+            const hayPeriodos = (AppState.allParsedPeriodsForDisplay || []).length > 0;
+            if (!hayPeriodos) { panel.style.display = 'none'; return; }
 
             const v = AppState.vigencia;
+            const vigente = !!v.detectado;
             const corte = getFechaCorteVigente();
-            const semExtra = Math.floor((v.diasExtra || 0) / 7);
-            const hoy = new Date();
-            const sugerida = new Date(Date.UTC(hoy.getUTCFullYear() + 1, hoy.getUTCMonth() + 1, 0));
-            const valorFecha = (v.fechaHasta instanceof Date && !isNaN(v.fechaHasta))
-                ? v.fechaHasta.toISOString().slice(0, 10)
-                : sugerida.toISOString().slice(0, 10);
+
+            const tarjetaBaja = vigente ? `
+                <div class="opcion-card ${v.opcion === 'baja' ? 'is-active' : ''}" onclick="setOpcionVigente('baja')">
+                    <div class="opcion-card__icono"><i class="fas fa-door-closed"></i></div>
+                    <div class="opcion-card__titulo">Se da de baja ya</div>
+                    <p class="opcion-card__texto">Cierra el empleo el <strong>${formatDateDDMMYYYY(corte)}</strong>,
+                       &uacute;ltimo d&iacute;a que ampara la constancia.</p>
+                </div>` : '';
 
             panel.innerHTML = `
                 <div class="paso-bloque" style="margin-bottom:0;">
                     <div class="paso-encabezado">
                         <span class="paso-num"><i class="fas fa-briefcase" style="font-size:.9rem;"></i></span>
                         <div>
-                            <h3 class="paso-titulo">El asegurado sigue trabajando</h3>
-                            <p class="paso-sub">La constancia muestra un empleo <strong>VIGENTE</strong>. Elija c&oacute;mo contarlo.</p>
+                            <h3 class="paso-titulo">${vigente ? 'El asegurado sigue trabajando' : 'Periodos adicionales'}</h3>
+                            <p class="paso-sub">${vigente
+                                ? 'La constancia muestra un empleo <strong>VIGENTE</strong>. Elija c&oacute;mo contarlo.'
+                                : 'Puede agregar un periodo que no aparezca en la constancia.'}</p>
                         </div>
                         <i class="fas fa-code-branch paso-icono"></i>
                     </div>
                     <div class="paso-cuerpo">
                         <div class="opciones-vigente">
-                            <div class="opcion-card ${v.opcion === 'baja' ? 'is-active' : ''}" onclick="setOpcionVigente('baja')">
-                                <div class="opcion-card__icono"><i class="fas fa-door-closed"></i></div>
-                                <div class="opcion-card__titulo">Se da de baja ya</div>
-                                <p class="opcion-card__texto">Cierra el empleo el <strong>${formatDateDDMMYYYY(corte)}</strong>, &uacute;ltimo d&iacute;a del mes de la constancia. C&aacute;lculo conservador.</p>
-                            </div>
-                            <div class="opcion-card ${v.opcion === 'seguir' ? 'is-active' : ''}" onclick="setOpcionVigente('seguir')">
-                                <div class="opcion-card__icono"><i class="fas fa-calendar-check"></i></div>
-                                <div class="opcion-card__titulo">Sigue trabajando hasta...</div>
-                                <p class="opcion-card__texto">Extiende el mismo empleo con el mismo SBC y suma las semanas al total.</p>
-                                <div class="mt-3 ${v.opcion === 'seguir' ? '' : 'hidden'}" onclick="event.stopPropagation()">
-                                    <label class="block text-xs font-bold uppercase mb-1" style="color:var(--tinta-2)">&iquest;Cu&aacute;ntas semanas m&aacute;s cotizar&aacute;?</label>
-                                    <input type="number" id="semanasSeguirTrabajando" min="1" max="520" value="${v.semanasExtra || ''}"
-                                           placeholder="Ej. 52" class="w-full text-lg font-bold"
-                                           oninput="previsualizarSemanasSeguir(this.value)"
-                                           onchange="aplicarSemanasSeguir(this.value)">
-                                    <div id="previewFechaBaja" class="fecha-resultado" style="${v.semanasExtra ? '' : 'display:none;'}">
-                                        ${v.fechaHasta ? `<i class="fas fa-flag-checkered mr-1"></i>Fecha de baja: <strong>${formatDateDDMMYYYY(v.fechaHasta)}</strong>` : ''}
-                                    </div>
-                                </div>
-                            </div>
+                            ${tarjetaBaja}
                             <div class="opcion-card" onclick="agregarPeriodoDesdeVigente()">
                                 <div class="opcion-card__icono"><i class="fas fa-pen-to-square"></i></div>
                                 <div class="opcion-card__titulo">Capturar periodo aparte</div>
-                                <p class="opcion-card__texto">Como el bot&oacute;n de R.I.: fechas y SBC distintos, por si cambia de patr&oacute;n o de salario.</p>
+                                <p class="opcion-card__texto">Fechas y SBC propios, por si cambia de patr&oacute;n o
+                                   de salario. Se suma al historial como uno m&aacute;s.</p>
                             </div>
                         </div>
                     </div>
@@ -4128,41 +4152,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         }
 
         function setOpcionVigente(opcion) {
+            if (opcion !== 'baja') return;   // ya no hay otra opcion que elegir
             AppState.vigencia.opcion = opcion;
             if (opcion === 'baja') { AppState.vigencia.fechaHasta = null; AppState.vigencia.diasExtra = 0; AppState.vigencia.mesesExtra = 0; AppState.vigencia.semanasExtra = 0; }
             renderPanelVigente();
             if (opcion === 'baja') analizarYCalcularSBC();
         }
 
-        // Suma N meses al cierre natural de la constancia y cierra el ultimo dia de ese mes.
-        function seguirMeses(meses) {
-            const corte = getFechaCorteVigente();
-            const destino = new Date(Date.UTC(corte.getUTCFullYear(), corte.getUTCMonth() + meses + 1, 0));
-            AppState.vigencia.fechaHasta = destino;
-            AppState.vigencia.mesesExtra = meses;
-            AppState.vigencia.opcion = 'seguir';
-            actualizarBajaEnTarjeta(AppState.vigencia.fechaHasta);
-            analizarYCalcularSBC();
-        }
 
-        // El asesor captura semanas; la app devuelve la fecha de baja resultante.
-        function fechaBajaPorSemanas(semanas) {
-            const corte = getFechaCorteVigente();
-            const destino = new Date(corte.getTime());
-            destino.setUTCDate(destino.getUTCDate() + Math.round(semanas * 7));
-            return destino;
-        }
 
-        function previsualizarSemanasSeguir(valor) {
-            const box = document.getElementById('previewFechaBaja');
-            const sem = parseInt(valor) || 0;
-            if (!box) return;
-            if (sem <= 0) { box.style.display = 'none'; return; }
-            const f = fechaBajaPorSemanas(sem);
-            box.style.display = 'block';
-            box.innerHTML = `<i class="fas fa-flag-checkered mr-1"></i>Fecha de baja: <strong>${formatDateDDMMYYYY(f)}</strong>`
-                          + `<span style="color:var(--tinta-2)"> &middot; ${Math.round(sem * 7)} dias mas</span>`;
-        }
 
         // Reescribe la linea BAJA dentro de la tarjeta del empleo vigente.
         function actualizarBajaEnTarjeta(fecha) {
@@ -4177,28 +4175,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             ta.value = lineas.join('\n');
         }
 
-        function aplicarSemanasSeguir(valor) {
-            const sem = parseInt(valor) || 0;
-            if (sem <= 0) { setOpcionVigente('baja'); return; }
-            AppState.vigencia.semanasExtra = sem;
-            AppState.vigencia.fechaHasta = fechaBajaPorSemanas(sem);
-            AppState.vigencia.opcion = 'seguir';
-            analizarYCalcularSBC();
-        }
 
-        function aplicarFechaSeguir(valor) {
-            if (!valor) return;
-            const [a, m, d] = valor.split('-').map(Number);
-            const f = new Date(Date.UTC(a, m - 1, d));
-            const corte = getFechaCorteVigente();
-            if (f <= corte) {
-                showCustomAlert(`La fecha debe ser posterior al ${formatDateDDMMYYYY(corte)}, que es el cierre natural de la constancia.`, "Fecha no valida");
-                return;
-            }
-            AppState.vigencia.fechaHasta = f;
-            AppState.vigencia.opcion = 'seguir';
-            analizarYCalcularSBC();
-        }
 
         function agregarPeriodoDesdeVigente() {
             addManualEmploymentCard();
@@ -8290,34 +8267,49 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 const saldoColorClasses = data.saldoFinal >= 0 ? 'bg-green-100 border-green-300 text-green-900' : 'bg-red-100 border-red-300 text-red-900';
                 const saldoLabel = data.saldoFinal >= 0 ? 'SALDO FINAL A FAVOR' : 'DÉFICIT FINAL';
                 summaryContainer.innerHTML = `
-                    <div class="p-4 rounded-lg bg-gray-50 border space-y-2">
-                        <div class="flex justify-between font-semibold text-gray-700"><span class="text-sm">(+) Recursos Disponibles al Pensionarse</span><span>$${formatNumber(data.coberturaAfore + data.coberturaDeposito + data.coberturaExtra + data.prestamoRequerido)}</span></div>
-                        <div class="pl-4 text-xs text-gray-500 space-y-1 border-l-2 ml-1">
-                            <div class="flex justify-between"><span>AFORE Actual:</span><span>$${formatNumber(data.coberturaAfore)}</span></div>
-                            <div class="flex justify-between"><span>1er Depósito (${data.mesesPrimerDeposito} meses):</span><span>$${formatNumber(data.coberturaDeposito)}</span></div>
-                            <div class="flex justify-between"><span>Extra AFORE:</span><span>$${formatNumber(data.coberturaExtra)}</span></div>
-                            <div class="flex justify-between"><span>Préstamo Requerido:</span><span>$${formatNumber(data.prestamoRequerido)}</span></div>
-                        </div>
-                    </div>
-                    <div class="p-4 rounded-lg bg-gray-50 border">
-                        <div class="flex justify-between items-center font-semibold text-gray-700">
-                            <span class="flex items-center gap-2">
-                                (-) Costo Total del Proyecto
-                                <button onclick="editTotalCost(${scenarioNum})" title="Editar Costo Total" class="text-blue-600 hover:text-blue-800 text-xs focus:outline-none"><i class="fas fa-pencil-alt"></i></button>
-                                ${data.isManualCost ? '<span class="text-xs bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded-full font-medium">Manual</span>' : ''}
+                    <div class="bal">
+                        <div class="bal-fila bal-fila--costo">
+                            <span class="bal-etq">
+                                Costo total del proyecto
+                                <button onclick="editTotalCost(${scenarioNum})" title="Editar costo total" class="bal-lapiz"><i class="fas fa-pencil"></i></button>
+                                ${data.isManualCost ? '<span class="bal-manual">Manual</span>' : ''}
+                                ${data.meses > 0 ? `<button onclick="showPaymentBreakdown(${scenarioNum})" class="bal-desglose">ver desglose</button>` : ''}
                             </span>
-                            <div class="flex items-center gap-3">
-                                 ${data.meses > 0 ? `<button onclick="showPaymentBreakdown(${scenarioNum})" class="text-xs font-medium text-blue-600 hover:underline">Ver desglose</button>` : ''}
-                                <span>$${formatNumber(data.costoTotalContrato)}</span>
+                            <b>$${formatNumber(data.costoTotalContrato)}</b>
+                        </div>
+
+                        <div class="bal-grupo">
+                            <div class="bal-fila bal-fila--resta">
+                                <span>&minus; AFORE actual</span><b>$${formatNumber(data.coberturaAfore)}</b>
+                            </div>
+                            <div class="bal-fila bal-fila--resta">
+                                <span>&minus; 1er dep&oacute;sito <em>(${data.mesesPrimerDeposito} meses)</em></span><b>$${formatNumber(data.coberturaDeposito)}</b>
+                            </div>
+                            <div class="bal-fila bal-fila--resta">
+                                <span>&minus; Extra de AFORE</span><b>$${formatNumber(data.coberturaExtra)}</b>
                             </div>
                         </div>
-                    </div>
-                    <div class="flex justify-between items-center p-4 mt-2 rounded-lg font-bold border text-lg ${saldoColorClasses}">
-                        <span>${saldoLabel}</span>
-                        <span>$${formatNumber(Math.abs(data.saldoFinal))}</span>
-                    </div>
-                    <div class="text-center text-sm text-gray-600 pt-2">
-                        <span>% Límite Préstamo Usado:</span><span class="font-bold text-blue-700 text-base ml-2">${formatNumber(data.porcentajeUsoPrestamo, 1)}%</span>
+
+                        <div class="bal-fila bal-fila--suma">
+                            <span>Con lo que ya tiene, cubre</span>
+                            <b>$${formatNumber(data.coberturaAfore + data.coberturaDeposito + data.coberturaExtra)}</b>
+                        </div>
+
+                        ${data.prestamoRequerido > 0 ? `
+                        <div class="bal-fila bal-fila--deficit">
+                            <span>Le falta</span><b>$${formatNumber(data.prestamoRequerido)}</b>
+                        </div>
+                        <div class="bal-fila bal-fila--pmo">
+                            <span>+ Pr&eacute;stamo requerido</span><b>$${formatNumber(data.prestamoRequerido)}</b>
+                        </div>` : ''}
+
+                        <div class="bal-total ${data.saldoFinal >= 0 ? 'bal-total--ok' : 'bal-total--mal'}">
+                            <span>${data.saldoFinal >= 0 ? 'SALDO FINAL A FAVOR' : 'D\u00c9FICIT FINAL'}</span>
+                            <b>$${formatNumber(Math.abs(data.saldoFinal))}</b>
+                        </div>
+
+                        ${data.prestamoRequerido > 0 ? `
+                        <p class="bal-pie">Usa el <b>${formatNumber(data.porcentajeUsoPrestamo, 1)}%</b> del l&iacute;mite de pr&eacute;stamo disponible.</p>` : ''}
                     </div>
                 `;
             }
@@ -8618,16 +8610,36 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 if (sc.meses > 0) {
                     const saldoLabel = sc.saldoFinal >= 0 ? 'SALDO FINAL A FAVOR' : 'DÉFICIT FINAL';
                     const saldoColor = sc.saldoFinal >= 0 ? '#dcfce7' : '#fee2e2';
+                    const cobertura = sc.coberturaAfore + sc.coberturaDeposito + sc.coberturaExtra;
                     const financialBody = [
-                        [{ content: '(+) Recursos Disponibles al Pensionarse', styles: { fontStyle: 'bold' } }, { content: `$${formatNumber(sc.coberturaAfore + sc.coberturaDeposito + sc.coberturaExtra + sc.prestamoRequerido)}`, styles: { fontStyle: 'bold' } }],
-                        [{ content: '     AFORE Actual:', styles: { cellPadding: { left: 10 } } }, `$${formatNumber(sc.coberturaAfore)}`],
-                        [{ content: `     1er Depósito (${sc.mesesPrimerDeposito} meses):`, styles: { cellPadding: { left: 10 } } }, `$${formatNumber(sc.coberturaDeposito)}`],
-                        [{ content: '     Extra de AFORE:', styles: { cellPadding: { left: 10 } } }, `$${formatNumber(sc.coberturaExtra)}`],
-                        [{ content: '     Préstamo Requerido:', styles: { cellPadding: { left: 10 } } }, `$${formatNumber(sc.prestamoRequerido)}`],
-                        [{ content: '(-) Costo Total del Proyecto', styles: { fontStyle: 'bold' } }, { content: `$${formatNumber(sc.costoTotalContrato)}`, styles: { fontStyle: 'bold' } }],
-                        [{ content: saldoLabel, styles: { fontStyle: 'bold', fillColor: saldoColor } }, { content: `$${formatNumber(Math.abs(sc.saldoFinal))}`, styles: { fontStyle: 'bold', fillColor: saldoColor } }],
-                        [{ content: '% Límite Préstamo Usado', styles: { fontStyle: 'bold' } }, { content: `${formatNumber(sc.porcentajeUsoPrestamo, 1)}%`, styles: { fontStyle: 'bold' } }]
+                        [{ content: 'Costo total del proyecto', styles: { fontStyle: 'bold' } },
+                         { content: `$${formatNumber(sc.costoTotalContrato)}`, styles: { fontStyle: 'bold', halign: 'right' } }],
+                        [{ content: '   (-) AFORE actual', styles: { cellPadding: { left: 10 } } }, `$${formatNumber(sc.coberturaAfore)}`],
+                        [{ content: `   (-) 1er dep\u00f3sito (${sc.mesesPrimerDeposito} meses)`, styles: { cellPadding: { left: 10 } } }, `$${formatNumber(sc.coberturaDeposito)}`],
+                        [{ content: '   (-) Extra de AFORE', styles: { cellPadding: { left: 10 } } }, `$${formatNumber(sc.coberturaExtra)}`],
+                        [{ content: 'Con lo que ya tiene, cubre', styles: { fontStyle: 'bold', fillColor: '#F1F5F9' } },
+                         { content: `$${formatNumber(cobertura)}`, styles: { fontStyle: 'bold', halign: 'right', fillColor: '#F1F5F9' } }],
                     ];
+
+                    if (sc.prestamoRequerido > 0) {
+                        financialBody.push(
+                            [{ content: 'Le falta', styles: { textColor: '#B91C1C' } },
+                             { content: `$${formatNumber(sc.prestamoRequerido)}`, styles: { halign: 'right', textColor: '#B91C1C' } }],
+                            [{ content: '(+) Pr\u00e9stamo requerido', styles: { fontStyle: 'bold', fillColor: '#EFF6FF' } },
+                             { content: `$${formatNumber(sc.prestamoRequerido)}`, styles: { fontStyle: 'bold', halign: 'right', fillColor: '#EFF6FF' } }]
+                        );
+                    }
+
+                    financialBody.push(
+                        [{ content: saldoLabel, styles: { fontStyle: 'bold', fillColor: saldoColor } },
+                         { content: `$${formatNumber(Math.abs(sc.saldoFinal))}`, styles: { fontStyle: 'bold', fillColor: saldoColor, halign: 'right' } }]
+                    );
+                    if (sc.prestamoRequerido > 0) {
+                        financialBody.push(
+                            [{ content: '% l\u00edmite de pr\u00e9stamo usado' },
+                             { content: `${formatNumber(sc.porcentajeUsoPrestamo, 1)}%`, styles: { halign: 'right' } }]
+                        );
+                    }
 
                     doc.autoTable({
                         startY: tableStartY, head: [['Balance del Proyecto', '']], body: financialBody,
