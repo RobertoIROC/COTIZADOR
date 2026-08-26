@@ -2520,6 +2520,19 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         .btn-sisec:disabled { opacity: .6; cursor: default; }
         .btn-sisec--cen { background: var(--azul-900); border-color: var(--azul-900); color: #fff; }
         .btn-sisec--cen:hover { background: var(--azul-700); border-color: var(--azul-700); color: #fff; }
+
+        .lt-m40-rotulo { font-size: 10px; font-weight: 900; fill: #C2410C; letter-spacing: .08em; }
+        .lt-salto-num { font-size: 12px; font-weight: 900; fill: #fff; }
+        .lt-salto-sub { font-size: 8.5px; font-weight: 700; fill: rgba(255,255,255,.92); }
+
+
+        .lt-liq-tramo { font-size: 9px; font-weight: 900; letter-spacing: .08em; }
+        .lt-liq-tramo--espera { fill: #A16207; }
+        .lt-liq-tramo--cobro { fill: #15803D; }
+        .lt-pago-txt { font-size: 9.5px; font-weight: 900; fill: #15803D; }
+        .lt-pago-fecha { font-size: 8px; font-weight: 700; fill: #64748B; }
+        .lt-edad { font-size: 8.5px; font-weight: 700; fill: #94A3B8; }
+        .lt-edad--clave { font-size: 9.5px; font-weight: 900; fill: #0A2540; }
     </style>
 </head>
 
@@ -3186,44 +3199,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     </div>
                 </div>
 
-                <div class="text-center mt-12 pt-8 border-t">
-                    <h3 class="subsection-title">Evolución del Patrimonio a lo Largo del Tiempo</h3>
-                    <p class="mb-6 text-gray-600 max-w-3xl mx-auto">Esta herramienta compara el rendimiento de las estrategias de M40 contra un escenario base, mostrando cuándo se recupera la inversión del AFORE y el crecimiento a largo plazo.</p>
-                    <div class="max-w-4xl mx-auto bg-gray-50 p-6 rounded-2xl border">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 items-end">
-                            <div class="input-group">
-                                <label for="info_pensionMinimaSelect">Pensión Mínima Garantizada (Referencia):</label>
-                                <select id="info_pensionMinimaSelect" class="w-full mb-2" onchange="handlePMGSelection()">
-                                    <option value="4153">2020 - $4,153 MXN</option>
-                                    <option value="4777">2021 - $4,777 MXN</option>
-                                    <option value="5836">2022 - $5,836 MXN</option>
-                                    <option value="7003">2023 - $7,003 MXN</option>
-                                    <option value="8404" selected>2024 - $8,404 MXN</option>
-                                    <option value="9412">2025 - $9,412 MXN</option>
-                                    <option value="10636">2026 - $10,636 MXN</option>
-                                    <option value="custom">Captura Libre (Requiere Contraseña)</option>
-                                </select>
-                                <input type="number" id="info_pensionMinima" placeholder="Monto libre" class="w-full hidden" value="8404">
-                            </div>
-                            <div class="input-group">
-                                <label>Seleccione el Periodo de Proyección:</label>
-                                <div id="roiYearButtons" class="flex flex-wrap justify-start gap-3 mt-2">
-                                    <button onclick="generateROIMatrix(5)" class="btn btn-secondary !py-2 !px-5 text-base" data-years="5">5 Años</button>
-                                    <button onclick="generateROIMatrix(10)" class="btn btn-secondary !py-2 !px-5 text-base" data-years="10">10 Años</button>
-                                    <button onclick="generateROIMatrix(15)" class="btn btn-secondary !py-2 !px-5 text-base" data-years="15">15 Años</button>
-                                    <button onclick="generateROIMatrix(20)" class="btn btn-secondary !py-2 !px-5 text-base" data-years="20">20 Años</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="roiAnalysisContainer" class="mt-10" style="display: none;">
-                        <div id="roiSummary" class="mb-6 text-left max-w-4xl mx-auto space-y-2"></div>
-                        <div id="roiChartContainer" class="w-full h-96 mb-8 p-4 border rounded-xl shadow-lg bg-white">
-                        </div>
-                        <div id="roiTableContainer" class="overflow-x-auto max-h-[600px] border rounded-xl shadow-lg">
-                        </div>
-                    </div>
-                </div>
+
             </section>
         </div>
         <footer class="app-footer">
@@ -3479,7 +3455,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             }
         }
 
-        window.__NOLOGIN__ = true;
+        window.__NOLOGIN__ = false;   // produccion: inicio de sesion activo
 
         // Diagnostico: cualquier error de JS se muestra en pantalla en vez de
         // dejar la app a medias sin explicacion.
@@ -4151,9 +4127,41 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         const RE_CURP_PDF = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]{2}$/;
         const RE_RP_PDF = /^[A-Z0-9]\d{8}\d$/;
 
-        function _mascaraNss(v) { return v.slice(0, 2) + '*'.repeat(8) + v.slice(-1); }
+        // El NSS se desglosa igual que en la presentacion: lo unico que
+        // identifica de verdad es el consecutivo, y es lo unico que se tapa.
+        //   2 subdelegacion | 2 anio de alta | 2 anio de nacimiento | 4 consecutivo | 1 digito
+        function _mascaraNss(v) { return v.slice(0, 6) + '****' + v.slice(-1); }
         function _mascaraCurp(v) { return '****' + v.slice(4, 13) + '***' + v.slice(16); }
         function _mascaraRp(v) { return '*'.repeat(v.length - 2) + v.slice(-2); }   // se conserva la modalidad
+
+        // Terminaciones que delatan a una persona moral.
+        const FORMAS_SOCIALES = /\b(S\.?\s?A\.?(\s+DE\s+C\.?\s?V\.?)?|S\.?\s?DE\s?R\.?\s?L\.?(\s+DE\s+C\.?\s?V\.?)?|S\.?\s?C\.?|S\.?\s?A\.?\s?B\.?|A\.?\s?C\.?|S\.?A\.?P\.?I\.?|SOFOM|SNC|IBM|SA|SRL|SC)\b/i;
+        const PALABRAS_EMPRESA = /\b(BANCO|GRUPO|SERVICIOS?|COMERCIAL|INDUSTRIAL(IZADORA)?|CORPORATIVO|OPERADORA|ADMINISTRADORA|DISTRIBUIDORA|PRODUCTOS?|PROMOCIONES|INSTITUTO|TIENDAS|CENTROS?|CONSORCIO|FABRICA|MOLINERA|HARINERA|INMOBILIARIA|TANQUES|PRECISION|ASESORES|PROYECTOS|COMUNICACIONES|ELECTRONIC|MEXICO|MEXICANA|NACIONAL|INTERNACIONAL)\b/i;
+
+        // Decide si el patron parece persona fisica: 3 o 4 palabras, sin forma
+        // social ni palabras tipicas de empresa.
+        // Se conserva lo que identifica al patron y se tapa el resto.
+        //   persona moral  -> las dos primeras palabras, el resto en asteriscos
+        //   persona fisica -> el nombre, y de los apellidos solo la inicial
+        // Se distinguen por la forma social; no hace falta un banco de nombres.
+        function _asteriscos(palabra, conInicial) {
+            const letras = palabra.replace(/[^0-9A-Za-z\u00C0-\u024F]/g, '').length;
+            if (!letras) return palabra;
+            return conInicial
+                ? palabra[0] + '*'.repeat(Math.max(0, letras - 1))
+                : '*'.repeat(letras);
+        }
+
+        function mascaraPatron(nombre) {
+            const n = String(nombre || '').trim();
+            if (!n) return n;
+            const palabras = n.split(/\s+/).filter(Boolean);
+            const esMoral = FORMAS_SOCIALES.test(n) || PALABRAS_EMPRESA.test(n) || palabras.length > 4;
+            const conservar = esMoral ? 2 : 1;
+            return palabras
+                .map((w, i) => (i < conservar ? w : _asteriscos(w, !esMoral)))
+                .join(' ');
+        }
 
         function _nombreArchivoSisec(censurado) {
             const c = AppState.datosClienteInfo || {};
@@ -4200,6 +4208,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 const nombre = ((AppState.datosClienteInfo || {}).nombre || '').toUpperCase();
                 const tokens = nombre.split(/\s+/).filter(t => t.length >= 3);
 
+                // ventana de las ultimas 250 semanas (1,750 dias antes del corte)
+                let corte250 = null;
+                const periodos = AppState.allParsedPeriodsForDisplay || [];
+                if (periodos.length) {
+                    const hasta = new Date(Math.max(...periodos.map(x => x.fechaFin.getTime())));
+                    const desde = new Date(hasta.getTime() - Constants.DIAS_PROMEDIO_PENSION * 86400000);
+                    corte250 = { desde, hasta };
+                }
+
                 for (let n = 1; n <= pdf.numPages; n++) {
                     const pagina = await pdf.getPage(n);
                     const escala = 2.2;                       // suficiente para imprimir
@@ -4230,10 +4247,45 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                         }
                     };
 
+                    // --- la ventana de las ultimas 250 semanas ---
+                    if (corte250) {
+                        piezas.forEach(pieza => {
+                            if (!/^Fecha\s+de\s+alta$/i.test(pieza.txt)) return;
+                            const enLinea = piezas.filter(q => Math.abs(q.y - pieza.y) < 6)
+                                                  .sort((a, b) => a.x - b.x);
+                            const fechas = enLinea.map(q => q.txt)
+                                .filter(x => /^\d{2}\/\d{2}\/\d{4}$/.test(x) || /^Vigente$/i.test(x));
+                            if (!fechas.length) return;
+                            const aFecha = (x) => {
+                                if (/^Vigente$/i.test(x)) return new Date();
+                                const [d, m, a] = x.split('/').map(Number);
+                                return new Date(Date.UTC(a, m - 1, d));
+                            };
+                            const ini = aFecha(fechas[0]);
+                            const fin = fechas[1] ? aFecha(fechas[1]) : ini;
+                            if (fin < corte250.desde || ini > corte250.hasta) return;
+                            // el bloque del patron va unas filas arriba de esta linea
+                            const arriba = pieza.y - vista.height * 0.075;
+                            ctx.save();
+                            ctx.globalCompositeOperation = 'multiply';
+                            ctx.fillStyle = 'rgba(253, 224, 71, .45)';
+                            ctx.fillRect(vista.width * 0.055, arriba,
+                                         vista.width * 0.89, (pieza.y + pieza.h + 6) - arriba);
+                            ctx.restore();
+                        });
+                    }
+
                     piezas.forEach(pieza => {
                         const t = pieza.txt;
                         if (RE_NSS_PDF.test(t)) { tapar(pieza, _mascaraNss(t)); return; }
                         if (RE_CURP_PDF.test(t)) { tapar(pieza, _mascaraCurp(t)); return; }
+                        // nombre del patron: la celda a la derecha de la etiqueta
+                        const etqPatron = piezas.find(q => /Nombre\s+del\s+patr/i.test(q.txt)
+                            && Math.abs(q.y - pieza.y) < 6 && q.x < pieza.x);
+                        if (etqPatron && t.length > 2 && !/^Nombre/i.test(t)) {
+                            tapar(pieza, mascaraPatron(t));
+                            return;
+                        }
                         if (RE_RP_PDF.test(t)) {
                             // solo si a su izquierda esta la etiqueta "Registro Patronal"
                             const etiqueta = piezas.some(q => /Registro\s*Patronal/i.test(q.txt)
@@ -4262,6 +4314,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                             ctx.fillText('(Cadena original omitida: contiene el nombre y el folio del asegurado.)',
                                 etqCadena.x + etqCadena.w + 12, etqCadena.y + 1);
                         }
+                    }
+
+                    // nota de la ventana, al pie de la primera pagina
+                    if (n === 1 && corte250) {
+                        ctx.save();
+                        ctx.globalCompositeOperation = 'multiply';
+                        ctx.fillStyle = 'rgba(253, 224, 71, .55)';
+                        ctx.fillRect(vista.width * 0.055, vista.height * 0.945, vista.width * 0.42, vista.height * 0.022);
+                        ctx.restore();
+                        ctx.fillStyle = '#713F12';
+                        ctx.font = `bold ${Math.round(vista.height * 0.0125)}px Helvetica, Arial, sans-serif`;
+                        ctx.textBaseline = 'top';
+                        ctx.fillText('Resaltado: empleos dentro de las ultimas 250 semanas  ('
+                            + formatDateDDMMYYYY(corte250.desde) + ' al ' + formatDateDDMMYYYY(corte250.hasta) + ')',
+                            vista.width * 0.062, vista.height * 0.9485);
                     }
 
                     const img = lienzo.toDataURL('image/jpeg', 0.82);
@@ -9050,7 +9117,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 finalY = doc.autoTable.previous.finalY;
             }
             
-            if (document.getElementById('roiAnalysisContainer').style.display !== 'none') {
+            const _roi = document.getElementById('roiAnalysisContainer');
+            if (_roi && _roi.style.display !== 'none') {
                 doc.addPage(); addPageHeader(); finalY = addSectionTitle("Análisis de Evolución del Patrimonio (ROI)", finalY);
         
                 const roiChartCanvas = await captureElement(`roiChartContainer`);
@@ -9511,6 +9579,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         // =====================================================================
         // El reintegro se decide POR ESCENARIO: asi se puede comparar en la
         // misma pantalla como queda con reintegro y como queda sin el.
+
         function renderReintegroEscenario(scenarioNum) {
             const caja = document.getElementById(`scenario_${scenarioNum}_reintegro`);
             const d = AppState.desgloseSemanas;
@@ -9712,6 +9781,33 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             return mergedPeriods;
         }
 
+        // Fechas y montos de la liquidacion del escenario, para pintarlos
+        // sobre la misma linea de tiempo en vez de una grafica aparte.
+        const LIQ_DIAS_PRESTAMO = 10;    // el prestamo llega ~10 dias despues del retroactivo
+        const LIQ_DIAS_AFORE = 115;      // la AFORE, ~115 dias despues del prestamo
+
+        function _datosLiquidacion(svgId) {
+            const m = String(svgId).match(/scenario-(\d+)-svg/);
+            if (!m) return null;
+            const sc = AppState.scenarioData[m[1]];
+            if (!sc || !sc.fechaFinM40Obj || !sc.costoTotalContrato) return null;
+
+            const baja = sc.fechaFinM40Obj;
+            const meses = sc.mesesPrimerDeposito || 8;
+            const retro = new Date(baja.getTime());
+            retro.setUTCMonth(retro.getUTCMonth() + meses);
+            const prestamo = new Date(retro.getTime() + LIQ_DIAS_PRESTAMO * 86400000);
+            const afore = new Date(prestamo.getTime() + LIQ_DIAS_AFORE * 86400000);
+
+            const hitos = [
+                { f: retro, etq: 'Retroactivo', monto: sc.coberturaDeposito || 0 },
+                { f: prestamo, etq: 'Pr\u00e9stamo', monto: sc.prestamoRequerido || 0 },
+                { f: afore, etq: 'AFORE', monto: (sc.coberturaAfore || 0) + (sc.coberturaExtra || 0) }
+            ].filter(h => h.monto > 0);
+
+            return { baja, retro, prestamo, afore, meses, hitos };
+        }
+
         function drawScenarioTimeline(svgId, legendId, timelineData, titleId = null) {
             // En las graficas de los escenarios la ventana de las 250 semanas va
             // siempre visible: es la que explica de donde sale el SBC promedio.
@@ -9729,13 +9825,18 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             const relleneY = parseFloat(estilo.paddingTop || 0) + parseFloat(estilo.paddingBottom || 0);
             const containerWidth = container.clientWidth - relleneX;
             const containerHeight = container.clientHeight - relleneY;
-            const margin = { top: 26, right: 24, bottom: 44, left: 58 };
+            // abajo caben las etiquetas de anio y, debajo, las de edad
+            const margin = { top: 26, right: 24, bottom: 56, left: 58 };
             const height = Math.max(containerHeight, 240) - margin.top - margin.bottom;
             
             const minDate = d3.min(filteredData, d => d.fechaInicio);
             let maxDate = d3.max(filteredData, d => d.fechaFin);
             // Si la capa de Modalidad 40 esta encendida, el eje se estira hasta
             // el limite de los 5 anios para que la ventana se vea completa.
+            // La liquidacion vive en el futuro: el eje tiene que alcanzarla.
+            const liq = esEscenario ? _datosLiquidacion(svgId) : null;
+            if (liq && maxDate && liq.afore > maxDate) maxDate = liq.afore;
+
             if (!esEscenario && AppState.capasTimeline.cM40 && maxDate) {
                 const limite = new Date(maxDate.getTime());
                 limite.setUTCFullYear(limite.getUTCFullYear() + 5);
@@ -9801,7 +9902,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             gHuecos.selectAll("text").data(huecos.filter(h => (x(h.fin) - x(h.ini)) > 34)).enter().append("text")
                 .attr("x", d => (x(d.ini) + x(d.fin)) / 2).attr("y", 14)
                 .attr("text-anchor", "middle").attr("class", "lt-hueco-txt")
-                .text(d => d.dias >= 365 ? `${(d.dias / 365).toFixed(1)} a\u00f1os` : `${Math.round(d.dias / 30.44)} m`);
+                .text(d => {
+                    // en los huecos grandes se dice lo que significa, no solo el numero
+                    const anchoPx = x(d.fin) - x(d.ini);
+                    if (d.dias >= 365 && anchoPx > 96) return `aqu\u00ed perdi\u00f3 ${(d.dias / 365).toFixed(1)} a\u00f1os`;
+                    if (d.dias >= 365) return `${(d.dias / 365).toFixed(1)} a\u00f1os`;
+                    return `${Math.round(d.dias / 30.44)} m`;
+                });
 
             // ultimas 250 semanas y ventana de 5 anios para entrar a M40
             const ultima = orden.length ? orden[orden.length - 1].fechaFin : null;
@@ -9856,6 +9963,75 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     .attr("stroke", vencida ? "#DC2626" : "#C9A227").attr("stroke-width", 3);
             }
 
+            // ---- liquidacion: espera en amarillo, cobro en verde ----
+            if (liq) {
+                const gL = capas.append("g").attr("class", "capa-liquida");
+
+                const franja = (desde, hasta, relleno, borde) => {
+                    const x0 = Math.max(0, x(desde)), x1 = Math.min(width, x(hasta));
+                    if (x1 <= x0) return null;
+                    return gL.append("rect").attr("x", x0).attr("y", 0)
+                        .attr("width", x1 - x0).attr("height", height)
+                        .attr("fill", relleno).attr("stroke", borde).attr("stroke-dasharray", "3 3");
+                };
+                franja(liq.baja, liq.retro, "rgba(250,204,21,.20)", "#EAB308");
+                franja(liq.retro, liq.afore, "rgba(34,197,94,.16)", "#22C55E");
+
+                const centro = (a, b) => (Math.max(0, x(a)) + Math.min(width, x(b))) / 2;
+                if (x(liq.retro) - x(liq.baja) > 46) {
+                    gL.append("text").attr("x", centro(liq.baja, liq.retro)).attr("y", 12)
+                        .attr("text-anchor", "middle").attr("class", "lt-liq-tramo lt-liq-tramo--espera")
+                        .text(`ESPERA ${liq.meses} MESES`);
+                }
+                if (x(liq.afore) - x(liq.retro) > 46) {
+                    gL.append("text").attr("x", centro(liq.retro, liq.afore)).attr("y", 12)
+                        .attr("text-anchor", "middle").attr("class", "lt-liq-tramo lt-liq-tramo--cobro")
+                        .text("YA COBRA");
+                }
+
+                // los tres momentos en que le entra dinero
+                liq.hitos.forEach((h, i) => {
+                    const px = x(h.f);
+                    if (px < -20 || px > width + 20) return;
+                    const g = gL.append("g").attr("class", "lt-pago");
+                    g.append("line").attr("x1", px).attr("x2", px)
+                        .attr("y1", height).attr("y2", height - 26 - i * 15)
+                        .attr("stroke", "#15803D").attr("stroke-width", 1.5);
+                    g.append("circle").attr("cx", px).attr("cy", height - 26 - i * 15).attr("r", 3.5)
+                        .attr("fill", "#15803D");
+                    const anclaje = px > width - 90 ? "end" : "start";
+                    const dx = px > width - 90 ? -6 : 6;
+                    g.append("text").attr("x", px + dx).attr("y", height - 29 - i * 15)
+                        .attr("text-anchor", anclaje).attr("class", "lt-pago-txt")
+                        .text(`${h.etq}  +$${formatNumber(h.monto, 0)}`);
+                    g.append("text").attr("x", px + dx).attr("y", height - 19 - i * 15)
+                        .attr("text-anchor", anclaje).attr("class", "lt-pago-fecha")
+                        .text(formatDateDDMMYYYY(h.f));
+                });
+            }
+
+            // ---- cada cumpleanios, con la edad que va cumpliendo ----
+            const nacim = (AppState.datosClienteInfo || {}).curp
+                ? extraerFechaNacimientoCURP(AppState.datosClienteInfo.curp) : null;
+            if (nacim instanceof Date && !isNaN(nacim)) {
+                const gE = capas.append("g").attr("class", "capa-edades");
+                for (let edad = 55; edad <= 75; edad++) {
+                    const cumple = new Date(Date.UTC(nacim.getUTCFullYear() + edad,
+                                                     nacim.getUTCMonth(), nacim.getUTCDate()));
+                    if (cumple < minDate || cumple > maxDate) continue;
+                    const px = x(cumple);
+                    const clave = edad === 60 || edad === 65;
+                    gE.append("line").attr("x1", px).attr("x2", px).attr("y1", 0).attr("y2", height)
+                        .attr("stroke", clave ? "#0A2540" : "#94A3B8")
+                        .attr("stroke-width", clave ? 1.4 : 1)
+                        .attr("stroke-dasharray", clave ? "6 3" : "2 4")
+                        .attr("opacity", clave ? .8 : .45);
+                    gE.append("text").attr("x", px + 3).attr("y", height + 11)
+                        .attr("class", "lt-edad" + (clave ? " lt-edad--clave" : ""))
+                        .text(`${edad} a\u00f1os`);
+                }
+            }
+
             // ---- el dia de hoy, para ubicarse en la linea ----
             const ahora = new Date();
             if (ahora >= minDate && ahora <= maxDate) {
@@ -9866,6 +10042,72 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 gHoy.append("circle").attr("cx", x(ahora)).attr("cy", -6).attr("r", 3.5).attr("fill", "#DC2626");
                 gHoy.append("text").attr("x", x(ahora) + 5).attr("y", height - 4)
                     .attr("class", "lt-hoy-txt").text("hoy");
+            }
+
+            // ---- el tramo de Modalidad 40 y el salto de salario ----
+            // Es lo que el cliente va a comprar: no puede verse como un patron mas.
+            const tramosM40 = filteredData.filter(d => d.nombrePatron === 'Modalidad 40');
+            if (tramosM40.length) {
+                const iniM40 = new Date(Math.min(...tramosM40.map(d => d.fechaInicio.getTime())));
+                const finM40 = new Date(Math.max(...tramosM40.map(d => d.fechaFin.getTime())));
+                const sbcM40 = Math.max(...tramosM40.map(d => d.sbc));
+
+                // franja de fondo, para que el tramo se lea como un bloque aparte
+                const gM = capas.append("g").attr("class", "capa-m40tramo");
+                gM.append("rect")
+                    .attr("x", x(iniM40)).attr("y", 0)
+                    .attr("width", Math.max(2, x(finM40) - x(iniM40))).attr("height", height)
+                    .attr("fill", "rgba(249,115,22,.13)")
+                    .attr("stroke", "#F97316").attr("stroke-width", 1.5);
+                gM.append("text")
+                    .attr("x", (x(iniM40) + x(finM40)) / 2).attr("y", 12)
+                    .attr("text-anchor", "middle").attr("class", "lt-m40-rotulo")
+                    .text("MODALIDAD 40");
+
+                // el escalon: del ultimo SBC real al de M40
+                const previos = filteredData
+                    .filter(d => d.nombrePatron !== 'Modalidad 40' && d.fechaFin <= iniM40)
+                    .sort((a, b) => b.fechaFin - a.fechaFin);
+                if (previos.length) {
+                    const sbcPrevio = previos[0].sbc;
+                    if (sbcM40 > sbcPrevio) {
+                        const veces = sbcPrevio > 0 ? sbcM40 / sbcPrevio : 0;
+                        const xs = x(iniM40);
+                        const gS = chart.append("g").attr("class", "capa-salto");
+
+                        // linea punteada al nivel del salario anterior
+                        gS.append("line")
+                            .attr("x1", 0).attr("x2", width)
+                            .attr("y1", y(sbcPrevio)).attr("y2", y(sbcPrevio))
+                            .attr("stroke", "#64748B").attr("stroke-width", 1)
+                            .attr("stroke-dasharray", "3 4").attr("opacity", .8);
+
+                        // flecha del salto
+                        gS.append("line")
+                            .attr("x1", xs).attr("x2", xs)
+                            .attr("y1", y(sbcPrevio)).attr("y2", y(sbcM40) + 4)
+                            .attr("stroke", "#F97316").attr("stroke-width", 2.5);
+                        gS.append("path")
+                            .attr("d", `M ${xs - 5} ${y(sbcM40) + 8} L ${xs} ${y(sbcM40)} L ${xs + 5} ${y(sbcM40) + 8} Z`)
+                            .attr("fill", "#F97316");
+
+                        // etiqueta con el multiplicador
+                        const ancho = 82, alto = 30;
+                        const px = Math.min(Math.max(xs + 8, 2), width - ancho - 2);
+                        const py = Math.max(2, (y(sbcPrevio) + y(sbcM40)) / 2 - alto / 2);
+                        gS.append("rect")
+                            .attr("x", px).attr("y", py).attr("width", ancho).attr("height", alto)
+                            .attr("rx", 5).attr("fill", "#F97316");
+                        gS.append("text")
+                            .attr("x", px + ancho / 2).attr("y", py + 12)
+                            .attr("text-anchor", "middle").attr("class", "lt-salto-num")
+                            .text(`${formatNumber(veces, 1)}\u00d7 m\u00e1s`);
+                        gS.append("text")
+                            .attr("x", px + ancho / 2).attr("y", py + 23)
+                            .attr("text-anchor", "middle").attr("class", "lt-salto-sub")
+                            .text(`+$${formatNumber(sbcM40 - sbcPrevio, 0)}/d\u00eda`);
+                    }
+                }
             }
 
             chart.selectAll(".bar").data(filteredData).enter().append("rect").attr("class", "bar")
@@ -10776,6 +11018,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
         function handlePMGSelection() {
             const select = document.getElementById('info_pensionMinimaSelect');
+            if (!select) return;   // la seccion de patrimonio ya no existe
             const customInput = document.getElementById('info_pensionMinima');
             if (select.value === 'custom') {
                 promptForPassword(() => {
@@ -10857,6 +11100,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         });
 
         function generateROIMatrix(years) {
+            if (!document.getElementById('roiChartContainer')) return;
             const scBase = AppState.pensionBaseResultadosInfo;
             const sc1 = AppState.scenarioData[1];
             
@@ -10970,6 +11214,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         }
 
         function drawROIChart(data) {
+            if (!document.getElementById('roiChartContainer')) return;
             const container = d3.select("#roiChartContainer");
             container.html("");
             const width = container.node().getBoundingClientRect().width || 800;
