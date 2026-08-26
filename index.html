@@ -2522,17 +2522,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         .btn-sisec--cen:hover { background: var(--azul-700); border-color: var(--azul-700); color: #fff; }
 
         .lt-m40-rotulo { font-size: 10px; font-weight: 900; fill: #C2410C; letter-spacing: .08em; }
-        .lt-salto-num { font-size: 12px; font-weight: 900; fill: #fff; }
-        .lt-salto-sub { font-size: 8.5px; font-weight: 700; fill: rgba(255,255,255,.92); }
 
 
-        .lt-liq-tramo { font-size: 9px; font-weight: 900; letter-spacing: .08em; }
-        .lt-liq-tramo--espera { fill: #A16207; }
-        .lt-liq-tramo--cobro { fill: #15803D; }
-        .lt-pago-txt { font-size: 9.5px; font-weight: 900; fill: #15803D; }
-        .lt-pago-fecha { font-size: 8px; font-weight: 700; fill: #64748B; }
-        .lt-edad { font-size: 8.5px; font-weight: 700; fill: #94A3B8; }
-        .lt-edad--clave { font-size: 9.5px; font-weight: 900; fill: #0A2540; }
+
     </style>
 </head>
 
@@ -2973,10 +2965,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     <div class="flex justify-between items-center mb-2 flex-wrap gap-y-2">
                         <h3 id="timelineTitle" class="subsection-title !mb-0">Línea de Tiempo del Historial Laboral</h3>
                         <div class="lt-botones">
-                            <button type="button" id="btnLt250" class="lt-boton" onclick="toggleCapaTimeline('c250')">
+                            <button type="button" id="btnLt250" class="lt-boton is-on" onclick="toggleCapaTimeline('c250')">
                                 <i class="fas fa-highlighter"></i> SBC promedio
                             </button>
-                            <button type="button" id="btnLtM40" class="lt-boton" onclick="toggleCapaTimeline('cM40')">
+                            <button type="button" id="btnLtM40" class="lt-boton is-on" onclick="toggleCapaTimeline('cM40')">
                                 <i class="fas fa-door-open"></i> Ventana de Modalidad 40
                             </button>
                             <button type="button" id="btnLtHuecos" class="lt-boton is-on" onclick="toggleCapaTimeline('cHuecos')">
@@ -3660,7 +3652,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             desgloseSemanas: null, // { imss, descontadas, reintegradas, reintegrar }
             modoPresentacion: false,  // se enciende a mano, con el boton
             parReintegro: null,
-            capasTimeline: { c250: false, cM40: false, cHuecos: true },
+            capasTimeline: { c250: true, cM40: true, cHuecos: true },   // las tres, encendidas
             vigencia: { detectado: false, opcion: 'baja', fechaHasta: null, diasExtra: 0, mesesExtra: 0, semanasExtra: 0 },
 
             fechaEmisionConstancia: null, // FIX: fecha de emision leida del documento
@@ -8284,7 +8276,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                             <div id="timeline-section-${scenarioNum}" class="border rounded-xl p-5">
                                 <h4 class="font-bold text-center text-lg mb-2">Línea de Tiempo del Escenario</h4>
                                 <p class="text-xs text-center text-gray-500 mb-2">Periodos del nuevo SBC Promedio.</p>
-                                <div id="timeline-scenario-${scenarioNum}-container" class="w-full h-56 mt-2 overflow-x-auto bg-gray-50 rounded-lg border"><svg id="timeline-scenario-${scenarioNum}-svg"></svg></div>
+                                <div id="timeline-scenario-${scenarioNum}-container" class="w-full mt-2 bg-gray-50 rounded-lg border" style="height:17rem; padding:.6rem; overflow-x:auto; overflow-y:hidden;"><svg id="timeline-scenario-${scenarioNum}-svg"></svg></div>
                                 <div id="timeline-scenario-${scenarioNum}-legend" class="flex flex-wrap gap-x-2 gap-y-1 mt-2 p-1 text-xs justify-center"></div>
                             </div>
                             <div class="border rounded-xl p-5">
@@ -8707,7 +8699,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                             <span>D&Eacute;FICIT:</span><b>$${formatNumber(data.deficit)}</b>
                         </div>
                         <div class="bal-fila bal-fila--pmo">
-                            <span>(+) PR&Eacute;STAMO REQUERIDO:</span><b>$${formatNumber(data.prestamoRequerido)}</b>
+                            <span>PR&Eacute;STAMO AUTORIZADO POR:</span><b>$${formatNumber(data.prestamoRequerido)}</b>
                         </div>` : ''}
 
                         <div class="bal-total ${data.saldoFinal < -0.005 ? 'bal-total--mal' : (data.saldoFinal > 0.005 ? 'bal-total--ok' : 'bal-total--liquida')}">
@@ -9057,7 +9049,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                         financialBody.push(
                             [{ content: 'D\u00c9FICIT:', styles: { fontStyle: 'bold', textColor: '#B91C1C' } },
                              { content: `$${formatNumber(sc.deficit)}`, styles: { halign: 'right', textColor: '#B91C1C' } }],
-                            [{ content: '(+) PR\u00c9STAMO REQUERIDO:', styles: { fontStyle: 'bold', fillColor: '#EFF6FF' } },
+                            [{ content: 'PR\u00c9STAMO AUTORIZADO POR:', styles: { fontStyle: 'bold', fillColor: '#EFF6FF' } },
                              { content: `$${formatNumber(sc.prestamoRequerido)}`, styles: { fontStyle: 'bold', halign: 'right', fillColor: '#EFF6FF' } }]
                         );
                     }
@@ -9781,37 +9773,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             return mergedPeriods;
         }
 
-        // Fechas y montos de la liquidacion del escenario, para pintarlos
-        // sobre la misma linea de tiempo en vez de una grafica aparte.
-        const LIQ_DIAS_PRESTAMO = 10;    // el prestamo llega ~10 dias despues del retroactivo
-        const LIQ_DIAS_AFORE = 115;      // la AFORE, ~115 dias despues del prestamo
-
-        function _datosLiquidacion(svgId) {
-            const m = String(svgId).match(/scenario-(\d+)-svg/);
-            if (!m) return null;
-            const sc = AppState.scenarioData[m[1]];
-            if (!sc || !sc.fechaFinM40Obj || !sc.costoTotalContrato) return null;
-
-            const baja = sc.fechaFinM40Obj;
-            const meses = sc.mesesPrimerDeposito || 8;
-            const retro = new Date(baja.getTime());
-            retro.setUTCMonth(retro.getUTCMonth() + meses);
-            const prestamo = new Date(retro.getTime() + LIQ_DIAS_PRESTAMO * 86400000);
-            const afore = new Date(prestamo.getTime() + LIQ_DIAS_AFORE * 86400000);
-
-            const hitos = [
-                { f: retro, etq: 'Retroactivo', monto: sc.coberturaDeposito || 0 },
-                { f: prestamo, etq: 'Pr\u00e9stamo', monto: sc.prestamoRequerido || 0 },
-                { f: afore, etq: 'AFORE', monto: (sc.coberturaAfore || 0) + (sc.coberturaExtra || 0) }
-            ].filter(h => h.monto > 0);
-
-            return { baja, retro, prestamo, afore, meses, hitos };
-        }
-
         function drawScenarioTimeline(svgId, legendId, timelineData, titleId = null) {
             // En las graficas de los escenarios la ventana de las 250 semanas va
             // siempre visible: es la que explica de donde sale el SBC promedio.
+            // La de escenarios va limpia: los huecos solo estorban ahi.
             const esEscenario = svgId !== 'timeline-svg';
+            const capasVisibles = {
+                huecos: !esEscenario,            // en escenarios estorban
+                v250: true,
+                m40: true,
+            };
             const container = d3.select(`#${svgId}`).node() ? d3.select(`#${svgId}`).node().parentNode : null;
             if (!container) return;
             const svg = d3.select(`#${svgId}`); svg.selectAll("*").remove();
@@ -9825,18 +9796,18 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             const relleneY = parseFloat(estilo.paddingTop || 0) + parseFloat(estilo.paddingBottom || 0);
             const containerWidth = container.clientWidth - relleneX;
             const containerHeight = container.clientHeight - relleneY;
-            // abajo caben las etiquetas de anio y, debajo, las de edad
-            const margin = { top: 26, right: 24, bottom: 56, left: 58 };
+            // Las graficas de escenario viven en media columna: con los mismos
+            // margenes que la principal se quedaban sin espacio para las barras.
+            const estrecha = container.clientWidth < 520;
+            const margin = estrecha
+                ? { top: 20, right: 12, bottom: 40, left: 44 }
+                : { top: 26, right: 24, bottom: 44, left: 58 };
             const height = Math.max(containerHeight, 240) - margin.top - margin.bottom;
             
             const minDate = d3.min(filteredData, d => d.fechaInicio);
             let maxDate = d3.max(filteredData, d => d.fechaFin);
             // Si la capa de Modalidad 40 esta encendida, el eje se estira hasta
             // el limite de los 5 anios para que la ventana se vea completa.
-            // La liquidacion vive en el futuro: el eje tiene que alcanzarla.
-            const liq = esEscenario ? _datosLiquidacion(svgId) : null;
-            if (liq && maxDate && liq.afore > maxDate) maxDate = liq.afore;
-
             if (!esEscenario && AppState.capasTimeline.cM40 && maxDate) {
                 const limite = new Date(maxDate.getTime());
                 limite.setUTCFullYear(limite.getUTCFullYear() + 5);
@@ -9886,7 +9857,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 if (!tope || pe.fechaFin > tope) tope = pe.fechaFin;
             });
             const gHuecos = capas.append("g").attr("class", "capa-huecos")
-                .style("display", AppState.capasTimeline.cHuecos ? null : "none");
+                .style("display", (capasVisibles.huecos && AppState.capasTimeline.cHuecos) ? null : "none");
             gHuecos.selectAll("rect").data(huecos).enter().append("rect")
                 .attr("x", d => x(d.ini)).attr("y", 0)
                 .attr("width", d => Math.max(1, x(d.fin) - x(d.ini))).attr("height", height)
@@ -9913,7 +9884,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             // ultimas 250 semanas y ventana de 5 anios para entrar a M40
             const ultima = orden.length ? orden[orden.length - 1].fechaFin : null;
             if (ultima) {
-                const ini250 = new Date(ultima.getTime() - 250 * 7 * 86400000);
+                // Son las ultimas 250 semanas COTIZADAS, no las transcurridas:
+                // se camina hacia atras acumulando dias trabajados y saltando
+                // los huecos, igual que hace el motor de calculo.
+                let diasFaltan = Constants.DIAS_PROMEDIO_PENSION;
+                let ini250 = ultima;
+                for (let k = orden.length - 1; k >= 0 && diasFaltan > 0; k--) {
+                    const pe = orden[k];
+                    const diasPe = Math.round((pe.fechaFin - pe.fechaInicio) / 86400000) + 1;
+                    if (diasPe <= diasFaltan) { ini250 = pe.fechaInicio; diasFaltan -= diasPe; }
+                    else { ini250 = new Date(pe.fechaFin.getTime() - diasFaltan * 86400000); diasFaltan = 0; }
+                }
                 const desde250 = ini250 < minDate ? minDate : ini250;
                 const g250 = capas.append("g").attr("class", "capa-250")
                     .style("display", (esEscenario || AppState.capasTimeline.c250) ? null : "none");
@@ -9963,75 +9944,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     .attr("stroke", vencida ? "#DC2626" : "#C9A227").attr("stroke-width", 3);
             }
 
-            // ---- liquidacion: espera en amarillo, cobro en verde ----
-            if (liq) {
-                const gL = capas.append("g").attr("class", "capa-liquida");
-
-                const franja = (desde, hasta, relleno, borde) => {
-                    const x0 = Math.max(0, x(desde)), x1 = Math.min(width, x(hasta));
-                    if (x1 <= x0) return null;
-                    return gL.append("rect").attr("x", x0).attr("y", 0)
-                        .attr("width", x1 - x0).attr("height", height)
-                        .attr("fill", relleno).attr("stroke", borde).attr("stroke-dasharray", "3 3");
-                };
-                franja(liq.baja, liq.retro, "rgba(250,204,21,.20)", "#EAB308");
-                franja(liq.retro, liq.afore, "rgba(34,197,94,.16)", "#22C55E");
-
-                const centro = (a, b) => (Math.max(0, x(a)) + Math.min(width, x(b))) / 2;
-                if (x(liq.retro) - x(liq.baja) > 46) {
-                    gL.append("text").attr("x", centro(liq.baja, liq.retro)).attr("y", 12)
-                        .attr("text-anchor", "middle").attr("class", "lt-liq-tramo lt-liq-tramo--espera")
-                        .text(`ESPERA ${liq.meses} MESES`);
-                }
-                if (x(liq.afore) - x(liq.retro) > 46) {
-                    gL.append("text").attr("x", centro(liq.retro, liq.afore)).attr("y", 12)
-                        .attr("text-anchor", "middle").attr("class", "lt-liq-tramo lt-liq-tramo--cobro")
-                        .text("YA COBRA");
-                }
-
-                // los tres momentos en que le entra dinero
-                liq.hitos.forEach((h, i) => {
-                    const px = x(h.f);
-                    if (px < -20 || px > width + 20) return;
-                    const g = gL.append("g").attr("class", "lt-pago");
-                    g.append("line").attr("x1", px).attr("x2", px)
-                        .attr("y1", height).attr("y2", height - 26 - i * 15)
-                        .attr("stroke", "#15803D").attr("stroke-width", 1.5);
-                    g.append("circle").attr("cx", px).attr("cy", height - 26 - i * 15).attr("r", 3.5)
-                        .attr("fill", "#15803D");
-                    const anclaje = px > width - 90 ? "end" : "start";
-                    const dx = px > width - 90 ? -6 : 6;
-                    g.append("text").attr("x", px + dx).attr("y", height - 29 - i * 15)
-                        .attr("text-anchor", anclaje).attr("class", "lt-pago-txt")
-                        .text(`${h.etq}  +$${formatNumber(h.monto, 0)}`);
-                    g.append("text").attr("x", px + dx).attr("y", height - 19 - i * 15)
-                        .attr("text-anchor", anclaje).attr("class", "lt-pago-fecha")
-                        .text(formatDateDDMMYYYY(h.f));
-                });
-            }
-
-            // ---- cada cumpleanios, con la edad que va cumpliendo ----
-            const nacim = (AppState.datosClienteInfo || {}).curp
-                ? extraerFechaNacimientoCURP(AppState.datosClienteInfo.curp) : null;
-            if (nacim instanceof Date && !isNaN(nacim)) {
-                const gE = capas.append("g").attr("class", "capa-edades");
-                for (let edad = 55; edad <= 75; edad++) {
-                    const cumple = new Date(Date.UTC(nacim.getUTCFullYear() + edad,
-                                                     nacim.getUTCMonth(), nacim.getUTCDate()));
-                    if (cumple < minDate || cumple > maxDate) continue;
-                    const px = x(cumple);
-                    const clave = edad === 60 || edad === 65;
-                    gE.append("line").attr("x1", px).attr("x2", px).attr("y1", 0).attr("y2", height)
-                        .attr("stroke", clave ? "#0A2540" : "#94A3B8")
-                        .attr("stroke-width", clave ? 1.4 : 1)
-                        .attr("stroke-dasharray", clave ? "6 3" : "2 4")
-                        .attr("opacity", clave ? .8 : .45);
-                    gE.append("text").attr("x", px + 3).attr("y", height + 11)
-                        .attr("class", "lt-edad" + (clave ? " lt-edad--clave" : ""))
-                        .text(`${edad} a\u00f1os`);
-                }
-            }
-
             // ---- el dia de hoy, para ubicarse en la linea ----
             const ahora = new Date();
             if (ahora >= minDate && ahora <= maxDate) {
@@ -10064,50 +9976,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     .attr("text-anchor", "middle").attr("class", "lt-m40-rotulo")
                     .text("MODALIDAD 40");
 
-                // el escalon: del ultimo SBC real al de M40
-                const previos = filteredData
-                    .filter(d => d.nombrePatron !== 'Modalidad 40' && d.fechaFin <= iniM40)
-                    .sort((a, b) => b.fechaFin - a.fechaFin);
-                if (previos.length) {
-                    const sbcPrevio = previos[0].sbc;
-                    if (sbcM40 > sbcPrevio) {
-                        const veces = sbcPrevio > 0 ? sbcM40 / sbcPrevio : 0;
-                        const xs = x(iniM40);
-                        const gS = chart.append("g").attr("class", "capa-salto");
-
-                        // linea punteada al nivel del salario anterior
-                        gS.append("line")
-                            .attr("x1", 0).attr("x2", width)
-                            .attr("y1", y(sbcPrevio)).attr("y2", y(sbcPrevio))
-                            .attr("stroke", "#64748B").attr("stroke-width", 1)
-                            .attr("stroke-dasharray", "3 4").attr("opacity", .8);
-
-                        // flecha del salto
-                        gS.append("line")
-                            .attr("x1", xs).attr("x2", xs)
-                            .attr("y1", y(sbcPrevio)).attr("y2", y(sbcM40) + 4)
-                            .attr("stroke", "#F97316").attr("stroke-width", 2.5);
-                        gS.append("path")
-                            .attr("d", `M ${xs - 5} ${y(sbcM40) + 8} L ${xs} ${y(sbcM40)} L ${xs + 5} ${y(sbcM40) + 8} Z`)
-                            .attr("fill", "#F97316");
-
-                        // etiqueta con el multiplicador
-                        const ancho = 82, alto = 30;
-                        const px = Math.min(Math.max(xs + 8, 2), width - ancho - 2);
-                        const py = Math.max(2, (y(sbcPrevio) + y(sbcM40)) / 2 - alto / 2);
-                        gS.append("rect")
-                            .attr("x", px).attr("y", py).attr("width", ancho).attr("height", alto)
-                            .attr("rx", 5).attr("fill", "#F97316");
-                        gS.append("text")
-                            .attr("x", px + ancho / 2).attr("y", py + 12)
-                            .attr("text-anchor", "middle").attr("class", "lt-salto-num")
-                            .text(`${formatNumber(veces, 1)}\u00d7 m\u00e1s`);
-                        gS.append("text")
-                            .attr("x", px + ancho / 2).attr("y", py + 23)
-                            .attr("text-anchor", "middle").attr("class", "lt-salto-sub")
-                            .text(`+$${formatNumber(sbcM40 - sbcPrevio, 0)}/d\u00eda`);
-                    }
-                }
             }
 
             chart.selectAll(".bar").data(filteredData).enter().append("rect").attr("class", "bar")
