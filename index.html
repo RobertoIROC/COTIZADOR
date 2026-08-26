@@ -2525,6 +2525,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
 
 
+
+        .nota-edad { margin-top: .5rem; font-size: .78rem; color: var(--tinta-2);
+                     background: var(--superficie-2); border: 1px solid var(--linea);
+                     border-radius: .5rem; padding: .5rem .8rem; }
+        .nota-edad b { color: var(--tinta); }
+
+        .nota-edad--vencida { background: #FEE2E2; border-color: #FCA5A5; color: #7F1D1D; }
+        .nota-edad--vencida b { color: #991B1B; }
     </style>
 </head>
 
@@ -7119,6 +7127,44 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             recalculateScenario(scenarioNum);
         }
 
+        // Se deja claro con que edad y a que fecha se calculo, porque es lo
+        // primero que se revisa cuando un numero no cuadra contra el Excel.
+        function mostrarEdadDeLaBaja() {
+            const cont = document.getElementById('avisoEdadBase');
+            const e = AppState.edadEnLaBaja;
+            const f = AppState.fechaBajaParaEdad;
+            if (!cont || !e || !f) return;
+            let considerada = e.anos;
+            if (e.meses > 6 || (e.meses === 6 && e.dias > 0)) considerada = e.anos + 1;
+            const tabla = { 60: 75, 61: 80, 62: 85, 63: 90, 64: 95, 65: 100 };
+            const pct = tabla[Math.max(60, considerada)] || 100;
+            const nota = document.createElement('p');
+            nota.className = 'nota-edad';
+            nota.innerHTML = `<i class="fas fa-cake-candles mr-1"></i>
+                Calculado con la edad <b>a la fecha de baja</b> (${formatDateDDMMYYYY(f)}):
+                <b>${e.anos} a\u00f1os ${e.meses} meses</b> &rarr; cuenta como
+                <b>${considerada}</b> &rarr; <b>${pct}%</b>`;
+            cont.appendChild(nota);
+
+            // Si la conservacion del Art. 150 ya vencio, esta pension no se
+            // puede reclamar tal cual: hay que reingresar y cotizar 52 semanas.
+            const d = _datosDerechos();
+            if (d && d.finConservacion && d.finConservacion < new Date()) {
+                const anos = (new Date() - d.finConservacion) / 86400000 / 365.25;
+                const alerta = document.createElement('p');
+                alerta.className = 'nota-edad nota-edad--vencida';
+                alerta.innerHTML = `<i class="fas fa-triangle-exclamation mr-1"></i>
+                    <b>Conservaci\u00f3n de derechos vencida.</b> Ten\u00eda
+                    <b>${formatNumber(d.semConservacion, 0)} semanas</b> de conservaci\u00f3n
+                    (la cuarta parte de lo cotizado), que terminaron el
+                    <b>${formatDateDDMMYYYY(d.finConservacion)}</b>, hace
+                    <b>${formatNumber(anos, 1)} a\u00f1os</b>.
+                    Para reclamar esta pensi\u00f3n tendr\u00eda que reingresar al r\u00e9gimen
+                    y cotizar <b>52 semanas</b> (Art. 151).`;
+                cont.appendChild(alerta);
+            }
+        }
+
         function mostrarAvisoTope(idContenedor, datos) {
             const el = document.getElementById(idContenedor);
             if (!el) return;
@@ -7860,7 +7906,18 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             AppState.sbcCalculationPeriods = periodosParaTabla;
             const sbcPromedioFinal = diasAcumuladosSBC > 0 ? sbcPonderadoTotal / diasAcumuladosSBC : 0;
 
-            const edadObj = AppState.datosClienteInfo.edadObjCompleta;
+            // El porcentaje se congela con la edad que tenia EL DIA DE LA BAJA,
+            // no con la de hoy: es el criterio del IMSS.
+            const _nacBase = AppState.datosClienteInfo.curp
+                ? extraerFechaNacimientoCURP(AppState.datosClienteInfo.curp) : null;
+            const _ultimaBaja = (AppState.timelinePeriods || []).length
+                ? new Date(Math.max(...AppState.timelinePeriods.map(p => p.fechaFin.getTime())))
+                : null;
+            const edadObj = (_nacBase && _ultimaBaja)
+                ? calcularEdadExacta(_nacBase, _ultimaBaja)
+                : AppState.datosClienteInfo.edadObjCompleta;
+            AppState.edadEnLaBaja = edadObj;
+            AppState.fechaBajaParaEdad = _ultimaBaja;
             let edadConsiderada = edadObj.anos;
             if (edadObj.meses > 6 || (edadObj.meses === 6 && edadObj.dias > 0)) edadConsiderada = edadObj.anos + 1;
             let edadParaCalculoBase = Math.max(60, edadConsiderada);
@@ -7948,6 +8005,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             document.getElementById('res_base_pensionMensual').textContent = '$' + formatNumber(pensionData.PENSION_MENSUAL_ESTIMADA);
             mostrarAvisoTope('avisoTopeBase', pensionData);
             mostrarAvisoEdad('avisoEdadBase', pensionData);
+            mostrarEdadDeLaBaja();
             actualizarHeroPension(pensionData.PENSION_MENSUAL_ESTIMADA,
                 extraerFechaNacimientoCURP(AppState.datosClienteInfo.curp),
                 AppState.datosClienteInfo.ultimaFechaBaja);
@@ -8494,7 +8552,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             let fechaFinM40Obj, edadFinM40, sbcPromedio, pensionResult, pensionMensual, aguinaldo, finalTimelinePeriods, sbcBreakdownPeriods;
 
             if (inputs.meses === 0) {
-                const edadParaCalculoBase = Math.max(60, AppState.datosClienteInfo.edadBase);
+                // misma regla que arriba: la edad que tenia en la baja
+                const _eb = AppState.edadEnLaBaja;
+                let _consid = _eb ? _eb.anos : AppState.datosClienteInfo.edadBase;
+                if (_eb && (_eb.meses > 6 || (_eb.meses === 6 && _eb.dias > 0))) _consid = _eb.anos + 1;
+                const edadParaCalculoBase = Math.max(60, _consid);
                 pensionResult = _calcularPensionDetallado(AppState.datosClienteInfo.sbcPromedioBase, inputs.semanas, edadParaCalculoBase);
                 pensionMensual = pensionResult.PENSION_MENSUAL_ESTIMADA; aguinaldo = pensionResult.AGUINALDO_ESTIMADO;
                 sbcPromedio = AppState.datosClienteInfo.sbcPromedioBase; edadFinM40 = AppState.datosClienteInfo.edadObjCompleta;
@@ -8897,7 +8959,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
             finalY = addSectionTitle("Resumen de Análisis Inicial", finalY);
             doc.autoTable({
-                startY: finalY, theme: 'grid', styles: { fontSize: 8, cellPadding: 3, font: 'helvetica' }, headStyles: { fillColor: RGC_BLUE },
+                startY: finalY, theme: 'grid', alternateRowStyles: { fillColor: '#F8FAFC' }, styles: { fontSize: 8, cellPadding: 3, font: 'helvetica' }, headStyles: { fillColor: RGC_BLUE, fontSize: 9, cellPadding: 4, halign: 'left' },
                 columnStyles: { 0: { cellWidth: 110 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 130 }, 3: { cellWidth: 'auto', halign: 'right' } },
                 body: [
                     [{ content: 'Nombre Completo:', styles: { fontStyle: 'bold' }}, cliente.nombre, { content: 'SBC Promedio (Base):', styles: { fontStyle: 'bold' }}, `$${formatNumber(cliente.sbcPromedioBase)}`],
@@ -8952,7 +9014,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     startY: finalY,
                     head: [['Periodo', 'Días', 'Patrones', 'Estado/Alerta']],
                     body: overlapsTableRows,
-                    theme: 'grid', styles: { fontSize: 7, cellPadding: 3 }, headStyles: { fillColor: '#7e22ce' }
+                    theme: 'grid', alternateRowStyles: { fillColor: '#F8FAFC' }, styles: { fontSize: 7, cellPadding: 3 }, headStyles: { fillColor: '#7e22ce' }
                 });
                 finalY = doc.autoTable.previous.finalY + 15;
             }
@@ -8996,36 +9058,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     [{ content: 'Semanas Finales:', styles: { fontStyle: 'bold' }}, formatNumber(sc.semanas, 0)],
                     [{ content: 'Edad al Finalizar:', styles: { fontStyle: 'bold' }}, `${sc.edadFinM40.anos}a, ${sc.edadFinM40.meses}m`],
                     [{ content: 'Pensi\u00f3n Mensual:', styles: { fontStyle: 'bold', fillColor: '#e0f2fe', textColor: '#0c4a6e' }},
-                     { content: `$${formatNumber((sc.pensionMensual || 0) * (sc.factorFebrero || 1))}` +
-                                ((sc.factorFebrero && sc.factorFebrero > 1)
-                                  ? `\n(ya actualizada: $${formatNumber(sc.pensionMensual)} + ${formatNumber((sc.factorFebrero - 1) * 100, 2)}% de febrero)`
-                                  : ''),
-                       styles: { fontStyle: 'bold', fillColor: '#e0f2fe', textColor: '#0c4a6e', halign: 'right', fontSize: 11 } }],
+                     { content: `$${formatNumber((sc.pensionMensual || 0) * (sc.factorFebrero || 1))}`,
+                       styles: { fontStyle: 'bold', fillColor: '#e0f2fe', textColor: '#0c4a6e', halign: 'right', fontSize: 12 } }],
                     [{ content: 'Aguinaldo:', styles: { fontStyle: 'bold' }}, `$${formatNumber((sc.aguinaldo || 0) * (sc.factorFebrero || 1))}`],
                 ];
+                // El aumento de febrero va en su propio renglon: meter dos
+                // tamanos de letra en una celda obligaba a repintarla a mano
+                // y quedaba encimado.
+                if (sc.factorFebrero && sc.factorFebrero > 1) {
+                    pensionBody.push([
+                        { content: 'Ya incluye el aumento de febrero', styles: { fontStyle: 'italic', textColor: '#475569', fontSize: 7 } },
+                        { content: `antes $${formatNumber(sc.pensionMensual)}   +${formatNumber((sc.factorFebrero - 1) * 100, 2)}%`,
+                          styles: { halign: 'right', textColor: '#475569', fontSize: 7 } }
+                    ]);
+                }
                 
                 doc.autoTable({
                     startY: tableStartY, head: [['Resultados de Pensión', '']], body: pensionBody,
-                    theme: 'grid', headStyles: { fillColor: RGC_BLUE }, styles: { fontSize: 8, cellPadding: 3 },
+                    theme: 'grid', alternateRowStyles: { fillColor: '#F8FAFC' }, headStyles: { fillColor: RGC_BLUE, fontSize: 9, cellPadding: 4, halign: 'left' }, styles: { fontSize: 8, cellPadding: 3.4, lineColor: '#E2E8F0', lineWidth: 0.3 },
                     margin: { left: margin }, tableWidth: halfContentWidth,
                     columnStyles: { 0: { fontStyle: 'bold', cellWidth: 'auto' }, 1: { halign: 'right' } },
-                    didParseCell: (d) => {
-                        const t = typeof d.cell.raw === 'object' ? String(d.cell.raw.content || '') : String(d.cell.raw || '');
-                        if (t.includes('(ya actualizada')) d.cell.styles.minCellHeight = 15;
-                    },
-                    didDrawCell: (d) => {
-                        // la cifra actualizada en grande, la nota en chico debajo
-                        const lineas = Array.isArray(d.cell.text) ? d.cell.text : [];
-                        const iNota = lineas.findIndex(x => x.includes('(ya actualizada'));
-                        if (iNota < 1) return;
-                        doc.setFillColor(224, 242, 254);
-                        doc.rect(d.cell.x + 0.4, d.cell.y + 0.4, d.cell.width - 0.8, d.cell.height - 0.8, 'F');
-                        const der = d.cell.x + d.cell.width - 3;
-                        doc.setTextColor(12, 74, 110); doc.setFontSize(13); doc.setFont(undefined, 'bold');
-                        doc.text(lineas[0], der, d.cell.y + 7, { align: 'right' });
-                        doc.setTextColor(100, 116, 139); doc.setFontSize(5.5); doc.setFont(undefined, 'normal');
-                        doc.text(lineas.slice(iNota).join(' '), der, d.cell.y + 12, { align: 'right' });
-                    }
                 });
                 table1FinalY = doc.autoTable.previous.finalY;
 
@@ -9067,7 +9119,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
                     doc.autoTable({
                         startY: tableStartY, head: [['Balance del Proyecto', '']], body: financialBody,
-                        theme: 'grid', headStyles: { fillColor: RGC_BLUE }, styles: { fontSize: 8, cellPadding: 3 }, // OPTIMIZADO
+                        theme: 'grid', alternateRowStyles: { fillColor: '#F8FAFC' }, headStyles: { fillColor: RGC_BLUE, fontSize: 9, cellPadding: 4, halign: 'left' }, styles: { fontSize: 8, cellPadding: 3.4, lineColor: '#E2E8F0', lineWidth: 0.3 }, // OPTIMIZADO
                         margin: { left: margin + halfContentWidth + 10 }, tableWidth: halfContentWidth,
                         columnStyles: { 1: { halign: 'right' }}
                     });
@@ -9103,7 +9155,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 doc.autoTable({
                     startY: finalY, head: [['Año', 'Pensión Bruta Anual', 'Descuento Anual', 'Pensión Neta Anual']],
                     body: sc.proyeccion.map(row => [ row[0], row[1], row[2], row[3] ]),
-                    theme: 'striped', headStyles: { fillColor: RGC_BLUE }, styles: { fontSize: 7, cellPadding: 3, font: 'helvetica' },
+                    theme: 'striped', headStyles: { fillColor: RGC_BLUE, fontSize: 9, cellPadding: 4, halign: 'left' }, styles: { fontSize: 7, cellPadding: 3, font: 'helvetica' },
                     didParseCell: (data) => { if(data.section === 'body' && data.column.index > 0) data.cell.styles.halign = 'right'; }
                 });
                 finalY = doc.autoTable.previous.finalY;
@@ -9123,7 +9175,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 const roiTable = document.querySelector('#roiTableContainer table');
                 if (roiTable) {
                     finalY = checkPageBreak(finalY, 20); finalY = addSectionTitle("Tabla de Datos ROI", finalY);
-                    doc.autoTable({ startY: finalY, html: roiTable, theme: 'grid', headStyles: { fillColor: RGC_BLUE }, styles: { fontSize: 7, cellPadding: 2, font: 'helvetica' } });
+                    doc.autoTable({ startY: finalY, html: roiTable, theme: 'grid', alternateRowStyles: { fillColor: '#F8FAFC' }, headStyles: { fillColor: RGC_BLUE, fontSize: 9, cellPadding: 4, halign: 'left' }, styles: { fontSize: 7, cellPadding: 2, font: 'helvetica' } });
                     finalY = doc.autoTable.previous.finalY;
                 }
             }
