@@ -733,8 +733,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         .app-footer p { opacity: 0.8; }
 
         #timeline-tooltip {
-            position: absolute; text-align: left; padding: 10px 14px; font-size: 13px; background: var(--text-dark);
-            color: white; border: 0px; border-radius: 12px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 10; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: fixed; text-align: left; padding: 10px 14px; font-size: 13px; background: var(--text-dark);
+            color: white; border: 0px; border-radius: 12px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 200; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         body {
@@ -2075,9 +2075,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         .cv-correo__cuerpo em { display: block; font-style: normal; font-size: .68rem;
                                 letter-spacing: .18em; text-transform: uppercase;
                                 color: rgba(255,255,255,.55); font-weight: 800; }
-        .cv-correo__cuerpo b { display: block; font-size: clamp(1rem, 2.6vw, 1.75rem);
-                               color: var(--oro-300); font-weight: 900; line-height: 1.2;
-                               word-break: break-all; }
+        /* el correo va SIEMPRE en una linea: si no cabe, encoge la letra.
+           Con word-break se colaba la ultima letra al renglon de abajo. */
+        .cv-correo__cuerpo b { display: block; font-size: clamp(.78rem, 2.1vw, 1.6rem);
+                               color: var(--oro-300); font-weight: 900; line-height: 1.25;
+                               white-space: nowrap; overflow: hidden; text-overflow: clip; }
         .cv-correo__pie { display: block; font-size: .85rem;
                           color: rgba(255,255,255,.78); margin-top: .25rem; }
         .cv-correo__cuerpo strong { color: #fff; }
@@ -2259,9 +2261,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                       box-shadow: 0 16px 40px -16px rgba(37,211,102,.9); }
         .rv-arriba { font-size: .82rem; letter-spacing: .2em; text-transform: uppercase;
                      color: rgba(255,255,255,.6); font-weight: 800; margin-bottom: .5rem; }
-        .rv-dato { display: block; font-size: clamp(1.5rem, 4.2vw, 3.1rem); font-weight: 900;
+        .rv-dato { display: block; font-size: clamp(1rem, 3.2vw, 2.6rem); font-weight: 900;
                    color: var(--oro-300); text-decoration: none; line-height: 1.15;
-                   word-break: break-word; text-shadow: 0 8px 30px rgba(201,162,39,.35); }
+                   white-space: nowrap; text-shadow: 0 8px 30px rgba(201,162,39,.35); }
         .rv-dato:hover { text-decoration: underline; }
         .rv-dato--wa { color: #86EFAC; letter-spacing: .05em; text-shadow: 0 8px 30px rgba(37,211,102,.35); }
         .rv-abajo { font-size: clamp(.95rem, 2vw, 1.25rem); color: rgba(255,255,255,.82); margin-top: .9rem; }
@@ -2400,14 +2402,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
         /* el detalle del empleo cabe en pantalla angosta */
 
-        .pz-limite { margin-top: .9rem; padding: .7rem 1.1rem; border-radius: .7rem;
-                     font-size: .85rem; font-weight: 600; line-height: 1.45;
-                     background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.18);
-                     color: rgba(255,255,255,.8); max-width: 46rem; margin-left: auto; margin-right: auto; }
-        .pz-limite strong { color: #fff; }
-        .pz-limite--urge { background: rgba(217,119,6,.16); border-color: #D97706; color: #FDE68A; }
-        .pz-limite--urge strong { color: #FCD34D; }
-        .pz-limite--vencido { background: rgba(220,38,38,.16); border-color: #FCA5A5; color: #FCA5A5; }
 
         /* ===================================================================
            MODO VERTICAL: reglas de orden. Todo centrado, nada mas ancho que
@@ -2533,6 +2527,281 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
         .nota-edad--vencida { background: #FEE2E2; border-color: #FCA5A5; color: #7F1D1D; }
         .nota-edad--vencida b { color: #991B1B; }
+
+        .aviso-mod--revisar { background: #EFF6FF; border-color: #93C5FD; color: #1E3A8A; }
+        .aviso-mod--revisar b { color: #1E40AF; }
+
+        /* ===== LAMINA DEL HISTORIAL LABORAL ===== */
+
+        /* ===== CALCULO COMPLETO: DOS COLUMNAS ===== */
+        .cc-rejilla { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem;
+                      width: min(94vw, 1080px); margin: .4rem auto 0; align-items: start; }
+        .cc-col { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.16);
+                  border-radius: .9rem; padding: 1rem 1.1rem 1.2rem; }
+        .cc-control { display: flex; align-items: center; justify-content: center; gap: 1rem; }
+        .cc-reint { display: flex; align-items: center; gap: .7rem; cursor: pointer;
+                    margin: .7rem 0 .2rem; font-size: .82rem; color: rgba(255,255,255,.85); }
+        .cc-reint input { display: none; }
+        .cc-reint b { color: var(--oro-300); }
+        .cc-reint .switch-track { width: 40px; height: 22px; flex-shrink: 0; }
+        .cc-reint .switch-knob { width: 16px; height: 16px; }
+        .cc-reint input:checked + .switch-track .switch-knob { transform: translateX(18px); }
+        .cc-dif { text-align: center; margin-top: 1.1rem; font-size: 1rem;
+                  color: rgba(255,255,255,.85); }
+        .cc-dif b { color: var(--oro-300); font-weight: 900; }
+
+        /* ===== LAMINA DE CIERRE ===== */
+        .ci-resumen { display: flex; align-items: center; justify-content: center;
+                      gap: 1.8rem; flex-wrap: wrap; margin: 1.2rem 0 .6rem; }
+        .ci-dato { text-align: center; }
+        .ci-dato em { display: block; font-style: normal; font-size: .78rem;
+                      letter-spacing: .14em; text-transform: uppercase;
+                      color: rgba(255,255,255,.55); font-weight: 800; }
+        .ci-dato b { display: block; font-size: clamp(1.6rem, 4vw, 2.8rem);
+                     color: rgba(255,255,255,.75); font-weight: 900; }
+        .ci-dato--fuerte b { color: var(--oro-300); font-size: clamp(2.2rem, 6vw, 4rem); }
+        .ci-flecha { color: var(--oro-500); font-size: 1.6rem; }
+        .ci-gana { text-align: center; font-size: clamp(1rem, 2.2vw, 1.35rem);
+                   color: rgba(255,255,255,.85); margin-bottom: 1.6rem; }
+        .ci-gana b { color: #86EFAC; font-weight: 900; }
+
+        .ci-firma { border-top: 1px solid rgba(255,255,255,.18); padding-top: 1.2rem;
+                    display: flex; flex-direction: column; align-items: center; gap: .7rem; }
+        .ci-marca { font-family: 'Playfair Display', serif; font-size: 1.5rem;
+                    font-weight: 800; color: var(--oro-300); }
+        .ci-marca em { font-style: normal; font-size: .8rem; letter-spacing: .22em;
+                       text-transform: uppercase; color: rgba(255,255,255,.6);
+                       display: block; font-family: 'Lato', sans-serif; }
+        .ci-contacto { display: flex; flex-wrap: wrap; justify-content: center;
+                       gap: .5rem 1.4rem; font-size: .88rem; color: rgba(255,255,255,.8); }
+        .ci-contacto a { color: var(--oro-300); text-decoration: none; font-weight: 700; }
+        .ci-contacto a:hover { text-decoration: underline; }
+        .ci-pie { text-align: center; font-size: .72rem; color: rgba(255,255,255,.45); margin-top: 1rem; }
+
+        .cc-hoy { margin: 1.4rem auto .2rem; text-align: center; padding: .9rem 1.6rem;
+                  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18);
+                  border-radius: .8rem; width: fit-content; }
+        .cc-hoy em { display: block; font-style: normal; font-size: .78rem;
+                     letter-spacing: .14em; text-transform: uppercase;
+                     color: rgba(255,255,255,.55); font-weight: 800; }
+        .cc-hoy b { display: block; font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+                    color: rgba(255,255,255,.9); font-weight: 900; margin-top: .2rem; }
+
+        /* ---- la grafica del historial dentro de la presentacion ----
+           Va sobre fondo blanco: si hereda el texto claro del overlay,
+           los ejes y las etiquetas desaparecen. */
+
+        .ci-comparo { display: flex; align-items: stretch; justify-content: center;
+                      gap: 1.2rem; flex-wrap: wrap; margin: 1.4rem 0 1.8rem; }
+        .ci-op { text-align: center; padding: 1rem 1.4rem; border-radius: .9rem;
+                 background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18);
+                 min-width: 12rem; display: flex; flex-direction: column; justify-content: center; }
+        .ci-op em { display: block; font-style: normal; font-size: .7rem;
+                    letter-spacing: .1em; text-transform: uppercase;
+                    color: rgba(255,255,255,.55); font-weight: 800; margin-bottom: .3rem; }
+        .ci-op b { display: block; font-size: clamp(1.5rem, 3.4vw, 2.4rem);
+                   color: var(--oro-300); font-weight: 900; line-height: 1.1; }
+        .ci-op__gana { display: block; font-size: .95rem; color: #86EFAC; font-weight: 800; margin-top: .3rem; }
+        .ci-op__anual { display: block; font-size: .76rem; color: rgba(255,255,255,.6); margin-top: .1rem; }
+        .ci-op--hoy { background: rgba(255,255,255,.03); }
+        .ci-op--hoy b { color: rgba(255,255,255,.75); }
+
+
+        /* los patrones se distinguen mejor: barra con contorno */
+
+        /* ===================================================================
+           LAMINA DEL HISTORIAL LABORAL
+           Es la lamina que mas se ensena: panel oscuro con la grafica en
+           claro, cifras arriba y leyenda contenida.
+           =================================================================== */
+        .hl-cifras { display: flex; align-items: center; justify-content: center;
+                     gap: 1.4rem; flex-wrap: wrap; margin: .2rem 0 1rem; }
+        .hl-cifra { text-align: center; }
+        .hl-cifra b { display: block; font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+                      font-weight: 900; color: #fff; line-height: 1; letter-spacing: -.02em; }
+        .hl-cifra span { display: block; font-size: .68rem; letter-spacing: .16em;
+                         text-transform: uppercase; color: rgba(255,255,255,.5);
+                         font-weight: 800; margin-top: .3rem; }
+        .hl-cifra--oro b { color: var(--oro-300); text-shadow: 0 6px 24px rgba(201,162,39,.45); }
+        .hl-sep { width: 1px; height: 2.2rem; background: rgba(255,255,255,.18); }
+
+        .hl-botones { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; margin-bottom: .8rem; }
+        .hl-chip { display: inline-flex; align-items: center; gap: .45rem; cursor: pointer;
+                   background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.2);
+                   border-radius: 9999px; padding: .4rem .95rem;
+                   font-size: .78rem; font-weight: 700; color: rgba(255,255,255,.75);
+                   transition: all .18s ease; }
+        .hl-chip:hover { border-color: var(--oro-300); color: #fff; transform: translateY(-1px); }
+        .hl-chip.is-on { background: var(--oro-500); border-color: var(--oro-300); color: #0A2540; }
+        .hl-chip i { font-size: .78rem; }
+
+        /* todo el bloque se centra por si mismo: el flex de la escena estiraba
+           los hijos y la grafica se recorria a la derecha */
+        .hl-cifras, .hl-botones, .hl-leyenda, .hl-pie { width: 100%; }
+        .hl-panel { width: min(94vw, 1120px); margin-left: auto; margin-right: auto;
+                    padding: .5rem; border-radius: 1.1rem;
+                    background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
+                    box-shadow: 0 30px 70px -32px rgba(0,0,0,.95); }
+
+        /* La grafica vive en oscuro, como el resto de la presentacion.
+           El recuadro blanco partia la lamina en dos. */
+        .hl-lienzo svg text { fill: rgba(255,255,255,.72) !important; font-weight: 600; }
+        .hl-lienzo .tick text { font-size: 11px !important; font-weight: 700 !important;
+                                fill: rgba(255,255,255,.8) !important; }
+        .hl-lienzo .domain { stroke: rgba(255,255,255,.28) !important; }
+        .hl-lienzo .tick line { stroke: rgba(255,255,255,.12) !important; }
+        .hl-lienzo .lt-hueco-txt { fill: rgba(255,255,255,.62) !important; }
+        .hl-lienzo .lt-capa-txt--azul { fill: #93C5FD !important; }
+        .hl-lienzo .lt-capa-txt--oro { fill: var(--oro-300) !important; }
+        .hl-lienzo .lt-capa-txt--rojo { fill: #FCA5A5 !important; }
+        .hl-lienzo .lt-m40-rotulo { fill: #FDBA74 !important; }
+        .hl-lienzo .lt-hoy-txt { fill: #FCA5A5 !important; }
+
+        /* las barras brillan un poco sobre el fondo oscuro */
+        .hl-lienzo rect.bar { stroke: rgba(255,255,255,.22); stroke-width: .5;
+                              transition: opacity .15s ease, filter .15s ease; }
+        .hl-lienzo rect.bar:hover { stroke: #fff; stroke-width: 1.4;
+                                    filter: brightness(1.35) drop-shadow(0 0 8px rgba(255,255,255,.45)); }
+
+        /* el rayado de los huecos, visible en oscuro */
+        .hl-lienzo #rayadoHueco rect { fill: rgba(255,255,255,.05) !important; }
+        .hl-lienzo #rayadoHueco line { stroke: rgba(255,255,255,.30) !important; }
+
+        .hl-leyenda { display: flex; flex-wrap: wrap; gap: .3rem .9rem;
+                      justify-content: center; margin: .8rem auto 0;
+                      width: min(94vw, 1120px); max-height: 3.6rem; overflow-y: auto;
+                      font-size: .7rem; color: rgba(255,255,255,.72); }
+        .hl-leyenda .legend-item { display: flex; align-items: center; gap: .3rem; }
+        .hl-pie { text-align: center; font-size: .74rem; color: rgba(255,255,255,.45); margin-top: .6rem; }
+        .hl-pie i { margin-right: .3rem; }
+
+        /* el boton necesita su estilo completo: la clase .diag-btn no existia
+           y por eso salia invisible sobre el fondo azul */
+        #diagPlay { position: absolute; top: 1.3rem; right: 8.8rem; z-index: 4;
+                    width: 2.9rem; height: 2.9rem; border-radius: 9999px; cursor: pointer;
+                    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
+                    color: #fff; font-size: 1.05rem; transition: background .2s;
+                    display: flex; align-items: center; justify-content: center; }
+        #diagPlay:hover { background: var(--oro-500); color: #0A2540; }
+        #diagPlay.is-on { background: var(--oro-500); color: #0A2540; border-color: var(--oro-300); }
+
+        #diagProgreso { position: absolute; left: 50%; transform: translateX(-50%);
+                        bottom: 5.4rem; width: min(70vw, 640px); height: 4px;
+                        background: rgba(255,255,255,.16); border-radius: 4px;
+                        opacity: 0; transition: opacity .3s ease; z-index: 5; }
+        #diagProgreso.visible { opacity: 1; }
+        #diagProgreso i { display: block; height: 100%; width: 0;
+                          background: linear-gradient(90deg, var(--oro-500), var(--oro-300));
+                          border-radius: 4px; }
+        #diagProgreso b { position: absolute; right: 0; top: -1.4rem;
+                          font-size: .68rem; font-weight: 800; letter-spacing: .08em;
+                          color: rgba(255,255,255,.5); }
+
+        /* la cifra protagonista sigue viva mientras dura la lamina */
+        .respira-larga { animation: respiraLarga 4.2s ease-in-out 1.6s infinite !important; }
+        @keyframes respiraLarga {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.022); }
+        }
+
+        /* ===================== CRONOMETRO ===================== */
+        #diagCrono { position: absolute; right: 2.2rem; top: 50%; transform: translateY(-50%);
+                     width: 5.4rem; height: 5.4rem; z-index: 6;
+                     opacity: 0; transition: opacity .3s ease; pointer-events: none; }
+        #diagCrono.visible { opacity: 1; }
+        #diagCrono svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .cr-pista { fill: none; stroke: rgba(255,255,255,.14); stroke-width: 5; }
+        .cr-avance { fill: none; stroke: var(--oro-500); stroke-width: 5; stroke-linecap: round;
+                     transition: stroke .5s ease; }
+        #diagCrono b { position: absolute; inset: 0; display: flex;
+                       align-items: center; justify-content: center;
+                       font-size: 1.7rem; font-weight: 900; color: var(--oro-300);
+                       transition: color .5s ease, transform .2s ease; }
+        #diagCrono span { position: absolute; left: 50%; transform: translateX(-50%);
+                          bottom: -1.3rem; font-size: .62rem; font-weight: 800;
+                          letter-spacing: .1em; color: rgba(255,255,255,.4); white-space: nowrap; }
+
+        #diagCrono.is-tibio .cr-avance { stroke: #F97316; }
+        #diagCrono.is-tibio b { color: #FDBA74; }
+        #diagCrono.is-caliente .cr-avance { stroke: #DC2626; }
+        #diagCrono.is-caliente b { color: #FCA5A5; animation: crLatido .5s ease-in-out infinite; }
+        @keyframes crLatido { 0%,100% { transform: scale(1) } 50% { transform: scale(1.14) } }
+
+        #diagCrono.estalla { animation: crEstalla .42s cubic-bezier(.22,1.4,.4,1); }
+        @keyframes crEstalla {
+            0%   { transform: translateY(-50%) scale(1); filter: brightness(1); }
+            35%  { transform: translateY(-50%) scale(1.35); filter: brightness(2.2); }
+            100% { transform: translateY(-50%) scale(1); filter: brightness(1); }
+        }
+
+        /* las etiquetas de anio del eje, legibles en la presentacion */
+        .hl-lienzo { height: 22rem; padding-bottom: .9rem; }
+        .hl-lienzo .tick text { font-size: 11px !important; font-weight: 700 !important;
+                                fill: #334155 !important; }
+
+        /* ===== LAMINA DE IDENTIDAD ===== */
+        .id-nombre { font-family: 'Playfair Display', serif; font-weight: 800;
+                     font-size: clamp(1.8rem, 4.6vw, 3.2rem); color: #fff;
+                     text-align: center; letter-spacing: -.01em; margin: .6rem 0 1.6rem; }
+        .id-fichas { display: flex; gap: 1.4rem; justify-content: center; flex-wrap: wrap; }
+        .id-ficha { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18);
+                    border-radius: .9rem; padding: 1rem 1.6rem; text-align: center; min-width: 15rem; }
+        .id-ficha em { display: block; font-style: normal; font-size: .68rem;
+                       letter-spacing: .2em; text-transform: uppercase;
+                       color: rgba(255,255,255,.5); font-weight: 800; }
+        .id-ficha b { display: block; font-size: clamp(1.1rem, 2.6vw, 1.7rem);
+                      color: var(--oro-300); font-weight: 900; letter-spacing: .06em;
+                      margin: .3rem 0 .25rem; white-space: nowrap; }
+        .id-ficha span { display: block; font-size: .76rem; color: rgba(255,255,255,.6); }
+
+        .id-doc { display: flex; align-items: center; gap: 1.1rem;
+                  justify-content: center; margin: .9rem 0; flex-wrap: wrap; }
+        .id-doc__etq { font-size: .72rem; letter-spacing: .22em; text-transform: uppercase;
+                       color: rgba(255,255,255,.5); font-weight: 900; width: 3.4rem; text-align: right; }
+        .id-grupos { display: flex; gap: .7rem; align-items: flex-end; flex-wrap: wrap; }
+        .id-grupo { display: flex; flex-direction: column; align-items: center; gap: .35rem; }
+        .id-fichas-fila { display: flex; gap: .2rem; }
+        .id-grupo em { font-style: normal; font-size: .58rem; letter-spacing: .1em;
+                       text-transform: uppercase; color: rgba(255,255,255,.5);
+                       font-weight: 800; text-align: center; max-width: 7rem; line-height: 1.2; }
+        .id-grupo .curp-ficha { width: 1.6rem; height: 2.1rem; font-size: .95rem;
+                                display: flex; align-items: center; justify-content: center;
+                                border-radius: .3rem; }
+        .id-grupo .ficha-oculta { background: rgba(255,255,255,.12) !important;
+                                  color: rgba(255,255,255,.45) !important; }
+
+        .hl-lienzo .capa-250 rect { fill: rgba(96,165,250,.22) !important; stroke: #60A5FA !important; }
+        .hl-lienzo .capa-m40 rect { fill: rgba(201,162,39,.24) !important; stroke: var(--oro-300) !important; }
+        .hl-lienzo .capa-m40tramo rect { fill: rgba(249,115,22,.22) !important; stroke: #FB923C !important; }
+        .hl-lienzo .capa-hoy line { stroke: #F87171 !important; }
+        .hl-lienzo .capa-hoy circle { fill: #F87171 !important; }
+        .hl-lienzo { height: 22rem; padding-bottom: .9rem; }
+
+        .cc-mini { width: 100%; height: 74px; margin: .7rem 0 .1rem;
+                   background: rgba(0,0,0,.18); border-radius: .5rem; overflow: hidden; }
+        .cc-mini svg { display: block; }
+        .cc-mini__anio { font-size: 8px; font-weight: 700; fill: rgba(255,255,255,.5); }
+        .cc-mini__pie { font-size: .62rem; letter-spacing: .1em; text-transform: uppercase;
+                        color: rgba(255,255,255,.45); font-weight: 800; text-align: center;
+                        margin-bottom: .5rem; }
+
+        .cmp-delta { display: flex; gap: 1.6rem; justify-content: center; flex-wrap: wrap; }
+        .cmp-delta span { font-size: 1rem; color: rgba(255,255,255,.8); }
+        .cmp-delta b { color: rgba(255,255,255,.6); font-weight: 800; }
+        .cmp-delta strong { color: #86EFAC; font-weight: 900; }
+
+        .cmp-anios { margin-top: 1.2rem; text-align: center; }
+        .cmp-anios__etq { display: block; font-size: .7rem; letter-spacing: .18em;
+                          text-transform: uppercase; color: rgba(255,255,255,.5);
+                          font-weight: 800; margin-bottom: .5rem; }
+        .cmp-tabla { margin: 0 auto; border-collapse: collapse; font-size: .88rem; }
+        .cmp-tabla th { font-size: .66rem; letter-spacing: .1em; text-transform: uppercase;
+                        color: rgba(255,255,255,.5); font-weight: 800; padding: .3rem .9rem; }
+        .cmp-tabla td { padding: .32rem .9rem; color: rgba(255,255,255,.75);
+                        border-top: 1px solid rgba(255,255,255,.12); font-variant-numeric: tabular-nums; }
+        .cmp-tabla td:first-child { color: rgba(255,255,255,.5); font-size: .78rem; text-align: left; }
+        .cmp-tabla .es-oro { color: var(--oro-300); font-weight: 800; }
+        .cmp-anios__pie { font-size: .68rem; color: rgba(255,255,255,.42); margin-top: .5rem; }
     </style>
 </head>
 
@@ -2569,6 +2838,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     <!-- ===== DIAGNOSTICO EN MODO PRESENTACION ===== -->
     <div id="diagOverlay">
         <div id="diagFondo"><div id="diagZoom"></div></div>
+        <button id="diagPlay" title="Reproducir en minuto y medio"
+                onclick="_diagAutoplay()"><i class="fas fa-play"></i></button>
         <button id="diagAjustes" onclick="_toggleAjustes()" title="Precio de venta y AFORE"><i class="fas fa-sliders"></i></button>
         <button id="diagCerrar" onclick="cerrarDiagnostico()" title="Cerrar"><i class="fas fa-times"></i></button>
 
@@ -2592,7 +2863,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
         <div class="diag-pie">
             <button class="diag-nav" onclick="diagAnterior()" title="Anterior"><i class="fas fa-chevron-left"></i></button>
-            <div id="diagPuntos" class="diag-puntos"></div>
+            <div id="diagCrono" aria-hidden="true">
+            <svg viewBox="0 0 64 64">
+                <circle class="cr-pista" cx="32" cy="32" r="27"></circle>
+                <circle class="cr-avance" cx="32" cy="32" r="27"></circle>
+            </svg>
+            <b id="crNum">0</b>
+            <span id="crTotal">0s / 90s</span>
+        </div>
+        <div id="diagProgreso"><i></i><b>0s / 90s</b></div>
+        <div id="diagPuntos" class="diag-puntos"></div>
             <button class="diag-nav" onclick="diagSiguiente()" title="Siguiente"><i class="fas fa-chevron-right"></i></button>
         </div>
     </div>
@@ -3665,6 +3945,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
             fechaEmisionConstancia: null, // FIX: fecha de emision leida del documento
             semanasAyudaDesempleo: 0,
+            entidadPorPatron: {},
             datosClienteInfo: {
                 nombre: '', curp: '', nss: '',
                 semanasCotizadasBase: 0, edadBase: 0, sbcPromedioBase: 0, ultimaFechaBaja: null
@@ -4061,8 +4342,19 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         // Los nombres de los patrones NO se censuran: no identifican al asegurado
         // y sirven para que reconozca su propia historia laboral. Se censuran
         // el nombre de la persona, su CURP y su NSS.
+        // Razon social del patron. Con los datos ocultos se conservan 1, 2 o 3
+        // palabras segun el largo (ver mascaraPatron) y el resto va en asteriscos.
         function censurarNombre(txt) {
-            return txt;
+            if (!AppState.modoPresentacion) return txt;
+            return (typeof mascaraPatron === 'function') ? mascaraPatron(txt) : txt;
+        }
+
+        // Registro patronal: se conservan los dos ultimos digitos (la modalidad).
+        function censurarRegPatronal(rp) {
+            if (!AppState.modoPresentacion || !rp) return rp;
+            const t = String(rp).trim();
+            if (t.length < 3) return t;
+            return '*'.repeat(t.length - 2) + t.slice(-2);
         }
 
         // Nombre del asegurado: nombres de pila completos, apellidos solo inicial
@@ -4152,12 +4444,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 : '*'.repeat(letras);
         }
 
+        // Cuantas palabras se conservan segun el largo de la razon social:
+        //   hasta 3 palabras -> 1     de 4 a 6 -> 2     mas de 6 -> 3
+        function _palabrasAConservar(total) {
+            if (total <= 3) return 1;
+            if (total <= 6) return 2;
+            return 3;
+        }
+
         function mascaraPatron(nombre) {
             const n = String(nombre || '').trim();
             if (!n) return n;
             const palabras = n.split(/\s+/).filter(Boolean);
             const esMoral = FORMAS_SOCIALES.test(n) || PALABRAS_EMPRESA.test(n) || palabras.length > 4;
-            const conservar = esMoral ? 2 : 1;
+            // la persona fisica siempre deja el nombre y solo la inicial de los apellidos
+            const conservar = esMoral ? _palabrasAConservar(palabras.length) : 1;
             return palabras
                 .map((w, i) => (i < conservar ? w : _asteriscos(w, !esMoral)))
                 .join(' ');
@@ -4418,7 +4719,37 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 ${formatDateDDMMYYYY(pe.fechaInicio)} a ${formatDateDDMMYYYY(pe.fechaFin)}
                 &middot; <em>Mod. ${m.codigo}: ${m.nombre}</em></li>`;
 
-            let html = resumen;
+            // --- NSS de correccion y patrones a revisar ---
+            let extra = '';
+            const nssCli = (AppState.datosClienteInfo || {}).nss;
+            if (nssDeCorreccion(nssCli)) {
+                extra += `<div class="aviso-mod">
+                    <i class="fas fa-pen-to-square mr-1"></i>
+                    <b>El NSS empieza en 76.</b> No es un n&uacute;mero de origen: se asign&oacute; en una
+                    <b>correcci&oacute;n</b>. Conviene verificar que el historial est&eacute; completo y que no
+                    existan semanas en otro n&uacute;mero.</div>`;
+            }
+
+            const revisar = [];
+            periodos.forEach(pe => {
+                const r = revisarPatron(pe.nombrePatron, pe.regPatronal);
+                if (r.marcado) revisar.push({ pe, r });
+            });
+            if (revisar.length) {
+                const vistos = new Set();
+                const filas = revisar.filter(({ pe }) => {
+                    const k = pe.nombrePatron + '|' + pe.regPatronal;
+                    if (vistos.has(k)) return false;
+                    vistos.add(k); return true;
+                }).map(({ pe, r }) => `<li><b>* ${censurarNombre(pe.nombrePatron)}</b>
+                    &middot; <em>${r.motivos.join(' &middot; ')}</em></li>`).join('');
+                extra += `<div class="aviso-mod aviso-mod--revisar">
+                    <i class="fas fa-magnifying-glass mr-1"></i>
+                    <b>Patrones marcados para revisar:</b>
+                    <ul>${filas}</ul></div>`;
+            }
+
+            let html = resumen + extra;
             if (enM40.length) {
                 html += `<div class="aviso-mod aviso-mod--m40">
                     <i class="fas fa-door-open mr-1"></i>
@@ -4531,6 +4862,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 renderModalitySummary();
                 toggleFullHistoryTimeline();
             }
+            // Las tarjetas del Paso 4 tambien cambian: el costo pasa a ser solo
+            // el del IMSS y los patrones se enmascaran. Sin esto, el balance
+            // seguia mostrando "Costo total del proyecto".
+            Object.keys(AppState.scenarioData || {}).forEach(n => {
+                if (document.getElementById(`scenario_card_${n}`)) recalculateScenario(n);
+            });
+            if (typeof renderAvisoModalidades === 'function') renderAvisoModalidades();
         }
 
         // Calculadora suelta: misma formula Ley 73 del analizador, con el 15% incluido.
@@ -4613,6 +4951,183 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         }
 
         // ------------------------------- LAMINAS -------------------------------
+        // ---------- LAMINA DE CIERRE ----------
+        // Compara la pension de hoy contra los dos escenarios elegidos.
+        function _laminaCierre(esc) {
+            const nums = Object.keys(AppState.scenarioData || {}).map(Number)
+                .filter(n => AppState.scenarioData[n] && AppState.scenarioData[n].meses > 0)
+                .sort((a, b) => a - b).slice(0, 2);
+            const base = (AppState.pensionBaseResultadosInfo || {}).PENSION_MENSUAL_ESTIMADA || 0;
+            const aguiBase = (AppState.pensionBaseResultadosInfo || {}).AGUINALDO_ESTIMADO || 0;
+
+            const tarjeta = (n) => {
+                const sc = AppState.scenarioData[n];
+                const f = sc.factorFebrero || 1;
+                const pen = (sc.pensionMensual || 0) * f;
+                const agui = (sc.aguinaldo || 0) * f;
+                const gana = pen - base;
+                const ganaAnual = (pen * 12 + agui) - (base * 12 + aguiBase);
+                const titulo = (document.getElementById(`scenario_${n}_title`) || {}).value || `${sc.meses} meses`;
+                return `
+                    <div class="ci-op">
+                        <em>${titulo}</em>
+                        <b>$${formatNumber(pen)}</b>
+                        <span class="ci-op__gana">+$${formatNumber(gana)} al mes</span>
+                        <span class="ci-op__anual">+$${formatNumber(ganaAnual)} al a&ntilde;o</span>
+                    </div>`;
+            };
+
+            esc.innerHTML = `
+                <p class="diag-kicker">Su propuesta, en una l&iacute;nea</p>
+
+                ${nums.length ? `
+                <div class="ci-comparo">
+                    <div class="ci-op ci-op--hoy">
+                        <em>Hoy, sin hacer nada</em>
+                        <b>$${formatNumber(base)}</b>
+                        <span class="ci-op__gana">&nbsp;</span>
+                        <span class="ci-op__anual">$${formatNumber(base * 12 + aguiBase)} al a&ntilde;o</span>
+                    </div>
+                    <div class="ci-flecha"><i class="fas fa-arrow-right"></i></div>
+                    ${nums.map(tarjeta).join('')}
+                </div>
+                ` : '<p class="diag-sub">Calcule un escenario para ver el resumen.</p>'}
+
+                <div class="ci-firma">
+                    <span class="ci-marca">RGC <em>Pensiones y Seguros</em></span>
+                    <div class="ci-contacto">
+                        <a href="mailto:informes@rgcpensionesyseguros.com" onclick="event.stopPropagation()">
+                            <i class="fas fa-envelope"></i> informes@rgcpensionesyseguros.com</a>
+                        <a href="https://wa.me/525578963989" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+                            <i class="fab fa-whatsapp"></i> 55 7896 3989</a>
+                        <span><i class="fas fa-location-dot"></i> Eje Central 555 &middot; Int. 201 &middot; Narvarte Poniente</span>
+                    </div>
+                </div>
+                <p class="ci-pie">Los c&aacute;lculos son estimaciones basadas en su constancia y en la normativa vigente.</p>`;
+        }
+
+        // ---------- LAMINA DE IDENTIDAD ----------
+        // Nombre, CURP y NSS en una sola lamina. El CURP y el NSS se
+        // desmenuzan: cada grupo de caracteres se enciende con su etiqueta,
+        // pero en rafaga corta, no una lamina entera por documento.
+        function _laminaIdentidad(esc, d) {
+            const c = AppState.datosClienteInfo || {};
+            const curp = String(c.curp || '').toUpperCase();
+            const nss = String(c.nss || '').replace(/\D/g, '');
+            const oculta = !!AppState.modoPresentacion;
+            const ent = curp.length === 18 ? ENTIDADES_CURP[curp.substr(11, 2)] : null;
+
+            // grupos: [inicio, largo, etiqueta, se oculta en modo censura]
+            const gruposCurp = [
+                [0, 4, 'Iniciales', true],
+                [4, 6, 'Fecha de nacimiento', false],
+                [10, 1, 'Sexo', false],
+                [11, 2, ent ? ent.n : 'Entidad', false],
+                [13, 3, 'Consonantes', true],
+                [16, 2, 'Homoclave', false]
+            ];
+            const gruposNss = [
+                [0, 2, 'Subdelegaci&oacute;n', false],
+                [2, 2, 'A&ntilde;o de alta', false],
+                [4, 2, 'A&ntilde;o de nacimiento', false],
+                [6, 4, 'Consecutivo', true],
+                [10, 1, 'Verificador', false]
+            ];
+
+            const pintar = (texto, grupos, clase) => grupos.map(([i, n, etq, tapa], k) => {
+                const trozo = texto.substr(i, n) || '';
+                const visible = !(oculta && tapa);
+                const fichas = trozo.split('').map(ch =>
+                    `<span class="curp-ficha ${visible ? '' : 'ficha-oculta'}">${visible ? ch : '*'}</span>`).join('');
+                return `<div class="id-grupo aparece" style="animation-delay:${300 + k * 130}ms">
+                            <div class="id-fichas-fila">${fichas}</div>
+                            <em>${etq}</em>
+                        </div>`;
+            }).join('');
+
+            esc.innerHTML = `
+                <p class="diag-kicker">Con qui&eacute;n estamos trabajando</p>
+                <div class="id-nombre aparece">${nombrePublico() || 'ASEGURADO'}</div>
+
+                <div class="id-doc aparece" style="animation-delay:200ms">
+                    <span class="id-doc__etq">CURP</span>
+                    <div class="id-grupos">${pintar(curp, gruposCurp, 'curp')}</div>
+                </div>
+
+                <div class="id-doc aparece" style="animation-delay:900ms">
+                    <span class="id-doc__etq">NSS</span>
+                    <div class="id-grupos">${pintar(nss, gruposNss, 'nss')}</div>
+                </div>
+
+                <p class="diag-sub aparece" style="animation-delay:1500ms">
+                    ${d.nac ? 'Naci&oacute; el <strong>' + formatDateDDMMYYYY(d.nac) + '</strong>' : ''}
+                    ${ent ? ' &middot; registrado en <strong>' + ent.n + '</strong>' : ''}</p>`;
+        }
+
+        // ---------- LAMINA: LINEA DE TIEMPO DEL HISTORIAL ----------
+        // Se reusa la misma grafica del analisis, con sus capas y su tooltip.
+        // Las mismas capas del analisis, pero mandando sobre la grafica de la
+        // presentacion (la del analisis tiene sus propios botones).
+        function _histCapa(capa) {
+            AppState.capasTimeline[capa] = !AppState.capasTimeline[capa];
+            const botones = { c250: 'btnHist250', cM40: 'btnHistM40', cHuecos: 'btnHistHuecos' };
+            const b = document.getElementById(botones[capa]);
+            if (b) b.classList.toggle('is-on', AppState.capasTimeline[capa]);
+            const svg = document.getElementById('timeline-diag-svg');
+            if (!svg) return;
+            const clases = { c250: '.capa-250', cM40: '.capa-m40', cHuecos: '.capa-huecos' };
+            svg.querySelectorAll(clases[capa]).forEach(g => {
+                g.style.display = AppState.capasTimeline[capa] ? '' : 'none';
+            });
+        }
+
+        function _laminaHistorial(esc) {
+            const per = AppState.timelinePeriods || [];
+            const patrones = new Set(per.map(x => x.regPatronal)).size;
+            const sem = AppState.semanasNetasReales || (AppState.datosClienteInfo || {}).semanasCotizadasBase || 0;
+            const desde = per.length ? new Date(Math.min(...per.map(x => x.fechaInicio.getTime()))) : null;
+            const hasta = per.length ? new Date(Math.max(...per.map(x => x.fechaFin.getTime()))) : null;
+            const anios = (desde && hasta) ? (hasta - desde) / 86400000 / 365.25 : 0;
+
+            esc.innerHTML = `
+                <p class="diag-kicker">Su historia laboral completa</p>
+
+                <div class="hl-cifras">
+                    <div class="hl-cifra"><b>${formatNumber(anios, 0)}</b><span>a&ntilde;os de historia</span></div>
+                    <div class="hl-sep"></div>
+                    <div class="hl-cifra"><b>${patrones}</b><span>patrones</span></div>
+                    <div class="hl-sep"></div>
+                    <div class="hl-cifra hl-cifra--oro"><b>${formatNumber(sem, 0)}</b><span>semanas cotizadas</span></div>
+                    <div class="hl-sep"></div>
+                    <div class="hl-cifra"><b>${desde ? desde.getUTCFullYear() : '--'}</b><span>primer alta</span></div>
+                </div>
+
+                <div class="hl-botones">
+                    <button type="button" id="btnHist250" class="hl-chip is-on" onclick="_histCapa('c250')">
+                        <i class="fas fa-highlighter"></i> Las 250 semanas del c&aacute;lculo
+                    </button>
+                    <button type="button" id="btnHistM40" class="hl-chip is-on" onclick="_histCapa('cM40')">
+                        <i class="fas fa-door-open"></i> Ventana de Modalidad 40
+                    </button>
+                    <button type="button" id="btnHistHuecos" class="hl-chip is-on" onclick="_histCapa('cHuecos')">
+                        <i class="fas fa-scissors"></i> Huecos sin cotizar
+                    </button>
+                </div>
+
+                <div class="hl-panel">
+                    <div id="diag-hist-container" class="hl-lienzo">
+                        <svg id="timeline-diag-svg"></svg>
+                    </div>
+                </div>
+                <div id="timeline-diag-legend" class="hl-leyenda"></div>
+                <p class="hl-pie"><i class="fas fa-hand-pointer"></i>
+                   Pase el cursor sobre cualquier barra para ver el patr&oacute;n, las fechas y el salario.</p>`;
+
+            _diagLuego(() => {
+                if (per.length) drawScenarioTimeline('timeline-diag-svg', 'timeline-diag-legend', per);
+            }, 120);
+        }
+
         // ---------- LAMINA DE APERTURA: COMO LLEGAR ----------
         // Los subtitulos son una lista {t: segundo, txt: texto}. Se muestran
         // sobre el video segun avanza. Editar aqui para cambiar el guion.
@@ -5447,39 +5962,80 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             return { sc, base, conM40, costo, ganancia, gananciaAnual, mesesRecupera, veces: base > 0 ? conM40 / base : 0 };
         }
 
+        // ---------- COMPARATIVA: HOY CONTRA LOS DOS ESCENARIOS ----------
         function _laminaComparativa(esc) {
-            const e = _diagEscenario();
-            if (!e) { esc.innerHTML = '<p class="diag-kicker">Propuesta</p><p class="diag-sub">Calcule un escenario de Modalidad 40 en el Paso 4 para ver esta parte.</p>'; return; }
+            const nums = Object.keys(AppState.scenarioData || {}).map(Number)
+                .filter(n => AppState.scenarioData[n] && AppState.scenarioData[n].meses > 0)
+                .sort((a, b) => a - b).slice(0, 2);
+            if (!nums.length) {
+                esc.innerHTML = '<p class="diag-kicker">Propuesta</p>' +
+                                '<p class="diag-sub">Calcule un escenario de Modalidad 40.</p>';
+                return;
+            }
+
+            const base = (AppState.pensionBaseResultadosInfo || {}).PENSION_MENSUAL_ESTIMADA || 0;
+            const opciones = nums.map(n => {
+                const sc = AppState.scenarioData[n];
+                const f = sc.factorFebrero || 1;
+                return {
+                    n, meses: sc.meses,
+                    pension: (sc.pensionMensual || 0) * f,
+                    titulo: (document.getElementById(`scenario_${n}_title`) || {}).value || `${sc.meses} meses`
+                };
+            });
+            const maxV = Math.max(base, ...opciones.map(o => o.pension)) || 1;
+
+            const columna = (etq, valor, id, oro) => `
+                <div class="cmp-lado ${oro ? 'cmp-lado--despues' : 'cmp-lado--antes'}">
+                    <span class="cmp-etiqueta">${etq}</span>
+                    <div class="cmp-cifra ${oro ? 'cmp-cifra--oro' : ''}" id="${id}">$0.00</div>
+                    <div class="cmp-barra"><div class="cmp-barra__fill ${oro ? 'cmp-barra__fill--oro' : ''}" id="${id}Barra"></div></div>
+                </div>`;
+
             esc.innerHTML = `
-                <p class="diag-kicker">Su pensi&oacute;n con Modalidad 40 &middot; ${e.sc.meses} meses</p>
+                <p class="diag-kicker">Hoy contra sus dos opciones</p>
                 <div class="cmp-duo">
-                    <div class="cmp-lado cmp-lado--antes">
-                        <span class="cmp-etiqueta">Hoy, sin hacer nada</span>
-                        <div class="cmp-cifra" id="cmpAntes">$0.00</div>
-                        <div class="cmp-barra"><div class="cmp-barra__fill" id="cmpBarraAntes"></div></div>
-                    </div>
+                    ${columna('Hoy, sin hacer nada', base, 'cmpAntes', false)}
                     <div class="cmp-flecha"><i class="fas fa-arrow-right-long"></i></div>
-                    <div class="cmp-lado cmp-lado--despues">
-                        <span class="cmp-etiqueta">Con Modalidad 40</span>
-                        <div class="cmp-cifra cmp-cifra--oro" id="cmpDespues">$0.00</div>
-                        <div class="cmp-barra"><div class="cmp-barra__fill cmp-barra__fill--oro" id="cmpBarraDespues"></div></div>
-                    </div>
+                    ${opciones.map((o, k) => columna(o.titulo, o.pension, 'cmpOp' + k, true)).join('')}
                 </div>
-                <div class="cmp-delta aparece" style="animation-delay:1.8s">
-                    <i class="fas fa-arrow-trend-up"></i>
-                    <span><strong>$${formatNumber(e.ganancia)}</strong> m&aacute;s cada mes &middot; su pensi&oacute;n se multiplica por <strong>${formatNumber(e.veces, 2)}</strong></span>
+
+                <div class="cmp-delta aparece" style="animation-delay:1.6s">
+                    ${opciones.map(o => `<span><b>${o.meses} meses</b> &rarr;
+                        <strong>+$${formatNumber(o.pension - base)}</strong> al mes</span>`).join('')}
                 </div>
-                <p class="diag-sub aparece" style="animation-delay:2.3s">
-                    Son <strong>$${formatNumber(e.gananciaAnual)}</strong> adicionales al a&ntilde;o, de por vida y con incrementos anuales.
-                </p>`;
-            _diagConteo(document.getElementById('cmpAntes'), 0, e.base, 1200, 2, '$');
-            _diagLuego(() => _diagConteo(document.getElementById('cmpDespues'), 0, e.conM40, 1400, 2, '$'), 500);
-            const maxV = Math.max(e.base, e.conM40) || 1;
+
+                <div class="cmp-anios aparece" style="animation-delay:2.1s">
+                    <span class="cmp-anios__etq">C&oacute;mo crece con la inflaci&oacute;n</span>
+                    <table class="cmp-tabla">
+                        <thead><tr><th>A&ntilde;o</th><th>Hoy</th>
+                            ${opciones.map(o => `<th>${o.meses} meses</th>`).join('')}</tr></thead>
+                        <tbody>
+                            ${[1, 3, 5, 10].map(a => {
+                                const factor = Math.pow(1 + Constants.INPC_GROWTH_ESTIMATE, a - 1);
+                                return `<tr><td>${a === 1 ? 'Al inicio' : 'A ' + a + ' a\u00f1os'}</td>
+                                    <td>$${formatNumber(base * factor)}</td>
+                                    ${opciones.map(o => `<td class="es-oro">$${formatNumber(o.pension * factor)}</td>`).join('')}
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                    <p class="cmp-anios__pie">Proyectado con ${formatNumber(Constants.INPC_GROWTH_ESTIMATE * 100, 1)}%
+                       anual, el aumento de febrero que aplica el IMSS.</p>
+                </div>`;
+
+            _diagConteo(document.getElementById('cmpAntes'), 0, base, 1100, 2, '$');
+            opciones.forEach((o, k) => {
+                _diagLuego(() => _diagConteo(document.getElementById('cmpOp' + k), 0, o.pension, 1200, 2, '$'),
+                           420 + k * 260);
+            });
             _diagLuego(() => {
-                const a = document.getElementById('cmpBarraAntes');
-                const b = document.getElementById('cmpBarraDespues');
-                if (a) a.style.height = (e.base / maxV * 100) + '%';
-                if (b) b.style.height = (e.conM40 / maxV * 100) + '%';
+                const a = document.getElementById('cmpAntesBarra');
+                if (a) a.style.height = (base / maxV * 100) + '%';
+                opciones.forEach((o, k) => {
+                    const b = document.getElementById('cmpOp' + k + 'Barra');
+                    if (b) b.style.height = (o.pension / maxV * 100) + '%';
+                });
             }, 300);
         }
 
@@ -5824,80 +6380,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             return marcas.filter(m => m.m >= piso).sort((a, b) => a.m - b.m);
         }
 
-        function _laminaPlazo(esc) {
-            const nums = Object.keys(AppState.scenarioData || {}).map(Number)
-                .filter(n => AppState.scenarioData[n] && AppState.scenarioData[n].meses > 0).sort((a, b) => a - b);
-            const scNum = nums[0] || 1;
-            const sc = AppState.scenarioData[scNum];
-            if (!sc) { esc.innerHTML = '<p class="diag-sub">Sin escenario calculado.</p>'; return; }
-            const marcas = _hitosDelPlazo(scNum);
-
-            esc.innerHTML = `
-                <p class="diag-kicker">¿Hasta qué mes conviene llegar?</p>
-
-                <div class="pz-cifra">
-                    <b id="ltPension">$0.00</b>
-                    <span>pensión mensual con <em id="ltMeses">${sc.meses}</em> meses de Modalidad 40</span>
-                </div>
-
-                <div class="pz-barras" id="pzBarras"></div>
-
-                <div class="pz-control">
-                    <button type="button" class="calc-paso" onclick="_ltMover(${scNum}, -1)"><i class="fas fa-minus"></i></button>
-                    <input type="range" id="ltRango" class="calc-rango pz-rango" min="0" max="60" value="${sc.meses}"
-                           oninput="_ltDeslizar(${scNum}, this.value)">
-                    <button type="button" class="calc-paso" onclick="_ltMover(${scNum}, 1)"><i class="fas fa-plus"></i></button>
-                </div>
-
-                <div class="pz-hitos">
-                    ${marcas.map(mk => `
-                        <button type="button" class="pz-hito pz-hito--${mk.tipo}" data-m="${mk.m}" onclick="_ltIr(${scNum}, ${mk.m})">
-                            <b>${mk.m}</b><span>${mk.etq}</span>
-                        </button>`).join('')}
-                </div>
-                <p class="pz-nota" id="ltNota"></p>
-                <div class="pz-limite" id="ltLimite"></div>`;
-            _ltPintar(scNum);
-        }
-
-        // Barras de pensión año con año: base y, encima, lo que agrega M40
-        function _pzBarras(scNum) {
-            const cont = document.getElementById('pzBarras');
-            if (!cont) return;
-            const base = AppState.pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA || 0;
-            const sc = AppState.scenarioData[scNum];
-            if (!sc || !sc.inicioM40Str) return;
-            const [ai, mi] = sc.inicioM40Str.split('-').map(Number);
-            const pasos = [12, 24, 36, 48, 60];
-            const sims = pasos.map(m => {
-                const r = typeof simularMeses === 'function' ? simularMeses(m) : null;
-                return { m, pension: r ? r.pension : 0 };
-            }).filter(x => x.pension > 0);
-            if (sims.length === 0) return;
-            const max = Math.max(...sims.map(x => x.pension));
-            cont.innerHTML = sims.map((x, i) => {
-                const hBase = (base / max) * 100;
-                const hExtra = ((x.pension - base) / max) * 100;
-                const activa = Math.abs(x.m - sc.meses) <= 6;
-                return `<div class="pz-col ${activa ? 'is-activa' : ''}" data-i="${i}" title="${x.m} meses · $${formatNumber(x.pension)}">
-                    <div class="pz-col__valor">$${formatNumber(x.pension, 0)}</div>
-                    <div class="pz-col__pila">
-                        <div class="pz-col__extra" style="height:0" data-h="${hExtra}"></div>
-                        <div class="pz-col__base" style="height:0" data-h="${hBase}"></div>
-                    </div>
-                    <span>${x.m}m</span>
-                </div>`;
-            }).join('');
-            cont.querySelectorAll('.pz-col').forEach((c, i) => {
-                _diagLuego(() => {
-                    const b = c.querySelector('.pz-col__base');
-                    const e = c.querySelector('.pz-col__extra');
-                    if (b) b.style.height = b.dataset.h + '%';
-                    if (e) e.style.height = e.dataset.h + '%';
-                }, 300 + i * 160);
-            });
-        }
-
         // Marcador deportivo: la cifra vieja sube y la nueva entra desde abajo.
         function _rodarNumero(el, texto) {
             if (!el) return;
@@ -5928,7 +6410,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             document.querySelectorAll('.pz-hito').forEach(b =>
                 b.classList.toggle('is-alcanzado', parseInt(b.dataset.m) <= sc.meses));
             _pzBarras(scNum);
-            _pzLimite(scNum);
             const nota = document.getElementById('ltNota');
             if (nota) {
                 const marcas = _hitosDelPlazo(scNum).filter(m => m.m <= sc.meses);
@@ -5938,36 +6419,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             }
         }
 
-        // Cuantos meses de M40 quedan realmente disponibles: la ventana de
-        // 5 anios desde la baja se va cerrando mes con mes.
-        function _pzLimite(scNum) {
-            const cont = document.getElementById('ltLimite');
-            if (!cont) return;
-            const v = _datosDerechos();
-            const sc = AppState.scenarioData[scNum];
-            if (!v || !sc || !sc.inicioM40Str) { cont.style.display = 'none'; return; }
-
-            const [a, m, d] = sc.inicioM40Str.split('-').map(Number);
-            const inicio = new Date(Date.UTC(a, m - 1, d));
-            // meses entre el arranque de M40 y el vencimiento de los 5 anios
-            const restantes = Math.max(0, Math.round((v.limiteM40 - inicio) / 86400000 / 30.4375));
-            const perdidos = Math.max(0, Math.round((inicio - v.baja) / 86400000 / 30.4375));
-
-            cont.style.display = 'block';
-            if (restantes <= 0) {
-                cont.className = 'pz-limite pz-limite--vencido';
-                cont.innerHTML = `<i class="fas fa-ban mr-2"></i>La ventana de Modalidad 40 venci&oacute; el
-                    <strong>${formatDateDDMMYYYY(v.limiteM40)}</strong>.`;
-                return;
-            }
-            const apremia = restantes <= 12;
-            cont.className = 'pz-limite' + (apremia ? ' pz-limite--urge' : '');
-            cont.innerHTML = `<i class="fas fa-hourglass-half mr-2"></i>
-                ${apremia ? '<strong>Est&aacute; por perder la ventana.</strong> ' : ''}
-                Desde su baja ya pasaron <strong>${perdidos} meses</strong> que no se pueden recuperar.
-                Solo quedan <strong>${restantes} meses</strong> de Modalidad 40 disponibles,
-                hasta el <strong>${formatDateDDMMYYYY(v.limiteM40)}</strong>.`;
-        }
 
         let _ltTimer = null;
         async function _ltAplicar(scNum, meses) {
@@ -5977,23 +6428,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             if (typeof sincronizarTituloEscenario === 'function') sincronizarTituloEscenario(scNum);
             await recalculateScenario(scNum);
             _ltPintar(scNum);
-        }
-        function _ltDeslizar(scNum, v) {
-            const m = parseInt(v) || 0;
-            const el = document.getElementById('ltMeses');
-            if (el) el.textContent = m;
-            const cur = document.getElementById('ltCursor');
-            if (cur) cur.style.top = (m / 60) * 100 + '%';
-            const rel = document.getElementById('ltRelleno');
-            if (rel) rel.style.height = (m / 60) * 100 + '%';
-            clearTimeout(_ltTimer);
-            _ltTimer = setTimeout(() => _ltAplicar(scNum, m), 240);
-        }
-        function _ltMover(scNum, d) {
-            const r = document.getElementById('ltRango');
-            if (!r) return;
-            const m = Math.max(0, Math.min(parseInt(r.max) || 60, (parseInt(r.value) || 0) + d));
-            r.value = m; _ltDeslizar(scNum, m);
         }
         function _ltIr(scNum, m) {
             const r = document.getElementById('ltRango');
@@ -6064,260 +6498,205 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             _diagLuego(() => _diagConteo(document.getElementById('fmCuota'), 0, filas[0].costoBase || (sbcM40 * tasa * dias), 900, 2, '$'), 1500);
         }
 
-        // ---------- DESGLOSE DEL COSTO ----------
-        function _laminaDesgloseCosto(esc) {
-            const e = _diagEscenario();
-            if (!e) { esc.innerHTML = '<p class="diag-sub">Sin escenario calculado.</p>'; return; }
-            const sc = e.sc;
-            const filasD = sc.desgloseM40 || [];
-            const partes = [
-                { etiqueta: 'Cuotas al IMSS', valor: filasD.reduce((t, f) => t + (f.costoBase || 0), 0), color: 'var(--azul-500)' },
-                { etiqueta: 'Actualizaci&oacute;n por INPC', valor: filasD.reduce((t, f) => t + (f.montoAct || 0), 0), color: '#7C6BD4' },
-                { etiqueta: 'Recargos', valor: filasD.reduce((t, f) => t + (f.recargos || 0), 0), color: '#D97706' }
-            ].filter(x => x.valor > 0);
-            const total = partes.reduce((a, b) => a + b.valor, 0) || 1;
+        // ---------- LAMINA FINAL: CALCULO CON MESES MOVIBLES ----------
+        // ---------- CALCULO COMPLETO: DOS ESCENARIOS EN VIVO ----------
+        // Cada columna tiene su propio deslizador y su interruptor de reintegro.
+        // No lleva costo ni precio: aqui solo se compara la pension.
+        let _calcCols = null;
 
-            esc.innerHTML = `
-                <p class="diag-kicker">De qu&eacute; se compone la inversi&oacute;n</p>
-                <div class="diag-cifra" id="desgTotal">$0.00</div>
-                <p class="diag-sub">${sc.meses} meses de Modalidad 40, solo lo que recibe el IMSS</p>
-                <div class="desg-barra" id="desgBarra">
-                    ${partes.map((x, i) => `<div class="desg-seg" data-i="${i}" style="background:${x.color}; width:0"></div>`).join('')}
-                </div>
-                <div class="desg-lista">
-                    ${partes.map((x, i) => `
-                        <div class="desg-item aparece" style="animation-delay:${1 + i * .22}s">
-                            <span class="desg-punto" style="background:${x.color}"></span>
-                            <span class="desg-etq">${x.etiqueta}</span>
-                            <b>$${formatNumber(x.valor)}</b>
-                            <em>${formatNumber(x.valor / total * 100, 1)}%</em>
-                        </div>`).join('')}
-                </div>`;
-            _diagConteoCifra(document.getElementById('desgTotal'), 0, total, 1400, 2, '$');
-            _diagLuego(() => {
-                partes.forEach((x, i) => {
-                    const seg = document.querySelector(`.desg-seg[data-i="${i}"]`);
-                    if (seg) seg.style.width = (x.valor / total * 100) + '%';
-                });
-            }, 400);
+        function _calcPendientesReintegro() {
+            const d = AppState.desgloseSemanas;
+            if (!d || !d.descontadas) return 0;
+            return Math.max(0, d.descontadas - d.reintegradas);
         }
 
-        // ---------- LAMINA FINAL: CALCULO CON MESES MOVIBLES ----------
         function _laminaCalculo(esc) {
             const nums = Object.keys(AppState.scenarioData || {}).map(Number)
-                .filter(n => AppState.scenarioData[n] && AppState.scenarioData[n].meses > 0).sort((a, b) => a - b);
-            const scNum = nums[0] || 1;
-            const sc = AppState.scenarioData[scNum];
-            if (!sc) { esc.innerHTML = '<p class="diag-sub">Sin escenario calculado.</p>'; return; }
+                .filter(n => AppState.scenarioData[n] && AppState.scenarioData[n].meses > 0)
+                .sort((a, b) => a - b);
+            if (!nums.length) { esc.innerHTML = '<p class="diag-sub">Sin escenario calculado.</p>'; return; }
+
+            const m1 = AppState.scenarioData[nums[0]].meses;
+            const m2 = nums[1] ? AppState.scenarioData[nums[1]].meses : Math.min(60, m1 + 12);
+            if (!_calcCols) {
+                _calcCols = [{ meses: m1, reintegro: false }, { meses: m2, reintegro: false }];
+            }
+
+            const pend = _calcPendientesReintegro();
+            const columna = (i) => `
+                <div class="cc-col">
+                    <div class="cc-control">
+                        <button type="button" class="calc-paso" onclick="_calcMover(${i}, -1)"><i class="fas fa-minus"></i></button>
+                        <div class="calc-meses"><b id="cc${i}Meses">${_calcCols[i].meses}</b><span>meses en Modalidad 40</span></div>
+                        <button type="button" class="calc-paso" onclick="_calcMover(${i}, 1)"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <input type="range" id="cc${i}Rango" class="calc-rango" min="1" max="60" value="${_calcCols[i].meses}"
+                           oninput="_calcDeslizar(${i}, this.value)">
+
+                    ${pend > 0 ? `
+                    <label class="cc-reint">
+                        <input type="checkbox" ${_calcCols[i].reintegro ? 'checked' : ''}
+                               onchange="_calcReintegro(${i}, this.checked)">
+                        <span class="switch-track"><span class="switch-knob"></span></span>
+                        <span>Reintegra las <b>${pend}</b> semanas del retiro</span>
+                    </label>` : ''}
+
+                    <div class="cc-mini"><svg id="ccMini${i}"></svg></div>
+                    <p class="cc-mini__pie">Lo que entra al nuevo SBC promedio</p>
+
+                    <div class="calc-tabla">
+                        <div class="calc-fila calc-fila--destacada">
+                            <span>Pensi&oacute;n mensual</span><b id="cc${i}Pension">$0.00</b>
+                        </div>
+                        <div class="calc-fila"><span>Aguinaldo anual</span><b id="cc${i}Aguinaldo">$0.00</b></div>
+                        <div class="calc-fila"><span>Ingreso anual total</span><b id="cc${i}Anual">$0.00</b></div>
+                        <div class="calc-sep"></div>
+                        <div class="calc-fila"><span>SBC promedio final</span><b id="cc${i}Sbc">$0.00</b></div>
+                        <div class="calc-fila"><span>Semanas al pensionarse</span><b id="cc${i}Semanas">0</b></div>
+                        <div class="calc-fila"><span>Edad al terminar M40</span><b id="cc${i}Edad">--</b></div>
+                        <div class="calc-fila"><span>Fecha de fin de M40</span><b id="cc${i}Fecha">--</b></div>
+                        <div class="calc-sep"></div>
+                        <div class="calc-fila calc-fila--verde"><span>Gana cada mes</span><b id="cc${i}Ganancia">$0.00</b></div>
+                    </div>
+                </div>`;
 
             esc.innerHTML = `
-                <p class="diag-kicker">C&aacute;lculo completo &middot; mueva los meses</p>
-                <div class="calc-control">
-                    <button type="button" class="calc-paso" onclick="_calcMover(${scNum}, -1)"><i class="fas fa-minus"></i></button>
-                    <div class="calc-meses"><b id="calcMeses">${sc.meses}</b><span>meses en Modalidad 40</span></div>
-                    <button type="button" class="calc-paso" onclick="_calcMover(${scNum}, 1)"><i class="fas fa-plus"></i></button>
+                <p class="diag-kicker">C&aacute;lculo completo &middot; mueva los meses de cada escenario</p>
+                <div class="cc-rejilla">${columna(0)}${columna(1)}</div>
+                <div class="cc-hoy">
+                    <em>Su pensi&oacute;n a d&iacute;a de hoy, sin hacer nada</em>
+                    <b>$${formatNumber((AppState.pensionBaseResultadosInfo || {}).PENSION_MENSUAL_ESTIMADA || 0)}</b>
                 </div>
-                <input type="range" id="calcRango" class="calc-rango" min="1" max="60" value="${sc.meses}"
-                       oninput="_calcDeslizar(${scNum}, this.value)">
+                <p id="ccDif" class="cc-dif"></p>`;
 
-                <div class="calc-tabla">
-                    <div class="calc-fila calc-fila--destacada">
-                        <span>Pensi&oacute;n mensual</span><b id="calcPension">$0.00</b>
-                    </div>
-                    <div class="calc-fila"><span>Aguinaldo anual</span><b id="calcAguinaldo">$0.00</b></div>
-                    <div class="calc-fila"><span>Ingreso anual total</span><b id="calcAnual">$0.00</b></div>
-                    <div class="calc-sep"></div>
-                    <div class="calc-fila"><span>SBC promedio final</span><b id="calcSbc">$0.00</b></div>
-                    <div class="calc-fila"><span>Semanas al pensionarse</span><b id="calcSemanas">0</b></div>
-                    <div class="calc-fila"><span>Edad al terminar M40</span><b id="calcEdad">--</b></div>
-                    <div class="calc-fila"><span>Fecha de fin de M40</span><b id="calcFecha">--</b></div>
-                    <div class="calc-sep"></div>
-                    <div class="calc-fila"><span>Cuotas al IMSS + act. y recargos</span><b id="calcCosto">$0.00</b></div>
-                    <div class="calc-fila calc-fila--verde"><span>Gana cada mes</span><b id="calcGanancia">$0.00</b></div>
-                </div>`;
-            _calcPintar(scNum);
+            _calcPintar(0);
+            _calcPintar(1);
         }
 
-        function _calcPintar(scNum) {
-            const sc = AppState.scenarioData[scNum];
-            if (!sc) return;
-            const base = AppState.pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA || 0;
-            const set = (id, v, pre, dec) => { const el = document.getElementById(id); if (el) _diagConteo(el, parseFloat(String(el.textContent).replace(/[^0-9.\-]/g, '')) || 0, v, 600, dec === undefined ? 2 : dec, pre || ''); };
-            set('calcPension', sc.pensionMensual || 0, '$');
-            set('calcAguinaldo', sc.aguinaldo || 0, '$');
-            set('calcAnual', (sc.pensionMensual || 0) * 12 + (sc.aguinaldo || 0), '$');
-            set('calcSbc', sc.sbcPromedio || 0, '$');
-            set('calcSemanas', sc.semanas || 0, '', 0);
-            const filasC = sc.desgloseM40 || [];
-            set('calcCosto', filasC.reduce((t, f) => t + (f.totalMes || 0), 0), '$');
-            set('calcGanancia', (sc.pensionMensual || 0) - base, '$');
-            const ed = document.getElementById('calcEdad');
-            if (ed && sc.edadFinM40) ed.textContent = `${sc.edadFinM40.anos} a&ntilde;os, ${sc.edadFinM40.meses} meses`.replace('&ntilde;', 'ñ');
-            const fe = document.getElementById('calcFecha');
-            if (fe && sc.fechaFinM40Obj) fe.textContent = formatDateDDMMYYYY(sc.fechaFinM40Obj);
-            const me = document.getElementById('calcMeses');
-            if (me) me.textContent = sc.meses;
+        function _calcPintar(i) {
+            const col = _calcCols[i];
+            const base = (AppState.pensionBaseResultadosInfo || {}).PENSION_MENSUAL_ESTIMADA || 0;
+            const r = simularMeses(col.meses, col.reintegro ? _calcPendientesReintegro() : 0);
+            if (!r) return;
+
+            // _diagConteo(el, desde, hasta, duracion, decimales, prefijo)
+            // El prefijo iba en el lugar de la duracion y todo salia en cero.
+            const set = (id, v, pre, dec) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const desde = parseFloat(String(el.textContent).replace(/[^0-9.-]/g, '')) || 0;
+                _diagConteo(el, desde, v, 700, (dec === undefined ? 2 : dec), pre || '');
+            };
+            set(`cc${i}Pension`, r.pension, '$');
+            set(`cc${i}Aguinaldo`, r.aguinaldo || 0, '$');
+            set(`cc${i}Anual`, r.pension * 12 + (r.aguinaldo || 0), '$');
+            set(`cc${i}Sbc`, r.sbcPromedio || 0, '$');
+            set(`cc${i}Semanas`, r.semanas || 0, '', 0);
+            set(`cc${i}Ganancia`, r.pension - base, '$');
+
+            const ed = document.getElementById(`cc${i}Edad`);
+            if (ed && r.edadFin) ed.textContent = `${r.edadFin.anos} a\u00f1os, ${r.edadFin.meses} meses`;
+            const fe = document.getElementById(`cc${i}Fecha`);
+            if (fe && r.fechaFin) fe.textContent = formatDateDDMMYYYY(r.fechaFin);
+            const me = document.getElementById(`cc${i}Meses`);
+            if (me) me.textContent = col.meses;
+
+            _calcCols[i].ultima = r.pension;
+            _calcMiniLinea(i, r.periodosSbc);
+            _calcDiferencia();
         }
 
-        let _calcTimer = null;
-        async function _calcAplicar(scNum, meses) {
-            const input = document.getElementById(`scenario_${scNum}_meses`);
-            if (!input) { showCustomAlert('Agregue un escenario en el Paso 4 para mover los meses.', 'Sin escenario'); return; }
-            input.value = meses;
-            if (typeof sincronizarTituloEscenario === 'function') sincronizarTituloEscenario(scNum);
-            await recalculateScenario(scNum);
-            _calcPintar(scNum);
+        // Mini linea por columna: solo los periodos que el motor usa para el
+        // nuevo SBC promedio, con el tramo de Modalidad 40 en naranja.
+        function _calcMiniLinea(i, periodos) {
+            const nodo = document.getElementById('ccMini' + i);
+            if (!nodo || !periodos || !periodos.length) return;
+            const svg = d3.select(nodo);
+            const w = Math.max(160, nodo.parentNode.clientWidth || 300), h = 74;
+            const m = { top: 6, right: 6, bottom: 16, left: 6 };
+            svg.selectAll('*').remove();
+            svg.attr('width', w).attr('height', h);
+
+            const ini = new Date(Math.min(...periodos.map(p => p.fechaInicio.getTime())));
+            const fin = new Date(Math.max(...periodos.map(p => p.fechaFin.getTime())));
+            const x = d3.scaleTime().domain([ini, fin]).range([m.left, w - m.right]);
+            const maxSbc = d3.max(periodos, p => p.sbc) || 1;
+            const y = d3.scaleLinear().domain([0, maxSbc * 1.1]).range([h - m.bottom, m.top]);
+
+            const g = svg.append('g');
+            g.selectAll('rect').data(periodos).enter().append('rect')
+                .attr('x', p => x(p.fechaInicio))
+                .attr('y', p => y(p.sbc))
+                .attr('width', p => Math.max(1.2, x(p.fechaFin) - x(p.fechaInicio)))
+                .attr('height', p => (h - m.bottom) - y(p.sbc))
+                .attr('fill', p => p.nombrePatron === 'Modalidad 40' ? '#F97316' : 'rgba(255,255,255,.45)')
+                .attr('rx', 1)
+                .style('cursor', 'pointer')
+                .on('mouseover', function (ev, p) {
+                    d3.select(this).attr('fill', p.nombrePatron === 'Modalidad 40' ? '#FB923C' : '#fff');
+                    const tip = d3.select('#timeline-tooltip');
+                    tip.style('opacity', 1).html(
+                        `<strong>${censurarNombre(p.nombrePatron)}</strong><br/>` +
+                        `${formatDateDDMMYYYY(p.fechaInicio)} al ${formatDateDDMMYYYY(p.fechaFin)}<br/>` +
+                        `Salario: $${formatNumber(p.sbc)} &middot; ${formatNumber(p.dias, 0)} d\u00edas`);
+                })
+                .on('mousemove', (ev) => d3.select('#timeline-tooltip')
+                    .style('left', (ev.clientX + 15) + 'px').style('top', (ev.clientY - 28) + 'px'))
+                .on('mouseout', function (ev, p) {
+                    d3.select(this).attr('fill', p.nombrePatron === 'Modalidad 40' ? '#F97316' : 'rgba(255,255,255,.45)');
+                    d3.select('#timeline-tooltip').style('opacity', 0);
+                });
+
+            g.append('line').attr('x1', m.left).attr('x2', w - m.right)
+                .attr('y1', h - m.bottom).attr('y2', h - m.bottom)
+                .attr('stroke', 'rgba(255,255,255,.25)');
+
+            [ini, fin].forEach((f, k) => {
+                g.append('text').attr('x', k === 0 ? m.left : w - m.right)
+                    .attr('y', h - 4).attr('text-anchor', k === 0 ? 'start' : 'end')
+                    .attr('class', 'cc-mini__anio').text(f.getUTCFullYear());
+            });
         }
 
-        function _calcDeslizar(scNum, valor) {
-            const m = parseInt(valor) || 1;
-            const el = document.getElementById('calcMeses');
+        function _calcDiferencia() {
+            const el = document.getElementById('ccDif');
+            if (!el || !_calcCols) return;
+            const a = _calcCols[0].ultima, b = _calcCols[1].ultima;
+            if (!a || !b) { el.innerHTML = ''; return; }
+            const dif = Math.abs(b - a);
+            const mayor = b > a ? 2 : 1;
+            el.innerHTML = dif < 1
+                ? 'Las dos opciones dan pr&aacute;cticamente lo mismo.'
+                : `El escenario <b>${mayor}</b> da <b>$${formatNumber(dif)}</b> m&aacute;s al mes
+                   &middot; <b>$${formatNumber(dif * 12)}</b> al a&ntilde;o.`;
+        }
+
+        let _calcTimer = [null, null];
+
+        function _calcDeslizar(i, valor) {
+            const m = Math.max(1, Math.min(60, parseInt(valor) || 1));
+            _calcCols[i].meses = m;
+            const el = document.getElementById(`cc${i}Meses`);
             if (el) el.textContent = m;
-            clearTimeout(_calcTimer);
-            _calcTimer = setTimeout(() => _calcAplicar(scNum, m), 220);
+            clearTimeout(_calcTimer[i]);
+            _calcTimer[i] = setTimeout(() => _calcPintar(i), 200);
         }
 
-        function _calcMover(scNum, delta) {
-            const rango = document.getElementById('calcRango');
-            if (!rango) return;
-            const m = Math.max(1, Math.min(60, (parseInt(rango.value) || 1) + delta));
-            rango.value = m;
-            _calcDeslizar(scNum, m);
+        function _calcMover(i, d) {
+            const r = document.getElementById(`cc${i}Rango`);
+            if (!r) return;
+            const m = Math.max(1, Math.min(60, (parseInt(r.value) || 0) + d));
+            r.value = m;
+            _calcDeslizar(i, m);
+        }
+
+        function _calcReintegro(i, valor) {
+            _calcCols[i].reintegro = !!valor;
+            _calcPintar(i);
         }
 
         // ---------- SIMULADOR: PLAZO, INICIO Y MENSUALIDADES ----------
         let _simConRecargos = false;
-
-        function _laminaSimulador(esc) {
-            const nums = Object.keys(AppState.scenarioData || {}).map(Number)
-                .filter(n => AppState.scenarioData[n] && AppState.scenarioData[n].meses > 0).sort((a, b) => a - b);
-            const scNum = nums[0] || 1;
-            const sc = AppState.scenarioData[scNum];
-            if (!sc) { esc.innerHTML = '<p class="diag-sub">Calcule un escenario en el Paso 4 para usar el simulador.</p>'; return; }
-
-            esc.innerHTML = `
-                <p class="diag-kicker">Simulador &middot; mueva el plazo y la fecha de inicio</p>
-
-                <div class="sim-controles">
-                    <div class="sim-bloque">
-                        <span class="sim-etq">Inicio de Modalidad 40</span>
-                        <div class="sim-fila">
-                            <button type="button" class="calc-paso" onclick="_simMoverInicio(${scNum}, -1)"><i class="fas fa-angle-left"></i></button>
-                            <div class="sim-valor"><b id="simInicio">--</b><em id="simDesdeBaja">--</em></div>
-                            <button type="button" class="calc-paso" onclick="_simMoverInicio(${scNum}, 1)"><i class="fas fa-angle-right"></i></button>
-                        </div>
-                    </div>
-                    <div class="sim-bloque">
-                        <span class="sim-etq">Meses en Modalidad 40</span>
-                        <div class="sim-fila">
-                            <button type="button" class="calc-paso" onclick="_simMoverMeses(${scNum}, -1)"><i class="fas fa-minus"></i></button>
-                            <div class="sim-valor"><b id="simMeses">${sc.meses}</b><em>meses</em></div>
-                            <button type="button" class="calc-paso" onclick="_simMoverMeses(${scNum}, 1)"><i class="fas fa-plus"></i></button>
-                        </div>
-                        <input type="range" id="simRango" class="calc-rango" min="1" max="60" value="${sc.meses}"
-                               oninput="_simDeslizar(${scNum}, this.value)">
-                    </div>
-                </div>
-
-                <div class="sim-resumen">
-                    <div class="sim-dato"><b id="simPension">$0.00</b><span>pensi&oacute;n mensual</span></div>
-                    <div class="sim-dato sim-dato--verde"><b id="simSube">$0.00</b><span>m&aacute;s que hoy</span></div>
-                    <div class="sim-dato"><b id="simCosto">$0.00</b><span id="simCostoEtq">costo total del contrato</span></div>
-                </div>
-
-                <label class="sim-switch">
-                    <input type="checkbox" id="simSwRecargos" ${_simConRecargos ? 'checked' : ''} onchange="_simToggleRecargos(${scNum}, this.checked)">
-                    <span class="switch-track"><span class="switch-knob"></span></span>
-                    <span id="simSwTexto">Con actualizaci&oacute;n y recargos</span>
-                </label>
-
-                <p id="simNota" class="sim-nota"></p>
-                <div class="sim-tabla-caja">
-                    <table class="sim-tabla">
-                        <thead><tr id="simCabecera"></tr></thead>
-                        <tbody id="simCuerpo"></tbody>
-                        <tfoot><tr id="simPie"></tr></tfoot>
-                    </table>
-                </div>`;
-
-            _simPintar(scNum);
-        }
-
-        function _simPintar(scNum) {
-            const sc = AppState.scenarioData[scNum];
-            if (!sc) return;
-            const base = AppState.pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA || 0;
-            const filas = sc.desgloseM40 || [];
-
-            // encabezado del simulador
-            const inicioEl = document.getElementById('simInicio');
-            if (inicioEl && sc.inicioM40Str) {
-                const [a, m, d] = sc.inicioM40Str.split('-').map(Number);
-                inicioEl.textContent = formatDateDDMMYYYY(new Date(Date.UTC(a, m - 1, d)));
-                const baja = AppState.datosClienteInfo.ultimaFechaBaja;
-                const desde = document.getElementById('simDesdeBaja');
-                if (desde && baja) {
-                    const meses = Math.round((new Date(Date.UTC(a, m - 1, d)) - baja) / 86400000 / 30.44);
-                    desde.textContent = meses <= 0 ? 'mismo mes de la baja' : `${meses} mes${meses > 1 ? 'es' : ''} tras la baja`;
-                }
-            }
-            const mEl = document.getElementById('simMeses');
-            if (mEl) mEl.textContent = sc.meses;
-
-            const totalBase = filas.reduce((t, f) => t + (f.costoBase || 0), 0);
-            const totalAct = filas.reduce((t, f) => t + (f.montoAct || 0), 0);
-            const totalRec = filas.reduce((t, f) => t + (f.recargos || 0), 0);
-            const totalCompleto = sc.costoTotalContrato || (totalBase + totalAct + totalRec);
-            const costoMostrado = _simConRecargos ? totalCompleto : totalBase;
-
-            const set = (id, v) => { const el = document.getElementById(id); if (el) _diagConteo(el, parseFloat(String(el.textContent).replace(/[^0-9.\-]/g, '')) || 0, v, 550, 2, '$'); };
-            set('simPension', sc.pensionMensual || 0);
-            set('simSube', (sc.pensionMensual || 0) - base);
-            set('simCosto', costoMostrado);
-
-            const etq = document.getElementById('simCostoEtq');
-            if (etq) etq.textContent = _simConRecargos ? 'costo total del contrato' : 'cuota base del IMSS';
-            const txt = document.getElementById('simSwTexto');
-            if (txt) txt.textContent = _simConRecargos ? 'Con actualización y recargos' : 'Solo cuota base del IMSS';
-
-            // tabla
-            const cab = document.getElementById('simCabecera');
-            const cue = document.getElementById('simCuerpo');
-            const pie = document.getElementById('simPie');
-            if (!cab || !cue) return;
-            cab.innerHTML = _simConRecargos
-                ? '<th>Mes</th><th>Cuota base</th><th>Actualizaci&oacute;n</th><th>Recargos</th><th>Total</th>'
-                : '<th>Mes</th><th>Cuota base del IMSS</th>';
-            cue.innerHTML = filas.map(f => _simConRecargos
-                ? `<tr><td>${f.mes}</td><td>$${formatNumber(f.costoBase)}</td>
-                     <td class="sim-act">$${formatNumber(f.montoAct || 0)}</td>
-                     <td class="sim-rec">$${formatNumber(f.recargos || 0)}</td>
-                     <td><b>$${formatNumber(f.totalMes)}</b></td></tr>`
-                : `<tr><td>${f.mes}</td><td><b>$${formatNumber(f.costoBase)}</b></td></tr>`).join('');
-            const totalMensualidades = filas.reduce((t, f) => t + (f.totalMes || 0), 0);
-            pie.innerHTML = _simConRecargos
-                ? `<td>${filas.length} pagos</td><td>$${formatNumber(totalBase)}</td>
-                   <td class="sim-act">$${formatNumber(totalAct)}</td>
-                   <td class="sim-rec">$${formatNumber(totalRec)}</td>
-                   <td><b>$${formatNumber(totalMensualidades)}</b></td>`
-                : `<td>${filas.length} pagos</td><td><b>$${formatNumber(totalBase)}</b></td>`;
-
-            // El contrato incluye honorarios ademas de lo que se paga al IMSS
-            const nota = document.getElementById('simNota');
-            if (nota) {
-                const otros = totalCompleto - totalMensualidades;
-                nota.innerHTML = _simConRecargos && otros > 1
-                    ? `Pagos al IMSS <strong>$${formatNumber(totalMensualidades)}</strong>
-                       + honorarios y dem&aacute;s <strong>$${formatNumber(otros)}</strong>
-                       = contrato <strong>$${formatNumber(totalCompleto)}</strong>`
-                    : `Solo cuota base del IMSS, sin actualizaci&oacute;n, recargos ni honorarios.`;
-            }
-        }
-
-        function _simToggleRecargos(scNum, valor) {
-            _simConRecargos = !!valor;
-            _simPintar(scNum);
-        }
 
         let _simTimer = null;
         async function _simAplicarMeses(scNum, meses) {
@@ -6327,14 +6706,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             if (typeof sincronizarTituloEscenario === 'function') sincronizarTituloEscenario(scNum);
             await recalculateScenario(scNum);
             _simPintar(scNum);
-        }
-
-        function _simDeslizar(scNum, valor) {
-            const m = parseInt(valor) || 1;
-            const el = document.getElementById('simMeses');
-            if (el) el.textContent = m;
-            clearTimeout(_simTimer);
-            _simTimer = setTimeout(() => _simAplicarMeses(scNum, m), 220);
         }
 
         function _simMoverMeses(scNum, delta) {
@@ -6367,6 +6738,133 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
         // ---------- AJUSTES DE LA PROPUESTA (precio de venta, AFORE, primer deposito) ----------
         // Modo 9:16: encuadra la lamina para grabar en vertical.
+
+
+        // ============================================================
+        // "CALCULO DE PENSION EN UN MINUTO"
+        // Cada lamina pesa segun lo que aporta y el tiempo se reparte para
+        // que el recorrido dure 60 s exactos.
+        //   a = lo que vende          peso 6
+        //   b = contexto util         peso 2
+        //   c = tramite y tecnicismos peso 1
+        // Si se agregan o quitan laminas, el reparto se recalcula solo.
+        // ============================================================
+        const DURACION_TOTAL = 90;   // minuto y medio: 60 s dejaba las laminas muy cortas
+        const PESO_LAMINA = { a: 6, i: 4, b: 2, c: 1 };   // i = identidad, el doble que una 'b'
+        const CLASE_LAMINA = {
+            _laminaComoLlegar: 'c', _laminaConvocatoria: 'c',
+            _laminaIdentidad: 'i',
+            _laminaHistorial: 'a',
+            _laminaEdad: 'c',
+            _laminaSemanas: 'a',
+            _laminaSbc: 'b', _laminaVigencia: 'b', _laminaConservacion: 'b',
+            _laminaPension: 'b',
+            _laminaCalculo: 'a',
+            _laminaComparativa: 'b',
+            _laminaCalculoM40: 'c', _laminaCosto: 'c', _laminaCierre: 'c'
+        };
+
+        function _tiemposDeLaminas() {
+            const pesos = _diagLaminas.map(f => PESO_LAMINA[CLASE_LAMINA[f && f.name] || 'b']);
+            const suma = pesos.reduce((t, x) => t + x, 0) || 1;
+            return pesos.map(w => (w / suma) * DURACION_TOTAL);
+        }
+
+        let _autoTimer = null;
+        let _autoCorriendo = false;
+        let _autoAvanzando = false;
+
+        function _diagAutoplay() {
+            if (_autoCorriendo) { _autoDetener(); return; }
+            _autoCorriendo = true;
+            const b = document.getElementById('diagPlay');
+            if (b) { b.classList.add('is-on'); b.innerHTML = '<i class="fas fa-pause"></i>'; }
+            const barra = document.getElementById('diagProgreso');
+            if (barra) barra.classList.add('visible');
+            const cr = document.getElementById('diagCrono');
+            if (cr) cr.classList.add('visible');
+            _autoSiguiente(true);
+        }
+
+        function _autoDetener() {
+            _autoCorriendo = false;
+            clearTimeout(_autoTimer);
+            const b = document.getElementById('diagPlay');
+            if (b) { b.classList.remove('is-on'); b.innerHTML = '<i class="fas fa-play"></i>'; }
+            const barra = document.getElementById('diagProgreso');
+            if (barra) { barra.classList.remove('visible'); barra.querySelector('i').style.width = '0%'; }
+            const cr = document.getElementById('diagCrono');
+            if (cr) { cr.classList.remove('visible', 'is-tibio', 'is-caliente', 'estalla'); }
+            clearInterval(_crTimer);
+        }
+
+        function _autoSiguiente(primera) {
+            if (!_autoCorriendo) return;
+            if (!primera) {
+                if (_diagPaso >= _diagLaminas.length - 1) { _autoDetener(); return; }
+                _autoAvanzando = true; _diagIr(_diagPaso + 1); _autoAvanzando = false;
+            }
+            const segundos = _tiemposDeLaminas()[_diagPaso] || 3;
+            _autoProgreso(segundos);
+            _autoTimer = setTimeout(() => _autoSiguiente(false), segundos * 1000);
+        }
+
+        // Cuenta regresiva de la lamina: arranca en dorado, se calienta y
+        // estalla justo cuando toca cambiar.
+        let _crTimer = null;
+
+        function _crArrancar(segundos) {
+            const cr = document.getElementById('diagCrono');
+            if (!cr) return;
+            clearInterval(_crTimer);
+            cr.classList.remove('is-tibio', 'is-caliente', 'estalla');
+
+            const aro = cr.querySelector('.cr-avance');
+            const num = document.getElementById('crNum');
+            const LARGO = 2 * Math.PI * 27;
+            aro.style.transition = 'none';
+            aro.style.strokeDasharray = LARGO;
+            aro.style.strokeDashoffset = 0;
+            void aro.getBoundingClientRect();
+            aro.style.transition = `stroke-dashoffset ${segundos}s linear`;
+            aro.style.strokeDashoffset = LARGO;
+
+            const fin = Date.now() + segundos * 1000;
+            const latir = () => {
+                const restan = (fin - Date.now()) / 1000;
+                if (num) num.textContent = Math.max(0, Math.ceil(restan));
+                const pasado = 1 - restan / segundos;
+                cr.classList.toggle('is-tibio', pasado >= 0.55 && pasado < 0.82);
+                cr.classList.toggle('is-caliente', pasado >= 0.82);
+                if (restan <= 0) {
+                    clearInterval(_crTimer);
+                    cr.classList.add('estalla');
+                    setTimeout(() => cr.classList.remove('estalla'), 420);
+                }
+            };
+            latir();
+            _crTimer = setInterval(latir, 100);
+        }
+
+        function _autoProgreso(segundos) {
+            _crArrancar(segundos);
+            const barra = document.getElementById('diagProgreso');
+            if (!barra) return;
+            const t = _tiemposDeLaminas();
+            const total = t.reduce((a, x) => a + x, 0);
+            const previo = t.slice(0, _diagPaso).reduce((a, x) => a + x, 0);
+            const i = barra.querySelector('i');
+            i.style.transition = 'none';
+            i.style.width = ((previo / total) * 100).toFixed(2) + '%';
+            void i.offsetWidth;
+            i.style.transition = 'width ' + segundos + 's linear';
+            i.style.width = (((previo + segundos) / total) * 100).toFixed(2) + '%';
+            const etq = barra.querySelector('b');
+            if (etq) etq.textContent = Math.round(previo) + 's / ' + Math.round(total) + 's';
+            const crTot = document.getElementById('crTotal');
+            if (crTot) crTot.textContent = Math.round(previo) + 's / ' + Math.round(total) + 's';
+        }
+
         function _toggleAjustes() {
             const el = document.getElementById('diagPanelAjustes');
             if (!el) return;
@@ -6493,6 +6991,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             ov.classList.add('abierto');
             document.body.style.overflow = 'hidden';
             _diagPintar();
+            _autoSiCensura();
+        }
+
+        // Con la censura encendida la presentacion es para grabar: el
+        // cronometro arranca solo y va cambiando de lamina.
+        function _autoSiCensura() {
+            if (!AppState.modoPresentacion) return;
+            setTimeout(() => { if (!_autoCorriendo) _diagAutoplay(); }, 900);
         }
 
         async function completarPresentacion() {
@@ -6502,12 +7008,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             // el escenario de arranque tambien hace falta aqui, si no las
             // laminas de propuesta nunca se agregan
             await _asegurarEscenarioParaPresentar();
-            _diagLaminas = [_laminaComoLlegar, _laminaConvocatoria, _laminaNombre, _laminaCurp,
-                            _laminaNss, _laminaEdad, _laminaSemanas, _laminaSbc, _laminaVigencia,
+            _diagLaminas = [_laminaComoLlegar, _laminaConvocatoria, _laminaIdentidad, _laminaHistorial, _laminaEdad, _laminaSemanas, _laminaSbc, _laminaVigencia,
                             _laminaConservacion, _laminaPension];
             if (_diagEscenario()) _diagLaminas = _diagLaminas.concat(
-                [_laminaPlazo, _laminaComparativa, _laminaCalculoM40, _laminaCosto,
-                 _laminaDesgloseCosto, _laminaCalculo, _laminaSimulador]);
+                [ _laminaCalculo, _laminaComparativa,
+                 _laminaCalculoM40, _laminaCosto, _laminaCierre]);
             // se repintan los puntos sin mover al asesor de donde va
             const puntos = document.getElementById('diagPuntos');
             if (puntos) puntos.innerHTML = _diagLaminas.map((_, i) =>
@@ -6533,17 +7038,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 return;
             }
             await _asegurarEscenarioParaPresentar();
-            _diagLaminas = [_laminaComoLlegar, _laminaConvocatoria, _laminaNombre, _laminaCurp, _laminaNss, _laminaEdad,
+            _diagLaminas = [_laminaComoLlegar, _laminaConvocatoria, _laminaIdentidad, _laminaHistorial, _laminaEdad,
                             _laminaSemanas, _laminaSbc, _laminaVigencia, _laminaConservacion, _laminaPension];
             // Si ya hay un escenario de M40 calculado, seguimos con la propuesta
             if (_diagEscenario()) _diagLaminas = _diagLaminas.concat(
-                [_laminaPlazo, _laminaComparativa, _laminaCalculoM40, _laminaCosto,
-                 _laminaDesgloseCosto,
-                 _laminaCalculo, _laminaSimulador]);
+                [ _laminaCalculo, _laminaComparativa,
+                 _laminaCalculoM40, _laminaCosto, _laminaCierre]);
             _diagPaso = 0;
             document.getElementById('diagOverlay').classList.add('abierto');
             document.body.style.overflow = 'hidden';
             _diagPintar();
+            _autoSiCensura();
         }
 
         function cerrarDiagnostico() {
@@ -6571,20 +7076,35 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             const ancla = esc.querySelector(_ANCLAS);
             if (ancla) ancla.classList.add('es-ancla');
 
-            const ARRANQUE = 620;   // el ancla ya se asento
-            const PASO = 150;
-            let t = ARRANQUE;
-
             const remate = esc.querySelector(_REMATES);
             const secundarios = [...esc.querySelectorAll('.aparece')]
                 .filter(el => el !== remate && !(remate && remate.contains(el)));
-            secundarios.forEach(el => { el.style.animationDelay = t + 'ms'; t += PASO; });
+
+            // El ritmo se estira o se aprieta segun los segundos que tenga
+            // asignada la lamina: una de 9 s no puede terminar de animarse en
+            // uno y quedarse muerta ocho.
+            const ARRANQUE = 620;
+            const segundos = (typeof _tiemposDeLaminas === 'function')
+                ? (_tiemposDeLaminas()[_diagPaso] || 3) : 3;
+            const disponible = Math.max(400, segundos * 1000 * 0.62 - ARRANQUE);
+            const cuantos = secundarios.length + (remate ? 1 : 0);
+            const PASO = cuantos > 0
+                ? Math.max(110, Math.min(1100, disponible / cuantos))
+                : 150;
+
+            let t = ARRANQUE;
+            secundarios.forEach(el => { el.style.animationDelay = Math.round(t) + 'ms'; t += PASO; });
 
             // El remate llega despues de una pausa: el silencio le da peso.
             if (remate) {
                 remate.classList.add('aparece', 'veredicto-remate');
-                remate.style.animationDelay = (t + 620) + 'ms';
+                remate.style.animationDelay = Math.round(t + Math.min(900, PASO * 1.6)) + 'ms';
             }
+
+            // Lo que sobra de tiempo no se queda quieto: la cifra protagonista
+            // respira suavemente hasta que cambia la lamina.
+            if (ancla && segundos >= 5) ancla.classList.add('respira-larga');
+            else if (ancla) ancla.classList.remove('respira-larga');
         }
 
         function _diagSalida(esc, haciaAdelante) {
@@ -6638,7 +7158,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 `<div class="diag-punto ${i === _diagPaso ? 'activo' : ''}" onclick="_diagIr(${i})"></div>`).join('');
         }
 
-        function _diagIr(i) { _diagPaso = Math.max(0, Math.min(_diagLaminas.length - 1, i)); _diagPintar(); }
+        function _diagIr(i) {
+            // si el asesor toma el control, la reproduccion se detiene sola
+            if (_autoCorriendo && !_autoAvanzando) _autoDetener();
+            _diagPaso = Math.max(0, Math.min(_diagLaminas.length - 1, i)); _diagPintar(); }
         function diagSiguiente() { if (_diagPaso < _diagLaminas.length - 1) _diagIr(_diagPaso + 1); else cerrarDiagnostico(); }
         function diagAnterior() { if (_diagPaso > 0) _diagIr(_diagPaso - 1); }
 
@@ -7082,7 +7605,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     pasos.push({ anio: a, pct: (real !== null ? real : Constants.INPC_GROWTH_ESTIMATE) * 100, estimado: real === null });
                 }
             }
-            return pasos;
+            // El primer deposito llega a mas tardar 12 meses despues de la baja,
+            // asi que solo puede cruzarse UN 1 de febrero. Si salen mas, es que
+            // las fechas vienen mal: se queda el primero.
+            return pasos.slice(0, 1);
         }
 
         function preguntarActualizacionFebrero(scenarioNum, data) {
@@ -7490,6 +8016,47 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             '45': { n: 'Trabajadores eventuales del campo', pension: true }
         };
 
+        // ============================================================
+        // PATRONES A REVISAR
+        // Marcados con * en el analisis. La lista es editable: son los casos
+        // que en la practica conviene mirar dos veces antes de proponer M40.
+        // ============================================================
+        // Los estados se buscan por nombre dentro del bloque del patron.
+        // Los mas largos van primero: "BAJA CALIFORNIA SUR" antes que "BAJA CALIFORNIA".
+        const ESTADOS_MX = ['BAJA CALIFORNIA SUR', 'BAJA CALIFORNIA', 'CIUDAD DE MÉXICO',
+            'SAN LUIS POTOSÍ', 'NUEVO LEÓN', 'QUERÉTARO', 'QUINTANA ROO',
+            'AGUASCALIENTES', 'CAMPECHE', 'CHIAPAS', 'CHIHUAHUA', 'COAHUILA', 'COLIMA',
+            'DURANGO', 'GUANAJUATO', 'GUERRERO', 'HIDALGO', 'JALISCO', 'MICHOACÁN',
+            'MORELOS', 'NAYARIT', 'OAXACA', 'PUEBLA', 'SINALOA', 'SONORA', 'TABASCO',
+            'TAMAULIPAS', 'TLAXCALA', 'VERACRUZ', 'YUCATÁN', 'ZACATECAS', 'MÉXICO'];
+
+        const ESTADOS_MARCADOS = ['NUEVO LE', 'QUER'];        // Monterrey y Queretaro
+        const PATRONES_MARCADOS = [
+            { re: /\bS\.?A\.?S\.?\b/i, motivo: 'Sociedad por Acciones Simplificada (SAS)' },
+            { re: /ASESORES\s+DE\s+M[E\u00c9]XICO/i, motivo: 'Asesores de M\u00e9xico' },
+            { re: /WORLD\s*W(I|Y)LD/i, motivo: 'World Wild' },
+            { re: /\bDCI\b/i, motivo: 'DCI' }
+        ];
+
+        function revisarPatron(nombrePatron, regPatronal) {
+            const motivos = [];
+            const n = String(nombrePatron || '');
+            PATRONES_MARCADOS.forEach(x => { if (x.re.test(n)) motivos.push(x.motivo); });
+
+            const ent = (AppState.entidadPorPatron || {})[regPatronal] || '';
+            const entNorm = ent.toUpperCase();
+            if (ESTADOS_MARCADOS.some(e => entNorm.includes(e))) {
+                motivos.push(`Registrado en ${ent}`);
+            }
+            return { marcado: motivos.length > 0, motivos, entidad: ent };
+        }
+
+        // El NSS que arranca en 76 no es de origen: se asigno en una correccion.
+        function nssDeCorreccion(nss) {
+            const limpio = String(nss || '').replace(/\D/g, '');
+            return limpio.length === 11 && limpio.slice(0, 2) === '76';
+        }
+
         function modalidadDe(regPatronal) {
             if (!regPatronal) return null;
             const limpio = String(regPatronal).trim().toUpperCase();
@@ -7606,12 +8173,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
         // Corre el motor real de escenarios para un numero de meses dado,
         // sin tocar la interfaz. Devuelve pension, costo, financiamiento y neto.
-        function simularMeses(meses) {
+        function simularMeses(meses, ajusteSemanas) {
             try {
-                const base = AppState.semanasNetasReales > 0
-                    ? AppState.semanasNetasReales : AppState.datosClienteInfo.semanasCotizadasBase;
+                const base = (AppState.semanasNetasReales > 0
+                    ? AppState.semanasNetasReales : AppState.datosClienteInfo.semanasCotizadasBase)
+                    + (parseInt(ajusteSemanas) || 0);
                 const inputs = {
-                    customTitle: '', meses, semanas: Math.floor(base + meses * (52.1429 / 12)),
+                    customTitle: '', meses, semanas: Math.round(base + meses * (52.1429 / 12)),
                     curp: document.getElementById('info_curpCliente').value,
                     inicioM40Str: getM40StartDate(),
                     sbcM40: getNumeroInfo('info_m40_p1_sbc'),
@@ -7624,13 +8192,23 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 if (!inputs.inicioM40Str || !inputs.sbcM40) return null;
                 const pd = calculateScenarioPensionData(inputs);
                 const fd = calculateScenarioFinancials(pd, inputs);
+                // Sin actualizacion de febrero: esa la decide el asesor en la
+                // tarjeta del escenario, no aqui.
+                const _pen = pd.pensionMensual || 0;
                 return {
-                    pension: pd.pensionMensual || 0,
+                    pension: _pen,
+                    aguinaldo: pd.aguinaldo || 0,
+                    sbcPromedio: pd.sbcPromedio || 0,
+                    // con M40 el desglose del SBC viaja en finalTimelinePeriods;
+                    // sbcBreakdownPeriods solo se llena en el caso sin M40
+                    periodosSbc: (pd.sbcBreakdownPeriods && pd.sbcBreakdownPeriods.length)
+                        ? pd.sbcBreakdownPeriods : (pd.finalTimelinePeriods || []),
+                    semanas: inputs.semanas,
                     costo: fd.costoTotalContrato || 0,
                     financiamiento: fd.prestamoRequerido || 0,
                     deficit: fd.deficit > 0 ? fd.deficit : 0,
                     descuento: fd.descuentoMensual || 0,
-                    neta: (pd.pensionMensual || 0) - (fd.descuentoMensual || 0),
+                    neta: _pen - (fd.descuentoMensual || 0),
                     edadFin: pd.edadFinM40,
                     fechaFin: pd.fechaFinM40Obj
                 };
@@ -8100,7 +8678,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     const color = getEmployerColor(p.regPatronal); let row;
                     if (p.isQP) {
                         row = `<tr class="bg-red-50 text-red-700 italic">
-                            <td class="p-3 border-b"><div class="flex items-center"><span class="w-1.5 h-full min-h-5 rounded-full mr-3" style="background-color: ${color};"></span><div><span>${p.regPatronal}</span> <span class="bg-red-200 text-red-800 text-xs font-semibold px-2 py-0.5 rounded-full">QP</span><span class="block text-xs text-gray-400">${censurarNombre(p.nombrePatron)}</span></div></div></td>
+                            <td class="p-3 border-b"><div class="flex items-center"><span class="w-1.5 h-full min-h-5 rounded-full mr-3" style="background-color: ${color};"></span><div><span>${censurarRegPatronal(p.regPatronal)}</span> <span class="bg-red-200 text-red-800 text-xs font-semibold px-2 py-0.5 rounded-full">QP</span><span class="block text-xs text-gray-500 break-words">${censurarNombre(p.nombrePatron)}</span></div></div></td>
                             <td class="p-3 border-b"><del>${formatDateDDMMYYYY(p.fechaInicio)}</del></td>
                             <td class="p-3 border-b"><del>${formatDateDDMMYYYY(p.fechaFin)}</del></td>
                             <td class="p-3 border-b text-right"><del>${formatNumber(p.dias, 0)}</del> (0)</td>
@@ -8109,7 +8687,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                         </tr>`;
                     } else {
                         row = `<tr class="border-b">
-                           <td class="p-3"><div class="flex items-center"><span class="w-1.5 h-full min-h-5 rounded-full mr-3" style="background-color: ${color};"></span><div><span>${p.regPatronal}</span><span class="block text-xs text-gray-400 truncate" style="max-width: 150px;" title="${censurarNombre(p.nombrePatron)}">${censurarNombre(p.nombrePatron)}</span></div></div></td>
+                           <td class="p-3"><div class="flex items-center"><span class="w-1.5 h-full min-h-5 rounded-full mr-3" style="background-color: ${color};"></span><div><span>${censurarRegPatronal(p.regPatronal)}</span><span class="block text-xs text-gray-400 truncate" style="max-width: 150px;" title="${censurarNombre(p.nombrePatron)}">${censurarNombre(p.nombrePatron)}</span></div></div></td>
                             <td class="p-3">${formatDateDDMMYYYY(p.fechaInicio)}</td>
                             <td class="p-3">${formatDateDDMMYYYY(p.fechaFin)}</td>
                             <td class="p-3 text-right">${formatNumber(p.dias, 0)}</td>
@@ -8460,8 +9038,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             };
             // La bandera del aumento de febrero es del asesor, no del calculo:
             // si no se conserva, al recalcular se pierde y el interruptor se traba.
-            const febreroPrevio = !!(AppState.scenarioData[scenarioNum] || {}).actualizaFebrero;
-            completeScenarioData.actualizaFebrero = febreroPrevio;
+            // La actualizacion de febrero NO se aplica sola: es decision del
+            // asesor, con el interruptor de la tarjeta. Solo se conserva lo que
+            // haya elegido, para que no se pierda al recalcular.
+            completeScenarioData.actualizaFebrero =
+                !!(AppState.scenarioData[scenarioNum] || {}).actualizaFebrero;
             AppState.scenarioData[scenarioNum] = completeScenarioData;
             updateScenarioUI(scenarioNum, completeScenarioData);
             const espejo = espejearMeses(scenarioNum);
@@ -8731,12 +9312,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     <div class="bal">
                         <div class="bal-fila bal-fila--costo">
                             <span class="bal-etq">
-                                Costo total del proyecto
+                                ${AppState.modoPresentacion ? 'Cuotas al IMSS + actualizaci&oacute;n y recargos' : 'Costo total del proyecto'}
                                 <button onclick="editTotalCost(${scenarioNum})" title="Editar costo total" class="bal-lapiz"><i class="fas fa-pencil"></i></button>
                                 ${data.isManualCost ? '<span class="bal-manual">Manual</span>' : ''}
                                 ${data.meses > 0 ? `<button onclick="showPaymentBreakdown(${scenarioNum})" class="bal-desglose">ver desglose</button>` : ''}
                             </span>
-                            <b>$${formatNumber(data.costoTotalContrato)}</b>
+                            <b>$${formatNumber(AppState.modoPresentacion
+                                ? (data.desgloseM40 || []).reduce((t, f) => t + (f.totalMes || 0), 0)
+                                : data.costoTotalContrato)}</b>
                         </div>
 
                         <div class="bal-grupo">
@@ -8756,7 +9339,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                             <b>$${formatNumber(data.coberturaAfore + data.coberturaDeposito + data.coberturaExtra)}</b>
                         </div>
 
-                        ${data.prestamoRequerido > 0 ? `
+                        ${(!AppState.modoPresentacion && data.prestamoRequerido > 0) ? `
                         <div class="bal-fila bal-fila--deficit">
                             <span>D&Eacute;FICIT:</span><b>$${formatNumber(data.deficit)}</b>
                         </div>
@@ -8764,14 +9347,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                             <span>PR&Eacute;STAMO AUTORIZADO POR:</span><b>$${formatNumber(data.prestamoRequerido)}</b>
                         </div>` : ''}
 
+                        ${AppState.modoPresentacion ? '' : `
                         <div class="bal-total ${data.saldoFinal < -0.005 ? 'bal-total--mal' : (data.saldoFinal > 0.005 ? 'bal-total--ok' : 'bal-total--liquida')}">
                             <span>${data.saldoFinal < -0.005 ? 'D\u00c9FICIT FINAL:'
                                     : (data.saldoFinal > 0.005 ? 'SALDO A FAVOR:' : 'LIQUIDA')}</span>
                             <b>$${formatNumber(Math.abs(data.saldoFinal))}</b>
                         </div>
-
                         ${data.prestamoRequerido > 0 ? `
-                        <p class="bal-pie">Utiliza el <b>${formatNumber(data.porcentajeUsoPrestamo, 1)}%</b> del l&iacute;mite de pr&eacute;stamo disponible.</p>` : ''}
+                        <p class="bal-pie">Utiliza el <b>${formatNumber(data.porcentajeUsoPrestamo, 1)}%</b> del l\u00edmite de pr\u00e9stamo disponible.</p>` : ''}`}
                     </div>
                 `;
             }
@@ -9242,7 +9825,19 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             if (AppState.isSisecNoDetallado) {
                 const employerBlocks = textoCompleto.split(regexPatron).slice(1);
                 if (employerBlocks.length === 0) { showCustomAlert("No se encontraron registros de empleadores en el formato de SISEC no detallado. Verifique que el texto contenga la frase 'Nombre del patrón'.", "Error de Formato"); return; }
-                employerBlocks.forEach(block => {
+                // El estado de cada patron es el ULTIMO que aparece antes de su
+                // bloque: en el SISEC va arriba del "Nombre del patron".
+                // Emparejar por indice fallaba cuando algun bloque no genera tarjeta.
+                const _trozos = textoCompleto.split(regexPatron);
+                const _ultimoEstado = (txt) => {
+                    const ls = String(txt || '').split('\n')
+                        .map(l => l.trim().toUpperCase())
+                        .filter(l => ESTADOS_MX.includes(l));
+                    return ls.length ? ls[ls.length - 1] : '';
+                };
+                const estadosEnOrden = employerBlocks.map((_, i) => _ultimoEstado(_trozos[i]));
+
+                employerBlocks.forEach((block, idxBloque) => {
                     // CORRECCIÓN: Limpiar cualquier residuo de "ón", "on", ":" o "-" que haya quedado tras el corte
                     const lines = block.trim().replace(/^(?:[oó]n|on)?\s*[:\-]*\s*/i, '').split('\n').map(l => l.trim()).filter(l => l);
                     const nombrePatron = lines[0] || 'No Encontrado'; let regPatronal = 'No Encontrado';
@@ -9251,6 +9846,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     let fechaBaja = 'Vigente'; const bajaMatch = block.match(/Fecha de baja[\s\S]*?(\d{2}\/\d{2}\/\d{4}|Vigente)/i); if (bajaMatch) fechaBaja = bajaMatch[1];
                     // Tolerante a pérdida de acento en Cotización
                     let sbc = '0.00'; const sbcMatch = block.match(/Salario Base de Cotizaci[\s\S]*?\$\s*([\d,]+\.?\d*)/i); if (sbcMatch) sbc = sbcMatch[1];
+                    // El estado va ARRIBA del "Nombre del patron", asi que el de
+                    // este bloque es el ultimo que aparece en el trozo anterior.
+                    AppState.entidadPorPatron[regPatronal] = estadosEnOrden[idxBloque] || '';
                     if (nombrePatron !== 'No Encontrado' && fechaAlta) {
                         let movimientoTexto = `REINGRESO ${fechaAlta} $ ${sbc}\n`;
                         const vigenteAqui = fechaBaja.toLowerCase() === 'vigente';
@@ -9829,7 +10427,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             // En las graficas de los escenarios la ventana de las 250 semanas va
             // siempre visible: es la que explica de donde sale el SBC promedio.
             // La de escenarios va limpia: los huecos solo estorban ahi.
-            const esEscenario = svgId !== 'timeline-svg';
+            // Solo las graficas de las tarjetas del Paso 4 son "escenario".
+            // La de la presentacion se comportaba como tal y por eso no salian
+            // los huecos ni se estiraba el eje para la ventana de M40.
+            const esEscenario = /timeline-scenario-\d+-svg/.test(svgId);
             const capasVisibles = {
                 huecos: !esEscenario,            // en escenarios estorban
                 v250: true,
@@ -9919,7 +10520,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                         `<strong>Sin cotizar</strong><br/>${formatDateDDMMYYYY(d.ini)} al ${formatDateDDMMYYYY(d.fin)}` +
                         `<br/>${d.dias} d\u00edas &middot; ${formatNumber(d.dias / 7, 0)} semanas perdidas`);
                 })
-                .on("mousemove", (ev) => timelineTooltip.style("left", (ev.pageX + 15) + "px").style("top", (ev.pageY - 28) + "px"))
+                .on("mousemove", (ev) => timelineTooltip.style("left", (ev.clientX + 15) + "px").style("top", (ev.clientY - 28) + "px"))
                 .on("mouseout", () => timelineTooltip.style("opacity", 0));
 
             gHuecos.selectAll("text").data(huecos.filter(h => (x(h.fin) - x(h.ini)) > 34)).enter().append("text")
@@ -10042,7 +10643,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 .on("mousemove", (event, d) => {
                     const employerList = (d.originalPeriods && d.originalPeriods.length > 0) ? d.originalPeriods.map(e => censurarNombre(e.nombrePatron)).join(' + ') : censurarNombre(d.nombrePatron);
                     timelineTooltip.html(`<strong>${employerList}</strong><br/>Salario: ${d.sbc.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}<br/>Inicio: ${formatDateDDMMYYYY(d.fechaInicio)}<br/>Fin: ${formatDateDDMMYYYY(d.fechaFin)}`)
-                        .style("left", (event.pageX + 15) + "px").style("top", (event.pageY - 28) + "px");
+                        .style("left", (event.clientX + 15) + "px").style("top", (event.clientY - 28) + "px");
                 }).on("mouseout", (event, d) => { timelineTooltip.style("opacity", 0); d3.select(event.currentTarget).style('opacity', 0.8).style('stroke', 'none'); });
             
             const legendContainer = d3.select(`#${legendId}`); legendContainer.html("");
@@ -10481,7 +11082,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 .on("mouseover", (event, d) => { tooltip.style("opacity", 1); d3.select(event.currentTarget).style("filter", "brightness(1.1)"); })
                 .on("mousemove", (event, d) => {
                     const percentage = (d.data.value / costoTotalContrato * 100).toFixed(1);
-                    tooltip.html(`<strong>${d.data.label}</strong><br>$${formatNumber(d.data.value)}<br>(${percentage}%)`).style("left", (event.pageX + 15) + "px").style("top", (event.pageY - 28) + "px");
+                    tooltip.html(`<strong>${d.data.label}</strong><br>$${formatNumber(d.data.value)}<br>(${percentage}%)`).style("left", (event.clientX + 15) + "px").style("top", (event.clientY - 28) + "px");
                 })
                 .on("mouseout", (event, d) => { tooltip.style("opacity", 0); d3.select(event.currentTarget).style("filter", "brightness(1)"); });
             svg.append("text").attr("text-anchor", "middle").attr("dy", "-0.5em").style("font-size", "0.75rem").style("fill", "#6b7280").text("Costo Total");
