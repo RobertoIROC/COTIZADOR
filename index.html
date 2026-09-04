@@ -1440,6 +1440,204 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         .hc-fila--neta { border-top: 1px dashed var(--linea); margin-top: .3rem; padding-top: .3rem; }
         .hc-fila--neta b { color: var(--success-color); font-size: .95rem; }
         .hc-fila--alerta b { color: var(--danger-color); }
+        .hito--febrero { border-color: #93C5FD; background: linear-gradient(180deg, rgba(59,130,246,.07), transparent); }
+
+        /* Aterrizaje en la linea de tiempo: sin el cuadro de "Proceso Iniciado"
+           que interrumpia, el enfasis lo tiene que dar la propia grafica. */
+        @keyframes ltDestello {
+            0%   { box-shadow: 0 0 0 0 rgba(212,175,55,0); transform: scale(1); }
+            18%  { box-shadow: 0 0 0 10px rgba(212,175,55,.42); transform: scale(1.012); }
+            45%  { box-shadow: 0 0 0 4px rgba(212,175,55,.22); transform: scale(1); }
+            70%  { box-shadow: 0 0 0 9px rgba(212,175,55,.30); }
+            100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); }
+        }
+        .lt-destello { animation: ltDestello 2.6s ease-out; border-radius: 1rem; }
+        @keyframes ltTitulo {
+            0%, 100% { color: inherit; }
+            25%, 60% { color: #B8860B; }
+        }
+        .lt-destello #timelineTitle { animation: ltTitulo 2.6s ease-out; }
+
+        /* Cotejo de semanas: dias reales contra el total de la constancia. */
+        .cotejo { margin-bottom: 2rem; padding: 1.1rem 1.25rem; border-radius: 1rem;
+                  background: #F4F7FB; border: 1.5px solid #DDE5EF; }
+        .cotejo--alerta { background: #FEF6F6; border-color: #FCA5A5; }
+        .cotejo__cabeza { display: flex; justify-content: space-between; align-items: baseline;
+                          flex-wrap: wrap; gap: .5rem; margin-bottom: .85rem; }
+        .cotejo__cabeza b { color: var(--azul-700); font-size: 1.02rem; }
+        .cotejo__cabeza b i { margin-right: .4rem; color: var(--oro-500); }
+        .cotejo__cabeza span { font-size: .86rem; color: #64748B; font-weight: 600; }
+        .cotejo__cols { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+        @media (max-width: 640px) { .cotejo__cols { grid-template-columns: 1fr; } }
+        .cotejo__op { text-align: left; background: #fff; border: 2px solid #DDE5EF;
+                      border-radius: .8rem; padding: .7rem .9rem; cursor: pointer;
+                      transition: all .18s ease; }
+        .cotejo__op:hover { border-color: var(--azul-700); }
+        .cotejo__op.is-on { border-color: var(--azul-700); box-shadow: 0 0 0 3px rgba(0,51,102,.12); }
+        .cotejo__op em { display: block; font-style: normal; font-size: .74rem; font-weight: 800;
+                         letter-spacing: .05em; text-transform: uppercase; color: #64748B; }
+        .cotejo__op b { display: block; font-size: 1.85rem; font-weight: 900; color: var(--azul-700); line-height: 1.15; }
+        .cotejo__op.is-on b { color: #B8860B; }
+        .cotejo__op i { display: block; font-style: normal; font-size: .78rem; color: #94A3B8; }
+        .cotejo__pie { margin-top: .8rem; font-size: .87rem; color: #475569; }
+        .cotejo__pie i { margin-right: .35rem; }
+        .cotejo--alerta .cotejo__pie { color: #B91C1C; }
+        .cotejo__ver { display: block; margin-top: .5rem; font-size: .74rem; font-weight: 800;
+                       letter-spacing: .04em; text-transform: uppercase; color: var(--azul-700); opacity: .75; }
+        .cotejo__ver i { margin-left: .25rem; }
+
+        /* Comprobacion del conteo por dias */
+        .cotejo__desglose { margin-top: 1rem; padding-top: 1rem; border-top: 1.5px dashed #CBD5E1; }
+        .cotejo__cuenta { width: 100%; border-collapse: collapse; background: #fff;
+                          border-radius: .7rem; overflow: hidden; border: 1px solid #DDE5EF; }
+        .cotejo__cuenta td { padding: .6rem .9rem; border-bottom: 1px solid #EDF1F6; font-size: .93rem; }
+        .cotejo__cuenta tr:last-child td { border-bottom: 0; }
+        .cotejo__cuenta td:last-child { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums;
+                                        white-space: nowrap; color: var(--azul-700); }
+        .cotejo__cuenta td span { display: block; font-size: .76rem; color: #94A3B8; font-weight: 500; }
+        .cotejo__cuenta .es-resta td:last-child { color: #B91C1C; }
+        .cotejo__cuenta .es-total td { background: #F4F7FB; font-weight: 700; }
+        .cotejo__cuenta .es-final td { background: #FFFBEB; font-size: 1.02rem; }
+        .cotejo__cuenta .es-final td:last-child { color: #B45309; font-size: 1.25rem; }
+        .cotejo__nota { margin-top: .7rem; font-size: .84rem; color: #64748B; }
+        .cotejo__nota i { margin-right: .3rem; color: #B91C1C; }
+        .cotejo__sub { margin: 1.1rem 0 .5rem; font-size: .78rem; font-weight: 800;
+                       letter-spacing: .05em; text-transform: uppercase; color: #64748B; }
+        .cotejo__tramos { width: 100%; border-collapse: collapse; background: #fff;
+                          border: 1px solid #DDE5EF; border-radius: .7rem; overflow: hidden; font-size: .85rem; }
+        .cotejo__tramos th { background: var(--azul-700); color: #fff; text-align: left;
+                             padding: .5rem .8rem; font-size: .76rem; letter-spacing: .03em; }
+        .cotejo__tramos td { padding: .5rem .8rem; border-bottom: 1px solid #EDF1F6; }
+        .cotejo__tramos th:nth-child(3), .cotejo__tramos th:nth-child(4),
+        .cotejo__tramos td:nth-child(3), .cotejo__tramos td:nth-child(4) { text-align: right; font-variant-numeric: tabular-nums; }
+        .cotejo__tramos tfoot td { background: #F4F7FB; font-weight: 800; text-align: right; }
+        .cotejo__resta { color: #B91C1C; font-weight: 800; }
+
+        /* Aviso: la M40 termina antes de los 60 y el tramite tiene que esperar. */
+        .aviso-espera60 {
+            display: flex; gap: .7rem; align-items: flex-start;
+            margin-top: .75rem; padding: .8rem .9rem;
+            background: #FFF7ED; border: 1.5px solid #FDBA74; border-left-width: 5px;
+            border-radius: .7rem; font-size: .84rem; line-height: 1.4;
+        }
+        .aviso-espera60 > i { color: #C2410C; font-size: 1rem; margin-top: .1rem; flex-shrink: 0; }
+        .aviso-espera60 b { display: block; color: #9A3412; margin-bottom: .25rem; font-size: .88rem; }
+        .aviso-espera60 span { display: block; color: #7C2D12; }
+        .aviso-espera60 strong { font-weight: 800; }
+        .aviso-espera60 .ae60__opciones {
+            margin-top: .4rem; padding-top: .4rem; border-top: 1px dashed #FDBA74;
+            font-weight: 700; color: #9A3412;
+        }
+
+        /* Semanas finales del escenario: se pueden abrir para ver la cuenta. */
+        .sem-verificar {
+            display: inline-flex; align-items: center; gap: .4rem;
+            background: none; border: 0; padding: .1rem .35rem; cursor: pointer;
+            font-weight: 700; color: #1F2937; border-radius: .45rem;
+            border-bottom: 1.5px dashed #CBD5E1; transition: all .18s ease;
+        }
+        .sem-verificar:hover { color: var(--azul-700); border-bottom-color: var(--azul-700); background: #F1F5FA; }
+        .sem-verificar i { font-size: .78rem; color: #94A3B8; }
+        .sem-verificar:hover i { color: var(--azul-700); }
+
+        /* Hoja lateral de comprobacion */
+        .hoja-sem { position: fixed; inset: 0; z-index: 1400; visibility: hidden; }
+        .hoja-sem.is-on { visibility: visible; }
+        .hoja-sem__fondo { position: absolute; inset: 0; background: rgba(15,23,42,.5);
+                           opacity: 0; transition: opacity .28s ease; }
+        .hoja-sem.is-on .hoja-sem__fondo { opacity: 1; }
+        .hoja-sem__caja {
+            position: absolute; top: 0; right: 0; bottom: 0; width: min(30rem, 94vw);
+            background: #fff; box-shadow: -18px 0 50px -20px rgba(0,0,0,.5);
+            transform: translateX(100%); transition: transform .32s cubic-bezier(.22,1,.36,1);
+            display: flex; flex-direction: column;
+        }
+        .hoja-sem.is-on .hoja-sem__caja { transform: translateX(0); }
+        .hoja-sem__cabeza {
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: 1.1rem 1.3rem; border-bottom: 1px solid #E4EBF3;
+            background: linear-gradient(180deg, #F8FAFD, #fff);
+        }
+        .hoja-sem__cabeza b { font-size: 1rem; color: var(--azul-700); }
+        .hoja-sem__cabeza button {
+            background: none; border: 0; cursor: pointer; color: #94A3B8;
+            font-size: 1.1rem; padding: .2rem .4rem; border-radius: .4rem;
+        }
+        .hoja-sem__cabeza button:hover { color: #B91C1C; background: #FEF2F2; }
+        .hoja-sem__cuerpo { padding: 1.3rem; overflow-y: auto; }
+
+        /* ---- SBC de inscripcion en M40, por escenario ----
+           Todo centrado en una sola columna: rotulo, cifra grande, explicacion
+           y un control segmentado. La version anterior peleaba el ancho entre
+           el rotulo y el monto, y en la tarjeta angosta el titulo se partia en
+           tres renglones. */
+        .sbc-m40 {
+            margin-top: .4rem; padding: .9rem .8rem .8rem; text-align: center;
+            background: linear-gradient(180deg, #F8FAFD, #EFF4FA);
+            border: 1.5px solid #DDE5EF; border-radius: .9rem;
+        }
+        .sbc-m40__rotulo {
+            font-size: .68rem; font-weight: 800; letter-spacing: .09em;
+            text-transform: uppercase; color: #8A9AB0; margin: 0 0 .15rem;
+        }
+        .sbc-m40__monto {
+            font-size: 1.75rem; font-weight: 900; color: var(--azul-700);
+            line-height: 1.1; margin: 0; font-variant-numeric: tabular-nums;
+        }
+        .sbc-m40__nota {
+            font-size: .74rem; color: #8A9AB0; margin: .15rem 0 .7rem; min-height: 1em;
+        }
+        .sbc-m40__nota b { color: #475569; font-weight: 700; }
+
+        /* Control segmentado: un solo riel, cuatro segmentos iguales. */
+        .sbc-m40__seg {
+            display: flex; gap: 3px; padding: 3px;
+            background: #E3EAF3; border-radius: .7rem;
+        }
+        .sbc-seg {
+            flex: 1 1 0; min-width: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 0;
+            padding: .38rem .1rem; border: 0; background: transparent;
+            border-radius: .55rem; cursor: pointer; transition: all .18s ease;
+        }
+        .sbc-seg b { font-size: 1rem; font-weight: 900; color: #46586F; line-height: 1.15; }
+        .sbc-seg small {
+            font-size: .55rem; font-weight: 800; letter-spacing: .08em;
+            text-transform: uppercase; color: #93A2B6; line-height: 1;
+        }
+        .sbc-seg:hover { background: rgba(255,255,255,.65); }
+        .sbc-seg.is-on { background: var(--azul-700); box-shadow: 0 2px 8px -2px rgba(0,51,102,.5); }
+        .sbc-seg.is-on b { color: #fff; }
+        .sbc-seg.is-on small { color: var(--oro-300, #E9CE7A); }
+
+        /* Campo libre: aparece debajo, no apretado entre los segmentos. */
+        .sbc-m40__libre {
+            display: flex; align-items: center; justify-content: center; gap: .3rem;
+            margin-top: .55rem; padding: .35rem .7rem; background: #fff;
+            border: 1.5px solid var(--azul-700); border-radius: .6rem;
+        }
+        .sbc-m40__libre span { font-size: 1rem; font-weight: 900; color: #93A2B6; }
+        .sbc-m40__libre input {
+            width: 6.5rem; border: 0; outline: none; background: transparent;
+            font-size: 1.05rem; font-weight: 800; color: var(--azul-700);
+            text-align: center; font-variant-numeric: tabular-nums; padding: 0;
+        }
+        .sbc-m40__libre em {
+            font-style: normal; font-size: .68rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .05em; color: #93A2B6;
+        }
+
+        /* Enlace discreto: guarda un campo que casi nunca se usa sin quitarlo. */
+        .link-discreto {
+            background: none; border: 0; padding: .15rem 0; cursor: pointer;
+            font-size: .82rem; font-weight: 600; color: var(--tinta-2);
+            opacity: .6; transition: opacity .2s ease, color .2s ease;
+        }
+        .link-discreto:hover { opacity: 1; color: var(--azul-700); }
+        .link-discreto i { margin-right: .35rem; }
+        .link-discreto.is-on { opacity: 1; color: var(--azul-700); }
+        .hito--febrero .hito__icono { color: #2563EB; }
+        .hc-fila--feb b { color: #1D4ED8; }
         @media (max-width: 900px) {
             .hito__calculo { border-left: none; border-top: 1px solid var(--linea);
                              margin-left: 0; padding-left: 0; padding-top: .7rem; width: 100%; }
@@ -2775,7 +2973,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         .hl-lienzo .capa-m40tramo rect { fill: rgba(249,115,22,.22) !important; stroke: #FB923C !important; }
         .hl-lienzo .capa-hoy line { stroke: #F87171 !important; }
         .hl-lienzo .capa-hoy circle { fill: #F87171 !important; }
-        .hl-lienzo { height: 22rem; padding-bottom: .9rem; }
+.hl-lienzo { height: 22rem; padding-bottom: .9rem;
+                              overflow-x: auto; overflow-y: hidden;
+                              scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.35) transparent; }
+                .hl-lienzo::-webkit-scrollbar { height: 9px; }
+                .hl-lienzo::-webkit-scrollbar-track { background: rgba(255,255,255,.06); border-radius: 9999px; }
+                .hl-lienzo::-webkit-scrollbar-thumb { background: rgba(255,255,255,.34); border-radius: 9999px; }
+                .hl-lienzo::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.55); }
+                /* Si la grafica cabe completa se centra; si no, se puede deslizar. */
+                .hl-lienzo > svg { display: block; margin: 0 auto; }
 
         .cc-mini { width: 100%; height: 74px; margin: .7rem 0 .1rem;
                    background: rgba(0,0,0,.18); border-radius: .5rem; overflow: hidden; }
@@ -3158,6 +3364,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     <div id="descargaSisec" style="display:none;" class="mb-6"></div>
                     <div id="avisoModalidades" style="display:none;" class="mb-6"></div>
                     <div id="panelVigente" style="display:none;" class="mb-8"></div>
+                    <div id="cotejoSemanas" class="cotejo" style="display:none;"></div>
                     <div class="hero-stats">
                         <div class="hero-stat hero-stat--main hero-stat--wide">
                             <div class="hero-stat__icon"><i class="fas fa-hand-holding-dollar"></i></div>
@@ -3393,13 +3600,18 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     </div>
                     <div class="input-group">
                         <label for="info_mesesPrimerDeposito">Meses para Primer Depósito (6-12):</label>
-                        <input type="number" id="info_mesesPrimerDeposito" value="6" min="6" max="12" onchange="handleMesesDepositoChange(this)" data-last-valid="6">
+                        <input type="number" id="info_mesesPrimerDeposito" value="8" min="6" max="12" onchange="handleMesesDepositoChange(this)" data-last-valid="8">
                     </div>
-                    <div class="input-group md:col-span-2">
-                        <label for="info_comisionExcedente">Proceso Adicional ($) y Concepto:</label>
-                        <div class="flex gap-4">
-                            <input type="number" id="info_comisionExcedente" placeholder="0.00" oninput="recalculateAllScenarios();" class="w-1/2">
-                            <input type="text" id="info_comisionExcedente_concepto" placeholder="Concepto para reporte" class="w-1/2">
+                    <div class="input-group md:col-span-2" id="grupoProcesoAdicional">
+                        <button type="button" id="linkProcesoAdicional" class="link-discreto" onclick="toggleProcesoAdicional()">
+                            <i class="fas fa-plus-circle"></i> Agregar proceso adicional
+                        </button>
+                        <div id="cuerpoProcesoAdicional" style="display:none;">
+                            <label for="info_comisionExcedente">Proceso Adicional ($) y Concepto:</label>
+                            <div class="flex gap-4">
+                                <input type="number" id="info_comisionExcedente" placeholder="0.00" oninput="recalculateAllScenarios();" class="w-1/2">
+                                <input type="text" id="info_comisionExcedente_concepto" placeholder="Concepto para reporte" class="w-1/2">
+                            </div>
                         </div>
                     </div>
                     <div class="md:col-span-2 mt-6">
@@ -3443,8 +3655,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     <h2 class="!border-0 !pb-0 !mb-0 w-full md:w-auto"><i class="fas fa-balance-scale-right"></i>Paso 4: Comparativa de Escenarios</h2>
                 </div>
                 <div id="umaSelectorContainer" class="mb-8 p-6 bg-blue-50 border-2 border-dashed border-blue-200 rounded-2xl" style="display: none;">
-                    <h4 class="font-bold text-center text-gray-800 text-lg mb-4">Selector Rápido de SBC para Escenario Principal</h4>
-                    <p class="text-center text-sm text-gray-600 mb-5">Ajuste el Salario Base de Cotización para la proyección de Modalidad 40. Los cambios se aplicarán a los escenarios principales y se recalculará todo.</p>
+                    <h4 class="font-bold text-center text-gray-800 text-lg mb-4">Aplicar un SBC a TODOS los escenarios</h4>
+                    <p class="text-center text-sm text-gray-600 mb-5">Estos botones escriben el mismo SBC en todas las tarjetas. Si quiere comparar topes distintos, use el selector que trae cada escenario dentro de su tarjeta.</p>
                     <div class="flex justify-center flex-wrap gap-4" id="umaButtons">
                         <button onclick="setSBCFromUMA(25)" class="btn btn-secondary !py-2 !px-5 text-base" data-uma="25">25 UMA (Tope)</button>
                         <button onclick="setSBCFromUMA(20)" class="btn btn-secondary !py-2 !px-5 text-base" data-uma="20">20 UMA</button>
@@ -3470,7 +3682,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                         <button onclick="showWhatsAppModal()" class="btn !bg-green-500 hover:!bg-green-600 !text-white text-lg">
                             <i class="fab fa-whatsapp"></i> Resumen para WhatsApp
                         </button>
-                        <button onclick="startComprehensiveReportProcess()" class="btn btn-blue text-lg">
+                        <button type="button" id="btnReportePDF" onclick="startComprehensiveReportProcess()" class="btn btn-blue text-lg">
                             <i class="fas fa-file-invoice"></i> Reporte Detallado a PDF
                         </button>
                         <button onclick="showExcelDataModal()" class="btn !bg-green-700 hover:!bg-green-800 !text-white text-lg">
@@ -3952,7 +4164,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             },
             sbcCalculationPeriods: [], fullHistoryPeriods: [], allParsedPeriodsForDisplay: [], timelinePeriods: [], 
             pensionBaseResultadosInfo: { PENSION_MENSUAL_ESTIMADA: 0, AGUINALDO_ESTIMADO: 0 },
-            pdfGenerated: false, semanasNetasReales: 0, lastPMGSelectValue: '8404'
+            pdfGenerated: false, semanasNetasReales: 0, lastPMGSelectValue: '8404',
+            // 'dias' = union de dias reales (predeterminado); 'sisec' = total de la constancia
+            metodoSemanas: 'dias', baseExactaSemanas: 0, diasUnionHistorial: 0,
+            mostrarDesgloseDias: false, diasBrutoHistorial: 0, diasQPExcluidos: 0, tramosTraslapados: []
         };
         
         let employerColorCache = {};
@@ -3989,6 +4204,19 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     2022: 96.22, 2023: 103.74, 2024: 108.57, 2025: 113.14, 2026: 117.31
                 },
                 smgvUltimoAnioReal: 2024, // ultimo con dato publicado; lo demas se proyecta
+                // Salario minimo general diario, AREA GEOGRAFICA A (Distrito
+                // Federal), serie oficial CONASAMI. Se usa solo para topar el
+                // SBC de anios anteriores a 2016, cuando el tope del Art. 28
+                // LSS se media en veces salario minimo y no en UMA.
+                // Fuente: CONASAMI, salarios minimos generales por areas
+                // geograficas 1992-2016.
+                smgAreaA: {
+                    1992: 13.33, 1993: 14.27, 1994: 15.27, 1995: 20.15, 1996: 26.45,
+                    1997: 26.45, 1998: 34.45, 1999: 34.45, 2000: 37.90, 2001: 40.35,
+                    2002: 42.15, 2003: 43.65, 2004: 45.24, 2005: 46.80, 2006: 48.67,
+                    2007: 50.57, 2008: 52.59, 2009: 54.80, 2010: 57.46, 2011: 59.82,
+                    2012: 62.33, 2013: 64.76, 2014: 67.29, 2015: 70.10
+                },
                 smgv_diario: {
                     2018: 88.36, 2019: 102.68, 2020: 123.22, 2021: 141.70, 2022: 172.87, 2023: 207.44, 2024: 248.93
                 },
@@ -4846,6 +5074,217 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             showCustomAlert("Se agrego una tarjeta de proyeccion en el Paso 3. Capture fechas y SBC, luego vuelva a analizar.", "Periodo Manual");
         }
 
+        // =====================================================================
+        // COTEJO DE SEMANAS: DIAS REALES vs CONSTANCIA
+        // El conteo por dias es el que manda, pero si se aleja del total que
+        // imprime el SISEC hay que verlo, no esconderlo: casi siempre significa
+        // que a la constancia le faltan renglones (tipico en historiales
+        // anteriores a 1998, donde el IMSS reporta el total pero no desglosa
+        // los periodos) o que hay un movimiento mal leido.
+        // =====================================================================
+        function renderCotejoSemanas() {
+            const caja = document.getElementById('cotejoSemanas');
+            if (!caja) return;
+            const porDias = AppState.semanasPorDias || 0;
+            const porSisec = AppState.semanasPorSisec || 0;
+            if (!(porDias > 0) && !(porSisec > 0)) { caja.style.display = 'none'; return; }
+
+            const dif = Math.round(porDias) - Math.round(porSisec);
+            const usaDias = AppState.metodoSemanas !== 'sisec';
+            const grave = Math.abs(dif) > 4;
+            caja.style.display = 'block';
+            caja.className = 'cotejo' + (grave ? ' cotejo--alerta' : '');
+            caja.innerHTML = `
+                <div class="cotejo__cabeza">
+                    <b><i class="fas fa-scale-balanced"></i> Cotejo de semanas</b>
+                    <span>${AppState.diasUnionHistorial || 0} d&iacute;as cotizados (traslapes contados una sola vez)</span>
+                </div>
+                <div class="cotejo__cols">
+                    <button type="button" class="cotejo__op ${usaDias ? 'is-on' : ''}" onclick="setMetodoSemanas('dias')">
+                        <em>Por d&iacute;as reales</em>
+                        <b>${formatNumber(Math.round(porDias), 0)}</b>
+                        <i>${(AppState.diasUnionHistorial || 0)} &divide; 7 = ${formatNumber(porDias, 2)}</i>
+                        <span class="cotejo__ver">${AppState.mostrarDesgloseDias ? 'Ocultar comprobaci&oacute;n' : 'Ver comprobaci&oacute;n'} <i class="fas fa-chevron-${AppState.mostrarDesgloseDias ? 'up' : 'down'}"></i></span>
+                    </button>
+                    <button type="button" class="cotejo__op ${usaDias ? '' : 'is-on'}" onclick="setMetodoSemanas('sisec')">
+                        <em>Total del SISEC</em>
+                        <b>${formatNumber(Math.round(porSisec), 0)}</b>
+                        <i>${formatNumber(AppState.semanasOficialesIMSS || 0, 0)} de la constancia${AppState.diasExtraNetos ? ` ${AppState.diasExtraNetos > 0 ? '+' : ''}${AppState.diasExtraNetos} d&iacute;as` : ''}</i>
+                    </button>
+                </div>
+                <p class="cotejo__pie">
+                    ${dif === 0
+                        ? '<i class="fas fa-circle-check"></i> Los dos m&eacute;todos coinciden.'
+                        : `<i class="fas fa-triangle-exclamation"></i> Diferencia de <b>${Math.abs(dif)} semana${Math.abs(dif) === 1 ? '' : 's'}</b>: `
+                          + `los d&iacute;as dan ${dif > 0 ? 'M&Aacute;S' : 'MENOS'} que la constancia. `
+                          + (dif < 0
+                             ? 'Suele pasar cuando la constancia reporta el total pero no desglosa periodos antiguos.'
+                             : 'Revise si alg&uacute;n movimiento qued&oacute; duplicado o con fecha de baja abierta.')}
+                </p>
+                <div id="cotejoDesglose" class="cotejo__desglose" style="display:${AppState.mostrarDesgloseDias ? 'block' : 'none'};">
+                    ${AppState.mostrarDesgloseDias ? _desgloseDiasHTML() : ''}
+                </div>`;
+        }
+
+        // Comprobacion aritmetica del conteo por dias, renglon por renglon.
+        function _desgloseDiasHTML() {
+            const bruto = AppState.diasBrutoHistorial || 0;
+            const union = AppState.diasUnionHistorial || 0;
+            const traslapados = bruto - union;
+            const qp = AppState.diasQPExcluidos || 0;
+            const tramos = AppState.tramosTraslapados || [];
+            const sem = union / 7;
+
+            const fila = (etq, val, nota, clase) => `
+                <tr class="${clase || ''}">
+                    <td>${etq}${nota ? `<span>${nota}</span>` : ''}</td>
+                    <td>${val}</td>
+                </tr>`;
+
+            const detalle = tramos.length ? `
+                <p class="cotejo__sub">Tramos con m&aacute;s de un patr&oacute;n a la vez</p>
+                <table class="cotejo__tramos">
+                    <thead><tr><th>Periodo</th><th>Patrones</th><th>D&iacute;as</th><th>No cuentan</th></tr></thead>
+                    <tbody>
+                        ${tramos.map(t => `
+                            <tr>
+                                <td>${formatDateDDMMYYYY(t.ini)} &ndash; ${formatDateDDMMYYYY(t.fin)}</td>
+                                <td>${censurarNombre(t.nombres)}</td>
+                                <td>${formatNumber(t.dias, 0)}</td>
+                                <td class="cotejo__resta">&minus;${formatNumber(t.duplicados, 0)}</td>
+                            </tr>`).join('')}
+                    </tbody>
+                    <tfoot><tr><td colspan="3">Total de d&iacute;as que se contaban dos veces</td>
+                        <td class="cotejo__resta">&minus;${formatNumber(traslapados, 0)}</td></tr></tfoot>
+                </table>` : '<p class="cotejo__sub">No hay traslapes en este historial.</p>';
+
+            return `
+                <table class="cotejo__cuenta">
+                    <tbody>
+                        ${fila('Suma de todos los periodos', `${formatNumber(bruto, 0)} d&iacute;as`, 'contando cada patr&oacute;n por separado')}
+                        ${fila('D&iacute;as traslapados', `&minus;${formatNumber(traslapados, 0)} d&iacute;as`, 'el mismo d&iacute;a no se cuenta dos veces', 'es-resta')}
+                        ${fila('D&iacute;as efectivos cotizados', `${formatNumber(union, 0)} d&iacute;as`, '', 'es-total')}
+                        ${fila('Entre 7', `${formatNumber(sem, 4)} semanas`, '')}
+                        ${fila('Semanas reconocidas', `${formatNumber(Math.round(sem), 0)}`, 'redondeo del IMSS', 'es-final')}
+                    </tbody>
+                </table>
+                ${qp > 0 ? `<p class="cotejo__nota"><i class="fas fa-ban"></i> Adem&aacute;s se excluyeron <b>${formatNumber(qp, 0)} d&iacute;as</b> de periodos marcados como QP, que no entran en ninguna de las dos cuentas.</p>` : ''}
+                ${detalle}`;
+        }
+
+        function toggleDesgloseDias() {
+            AppState.mostrarDesgloseDias = !AppState.mostrarDesgloseDias;
+            renderCotejoSemanas();
+        }
+
+        function setMetodoSemanas(metodo) {
+            // Si ya estaba elegido "por dias", el mismo clic abre y cierra la
+            // comprobacion: el asesor pide ver la cuenta sin cambiar de metodo.
+            const yaEstaba = (AppState.metodoSemanas || 'dias') === metodo;
+            if (metodo === 'dias' && yaEstaba) { toggleDesgloseDias(); return; }
+            AppState.metodoSemanas = metodo;
+            if (metodo === 'sisec') AppState.mostrarDesgloseDias = false;
+            const exacta = metodo === 'sisec' ? AppState.semanasPorSisec : AppState.semanasPorDias;
+            if (!(exacta > 0)) return;
+            AppState.baseExactaSemanas = exacta;
+            AppState.datosClienteInfo.semanasCotizadasBase = Math.round(exacta);
+            AppState.semanasNetasReales = Math.round(exacta);
+            const elSem = document.getElementById('res_semanasNetas');
+            if (elSem) elSem.textContent = formatNumber(Math.round(exacta), 0);
+            renderCotejoSemanas();
+            if (typeof renderHitosM40 === 'function') renderHitosM40();
+            if (typeof recalculateAllScenarios === 'function') recalculateAllScenarios();
+        }
+
+        // Desglose de las semanas de un escenario: historial + M40, en dias,
+        // con la division entre 7 hasta el final. Es la misma cuenta del
+        // cotejo del Paso 3 pero incluyendo ya los dias de Modalidad 40.
+        function verDesgloseSemanas(scenarioNum) {
+            const sc = AppState.scenarioData[scenarioNum];
+            const meses = sc ? sc.meses : 0;
+            const diasUnion = AppState.diasUnionHistorial || 0;
+            const diasM40 = Math.round(semanasDeM40(meses) * 7);
+            const ajuste = (() => {
+                const el = document.getElementById(`scenario_${scenarioNum}_semanas_ajuste`);
+                return el ? (parseInt(el.value) || 0) : 0;
+            })();
+            const usaDias = (AppState.metodoSemanas || 'dias') !== 'sisec';
+            const diasBase = usaDias ? diasUnion : Math.round((AppState.semanasPorSisec || 0) * 7);
+            const totalDias = diasBase + diasM40 + ajuste * 7;
+            const sem = totalDias / 7;
+
+            const fila = (etq, val, nota, clase) => `
+                <tr class="${clase || ''}"><td>${etq}${nota ? `<span>${nota}</span>` : ''}</td><td>${val}</td></tr>`;
+
+            const cuerpo = `
+                <table class="cotejo__cuenta">
+                    <tbody>
+                        ${fila('Historial laboral', `${formatNumber(diasBase, 0)} d&iacute;as`,
+                               usaDias ? 'traslapes contados una sola vez' : 'a partir del total del SISEC')}
+                        ${ajuste !== 0 ? fila('Ajuste manual del escenario', `${ajuste > 0 ? '+' : '&minus;'}${formatNumber(Math.abs(ajuste) * 7, 0)} d&iacute;as`, `${ajuste > 0 ? '+' : ''}${ajuste} semanas`) : ''}
+                        ${fila('Modalidad 40', `+${formatNumber(diasM40, 0)} d&iacute;as`, meses > 0 ? `${meses} meses de calendario real` : 'sin M40 en este escenario')}
+                        ${fila('Total de d&iacute;as', `${formatNumber(totalDias, 0)} d&iacute;as`, '', 'es-total')}
+                        ${fila('Entre 7', `${formatNumber(sem, 4)} semanas`, '')}
+                        ${fila('Semanas finales', `${formatNumber(Math.round(sem), 0)}`, 'redondeo del IMSS', 'es-final')}
+                    </tbody>
+                </table>
+                <p class="cotejo__nota"><i class="fas fa-circle-info"></i>
+                   Los d&iacute;as se suman primero y la divisi&oacute;n entre 7 ocurre una sola vez, al final.
+                   As&iacute; no se acumula error de redondeo entre el historial y la Modalidad 40.</p>`;
+
+            mostrarHojaSemanas(sc && sc.customTitle ? sc.customTitle : `Escenario ${scenarioNum}`, cuerpo);
+        }
+
+        // Hoja lateral reutilizable para mostrar comprobaciones sin sacar al
+        // asesor de la tarjeta en la que estaba.
+        function mostrarHojaSemanas(titulo, htmlCuerpo) {
+            let hoja = document.getElementById('hojaSemanas');
+            if (!hoja) {
+                hoja = document.createElement('div');
+                hoja.id = 'hojaSemanas';
+                hoja.className = 'hoja-sem';
+                hoja.innerHTML = `<div class="hoja-sem__fondo" onclick="cerrarHojaSemanas()"></div>
+                    <div class="hoja-sem__caja" role="dialog" aria-modal="true">
+                        <div class="hoja-sem__cabeza">
+                            <b id="hojaSemTitulo"></b>
+                            <button type="button" onclick="cerrarHojaSemanas()" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div id="hojaSemCuerpo" class="hoja-sem__cuerpo"></div>
+                    </div>`;
+                document.body.appendChild(hoja);
+            }
+            document.getElementById('hojaSemTitulo').textContent = `Comprobación de semanas · ${titulo}`;
+            document.getElementById('hojaSemCuerpo').innerHTML = htmlCuerpo;
+            requestAnimationFrame(() => hoja.classList.add('is-on'));
+        }
+
+        function cerrarHojaSemanas() {
+            const hoja = document.getElementById('hojaSemanas');
+            if (hoja) hoja.classList.remove('is-on');
+        }
+
+        function toggleProcesoAdicional(forzar) {
+            const cuerpo = document.getElementById('cuerpoProcesoAdicional');
+            const link = document.getElementById('linkProcesoAdicional');
+            if (!cuerpo || !link) return;
+            const abrir = (typeof forzar === 'boolean') ? forzar : cuerpo.style.display === 'none';
+            cuerpo.style.display = abrir ? 'block' : 'none';
+            link.classList.toggle('is-on', abrir);
+            link.innerHTML = abrir
+                ? '<i class="fas fa-minus-circle"></i> Quitar proceso adicional'
+                : '<i class="fas fa-plus-circle"></i> Agregar proceso adicional';
+            // Al cerrarlo se limpia: dejar un importe escondido cobrando de mas
+            // seria peor que no tener la opcion.
+            if (!abrir) {
+                const monto = document.getElementById('info_comisionExcedente');
+                const concepto = document.getElementById('info_comisionExcedente_concepto');
+                const tenia = monto && monto.value;
+                if (monto) monto.value = '';
+                if (concepto) concepto.value = '';
+                if (tenia && typeof recalculateAllScenarios === 'function') recalculateAllScenarios();
+            }
+        }
+
         function toggleModoPresentacion() {
             AppState.modoPresentacion = !AppState.modoPresentacion;
             const btn = document.getElementById('btnPresentacion');
@@ -4856,7 +5295,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     : '<i class="fas fa-user-secret"></i> Modo presentaci\u00f3n';
             }
             aplicarCensuraCampos();
-            // Repintar todo lo que muestra nombres
+            actualizarDisponibilidadPDF();
             if (AppState.allParsedPeriodsForDisplay && AppState.allParsedPeriodsForDisplay.length > 0) {
                 renderSbcAnalysisTable();
                 renderModalitySummary();
@@ -7055,6 +7494,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             _diagLimpiar();
             document.getElementById('diagOverlay').classList.remove('abierto');
             document.body.style.overflow = '';
+            // Al salir de la presentacion lo primero que debe verse es la linea
+            // de tiempo principal, no el punto de la pagina donde se solto el
+            // PDF. Es la pantalla con la que arranca la platica con el cliente.
+            enfocarLineaDeTiempo();
+        }
+
+        // Deja la linea de tiempo del historial laboral centrada en pantalla.
+        // Se usa al terminar el analisis y al cerrar la presentacion.
+        function enfocarLineaDeTiempo(destello) {
+            const sec = document.getElementById('timelineSection');
+            if (!sec || sec.style.display === 'none') return;
+            requestAnimationFrame(() => {
+                sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (destello !== false) {
+                    sec.classList.remove('lt-destello');
+                    void sec.offsetWidth;          // reinicia la animacion
+                    sec.classList.add('lt-destello');
+                    setTimeout(() => sec.classList.remove('lt-destello'), 2800);
+                }
+            });
         }
 
         // =====================================================================
@@ -7585,27 +8044,27 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
         // =====================================================================
         // ACTUALIZACION DE FEBRERO
-        // Si la baja de M40 cae en enero y el primer deposito llega el 1 de
-        // febrero o despues, la pension entra ya con el aumento anual.
+        // La ventana NO empieza en la baja de M40: empieza cuando arranca el
+        // tramite, que es la baja o el cumpleanos 60, lo que ocurra despues.
+        // El retro se paga desde los 60, asi que un 1 de febrero anterior a esa
+        // fecha no actualiza nada. Caso tipico: baja en diciembre y cumple 60 en
+        // marzo; el febrero de en medio NO cuenta, la pension se resuelve con el
+        // valor de ese ano sin actualizar.
         // No se aplica sola: se pregunta, porque depende de cuando resuelva el IMSS.
         // =====================================================================
-        // Cuenta los 1 de febrero que quedan ENTRE la baja de M40 y el primer
-        // deposito. Cada uno es un aumento anual que la pension ya trae encima.
-        // Ejemplo: M40 pagada hasta octubre, primer deposito 8 meses despues
-        // (junio del ano siguiente) -> cruza el 1 de febrero -> un aumento.
-        function actualizacionesFebrero(fechaFinM40, fechaPrimerDeposito) {
+        function actualizacionesFebrero(fechaArranque, fechaPrimerDeposito) {
             const pasos = [];
-            if (!(fechaFinM40 instanceof Date) || !(fechaPrimerDeposito instanceof Date)) return pasos;
-            if (isNaN(fechaFinM40) || isNaN(fechaPrimerDeposito)) return pasos;
-            for (let a = fechaFinM40.getUTCFullYear(); a <= fechaPrimerDeposito.getUTCFullYear(); a++) {
+            if (!(fechaArranque instanceof Date) || !(fechaPrimerDeposito instanceof Date)) return pasos;
+            if (isNaN(fechaArranque) || isNaN(fechaPrimerDeposito)) return pasos;
+            for (let a = fechaArranque.getUTCFullYear(); a <= fechaPrimerDeposito.getUTCFullYear(); a++) {
                 const feb = new Date(Date.UTC(a, 1, 1));
-                if (feb > fechaFinM40 && feb <= fechaPrimerDeposito) {
+                if (feb > fechaArranque && feb <= fechaPrimerDeposito) {
                     // si existe el INPC real de ese anio lo usamos; si no, la estimacion
                     const real = inflacionDicDic(a - 1);
                     pasos.push({ anio: a, pct: (real !== null ? real : Constants.INPC_GROWTH_ESTIMATE) * 100, estimado: real === null });
                 }
             }
-            // El primer deposito llega a mas tardar 12 meses despues de la baja,
+            // El primer deposito llega a mas tardar 12 meses despues del arranque,
             // asi que solo puede cruzarse UN 1 de febrero. Si salen mas, es que
             // las fechas vienen mal: se queda el primero.
             return pasos.slice(0, 1);
@@ -7614,19 +8073,23 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         function preguntarActualizacionFebrero(scenarioNum, data) {
             const el = document.getElementById(`scenario_${scenarioNum}_febrero`);
             if (!el) return;
-            const pasos = actualizacionesFebrero(data.fechaFinM40Obj, data.fechaPrimerDeposito);
+            const pasos = actualizacionesFebrero(data.arranqueTramite || data.fechaFinM40Obj, data.fechaPrimerDeposito);
             if (pasos.length === 0) { el.style.display = 'none'; return; }
 
             const activo = !!(AppState.scenarioData[scenarioNum] && AppState.scenarioData[scenarioNum].actualizaFebrero);
             const factor = pasos.reduce((f, p) => f * (1 + p.pct / 100), 1);
             const actualizada = (data.pensionMensual || 0) * factor;
             const detalle = pasos.map(p => `feb ${p.anio}: +${formatNumber(p.pct, 2)}%${p.estimado ? ' (estimado)' : ''}`).join(' &middot; ');
+            const desde = data.arranqueTramite || data.fechaFinM40Obj;
+            const esperoA60 = !!data.bajaAntesDe60;
             el.style.display = 'block';
             el.innerHTML = `
                 <div class="feb-cabeza"><i class="fas fa-calendar-plus mr-2"></i>
-                    <strong>Entre la baja y el primer dep&oacute;sito pasa${pasos.length > 1 ? 'n' : ''} ${pasos.length} aumento${pasos.length > 1 ? 's' : ''} de febrero.</strong></div>
-                <p class="feb-txt">Baja de M40 el <strong>${formatDateDDMMYYYY(data.fechaFinM40Obj)}</strong>,
-                   primer dep&oacute;sito el <strong>${formatDateDDMMYYYY(data.fechaPrimerDeposito)}</strong>.
+                    <strong>La pensi&oacute;n alcanza ${pasos.length} aumento${pasos.length > 1 ? 's' : ''} de febrero antes del primer dep&oacute;sito.</strong></div>
+                <p class="feb-txt">${esperoA60
+                        ? `El retro corre desde que cumple <strong>60 a&ntilde;os</strong> (${formatDateDDMMYYYY(desde)}), no desde la baja del ${formatDateDDMMYYYY(data.fechaFinM40Obj)}.`
+                        : `Baja de M40 el <strong>${formatDateDDMMYYYY(data.fechaFinM40Obj)}</strong>.`}
+                   Primer dep&oacute;sito el <strong>${formatDateDDMMYYYY(data.fechaPrimerDeposito)}</strong>.
                    La pensi&oacute;n llega ya actualizada. &iquest;La aplicamos?<br><span class="feb-detalle">${detalle}</span></p>
                 <label class="feb-switch">
                     <input type="checkbox" ${activo ? 'checked' : ''} onchange="aplicarFebrero(${scenarioNum}, this.checked)">
@@ -7641,7 +8104,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         function factorActualizacionFebrero(scenarioNum) {
             const d = AppState.scenarioData[scenarioNum];
             if (!d) return 1;
-            const pasos = actualizacionesFebrero(d.fechaFinM40Obj, d.fechaPrimerDeposito);
+            const pasos = actualizacionesFebrero(d.arranqueTramite || d.fechaFinM40Obj, d.fechaPrimerDeposito);
             return pasos.reduce((f, p) => f * (1 + p.pct / 100), 1);
         }
 
@@ -7946,6 +8409,103 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
         function actualizarSBCMaximoM40() { setSBCFromUMA(25); }
 
+        // =====================================================================
+        // SBC DE M40 POR ESCENARIO
+        // Antes el tope (25/20/15 UMA) era uno solo para toda la comparativa,
+        // asi que no se podia contrastar "24 meses a 25 UMA" contra "24 meses a
+        // 15 UMA". Ahora cada tarjeta guarda su propio SBC en su input; el
+        // selector global sigue existiendo y ahora aplica a todas las tarjetas.
+        // =====================================================================
+        function umaDeInicioM40() {
+            const inicio = getM40StartDate();
+            if (!inicio) return 0;
+            const [a, m] = inicio.split('-').map(Number);
+            return getUMA(a, m) || 0;
+        }
+
+        // SBC efectivo del escenario: el suyo si lo tiene, si no el global.
+        function sbcM40DeEscenario(scenarioNum) {
+            const el = document.getElementById(`scenario_${scenarioNum}_sbc_m40_input`);
+            const propio = el ? parseFloat(el.value) : NaN;
+            if (propio > 0) return propio;
+            return getNumeroInfo('info_m40_p1_sbc');
+        }
+
+        function setSBCEscenarioUMA(scenarioNum, multiplicador) {
+            const uma = umaDeInicioM40();
+            if (!(uma > 0)) {
+                showCustomAlert("Primero seleccione la fecha de inicio de la Modalidad 40 en el Paso 2.", "Fecha Requerida");
+                return;
+            }
+            const el = document.getElementById(`scenario_${scenarioNum}_sbc_m40_input`);
+            if (!el) return;
+            el.value = (uma * multiplicador).toFixed(2);
+            // Si el asesor habia abierto el campo libre y ahora elige un multiplo,
+            // el campo se recoge solo: ya no aporta nada.
+            const fila = document.getElementById(`scenario_${scenarioNum}_sbc_libre`);
+            if (fila) { delete fila.dataset.abierto; fila.style.display = 'none'; }
+            pintarChipsUma(scenarioNum);
+            destellarTarjeta(scenarioNum);
+            recalculateScenario(scenarioNum);
+        }
+
+        // Marca el segmento activo, pinta la cifra grande y explica de donde
+        // sale. El campo libre solo se muestra cuando hace falta.
+        function pintarChipsUma(scenarioNum) {
+            const caja = document.getElementById(`scenario_${scenarioNum}_uma_box`);
+            if (!caja) return;
+            const uma = umaDeInicioM40();
+            const sbc = sbcM40DeEscenario(scenarioNum);
+            let activo = null;
+            caja.querySelectorAll('.sbc-seg[data-uma]').forEach(seg => {
+                const mult = parseInt(seg.dataset.uma);
+                const coincide = uma > 0 && Math.abs(sbc - uma * mult) < 0.01;
+                seg.classList.toggle('is-on', coincide);
+                if (coincide) activo = mult;
+            });
+            const esLibre = !activo && sbc > 0;
+            const segOtro = caja.querySelector('.sbc-seg--otro');
+            if (segOtro) segOtro.classList.toggle('is-on', esLibre);
+
+            // El campo se queda abierto si el asesor lo abrio o si el SBC
+            // vigente no cae en ninguno de los tres multiplos.
+            const filaLibre = document.getElementById(`scenario_${scenarioNum}_sbc_libre`);
+            if (filaLibre && filaLibre.dataset.abierto !== '1') {
+                filaLibre.style.display = esLibre ? 'flex' : 'none';
+            }
+
+            const monto = document.getElementById(`scenario_${scenarioNum}_uma_monto`);
+            if (monto) monto.textContent = sbc > 0 ? `$${formatNumber(sbc)}` : '—';
+
+            const nota = document.getElementById(`scenario_${scenarioNum}_uma_nota`);
+            if (nota) {
+                if (!(sbc > 0)) nota.innerHTML = 'Sin definir: se usa el SBC del Paso 2.';
+                else if (activo) nota.innerHTML = `<b>${activo} UMA</b>${activo === 25 ? ' (tope m&aacute;ximo)' : ''} de $${formatNumber(uma)} diarios`;
+                else nota.innerHTML = uma > 0
+                    ? `SBC libre &middot; <b>${formatNumber(sbc / uma, 2)} UMA</b> de $${formatNumber(uma)} diarios`
+                    : 'SBC capturado a mano';
+            }
+        }
+
+        // Abre el campo libre y deja el cursor listo para escribir.
+        function editarSbcLibre(scenarioNum) {
+            const fila = document.getElementById(`scenario_${scenarioNum}_sbc_libre`);
+            if (!fila) return;
+            fila.dataset.abierto = '1';
+            fila.style.display = 'flex';
+            const inp = document.getElementById(`scenario_${scenarioNum}_sbc_m40_input`);
+            if (inp) { inp.focus(); inp.select(); }
+            pintarChipsUma(scenarioNum);
+        }
+
+        function pintarChipsUmaTodos() {
+            Object.keys(AppState.scenarioData || {}).forEach(n => pintarChipsUma(n));
+            document.querySelectorAll('[id^="scenario_card_"]').forEach(c => {
+                const n = c.id.replace('scenario_card_', '');
+                pintarChipsUma(n);
+            });
+        }
+
         function setSBCFromUMA(multiplier) {
             const inicioP1Str = getM40StartDate();
             const sbcM40Input = document.getElementById('info_m40_p1_sbc');
@@ -7964,7 +8524,18 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     }
                 });
 
-                if (document.getElementById('infoSection4').style.display !== 'none') recalculateAllScenarios();
+                if (document.getElementById('infoSection4').style.display !== 'none') {
+                    // El selector global ahora es un "aplicar a todos": escribe el
+                    // mismo SBC en cada tarjeta para que ninguna se quede con un
+                    // valor viejo que ya no corresponde al boton marcado.
+                    document.querySelectorAll('[id^="scenario_card_"]').forEach(c => {
+                        const n = c.id.replace('scenario_card_', '');
+                        const el = document.getElementById(`scenario_${n}_sbc_m40_input`);
+                        if (el) el.value = sbcCalculado.toFixed(2);
+                    });
+                    recalculateAllScenarios();
+                    pintarChipsUmaTodos();
+                }
             } else {
                 showCustomAlert("Por favor, seleccione primero una fecha de inicio para la Modalidad 40 en el Paso 2.", "Fecha Requerida");
             }
@@ -8067,7 +8638,49 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                      : { codigo, nombre: 'Modalidad no catalogada', pension: true, esM40: false };
         }
 
+        // Promedio teorico. NO se usa para calcular semanas: solo queda como
+        // referencia. Multiplicar meses por 4.3452 se desviaba hasta una semana
+        // contra el panel de resultados, que cuenta dias reales.
         const SEMANAS_POR_MES_M40 = 52.1429 / 12;
+
+        // =====================================================================
+        // SEMANAS DE MODALIDAD 40: UNA SOLA FUENTE DE VERDAD
+        // El panel de resultados, las tarjetas de recomendacion y el simulador
+        // tienen que dar el MISMO numero. Se cuenta por dias reales de
+        // calendario, igual que el IMSS, y se redondea (contrastado contra 7
+        // constancias: el redondeo acierta en las 7, el truncado en 3).
+        // =====================================================================
+        function semanasDeM40(meses) {
+            const inicioStr = getM40StartDate();
+            if (!(meses > 0) || !inicioStr) return 0;
+            const [aI, mI, dI] = inicioStr.split('-').map(Number);
+            const iniM40 = new Date(Date.UTC(aI, mI - 1, dI));
+            const finM40 = calcularFechaFinDesdeMeses(inicioStr, meses);
+            if (!finM40 || isNaN(finM40)) return 0;
+            return (Math.round((finM40 - iniM40) / 86400000) + 1) / 7;
+        }
+
+        // Semanas finales que va a mostrar el escenario para N meses de M40.
+        // Se parte de la base EXACTA en dias (sin el redondeo intermedio) y se
+        // le suman los dias de M40; el unico redondeo ocurre aqui, al final.
+        function semanasFinalesPorMeses(base, meses) {
+            const exacta = AppState.baseExactaSemanas || 0;
+            // El ajuste manual del escenario (+/- semanas) viaja dentro de
+            // `base`: es la diferencia contra la base redondeada del historial.
+            const partida = exacta > 0 ? exacta + (base - Math.round(exacta)) : (Number(base) || 0);
+            return Math.round(partida + semanasDeM40(meses));
+        }
+
+        // Meses minimos de M40 para que las semanas finales alcancen el umbral.
+        // Se busca por barrido en vez de dividir: la division no sabe que los
+        // meses tienen 28, 30 o 31 dias y recomendaba un mes de menos.
+        function mesesParaSemanas(base, umbral, maxMeses) {
+            const tope = maxMeses || 240;
+            for (let m = 1; m <= tope; m++) {
+                if (semanasFinalesPorMeses(base, m) >= umbral) return m;
+            }
+            return null;
+        }
 
         // Meses completos que hay que pagar para que la M40 llegue a una fecha.
         // Se cuenta por calendario: dividir dias entre 30.4375 se queda corto y
@@ -8104,24 +8717,32 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             const umbral = semanasParaAnios(excedentesHoy + 0.5);
             const faltanSemanas = umbral - base;
             if (faltanSemanas > 0) {
-                const meses = Math.ceil(faltanSemanas / SEMANAS_POR_MES_M40);
-                hitos.push({
-                    tipo: 'anualidad', meses,
-                    titulo: `Pasar de ${formatoAnios(excedentesHoy)} a ${formatoAnios(excedentesHoy + 0.5)} a&ntilde;os excedentes`,
-                    texto: `Hoy tiene <strong>${excedentesHoy} a&ntilde;os excedentes</strong> y le sobran ${Math.round((base - 500) % 52)} semanas que no cuentan. `
-                         + `Con <strong>${meses} meses</strong> llega a <strong>${umbral} semanas</strong> (le faltan ${Math.ceil(faltanSemanas)}) `
-                         + `y el IMSS le reconoce el a&ntilde;o n&uacute;mero ${excedentesHoy + 1}. Antes de esas ${umbral} semanas no sube nada: `
-                         + `los incrementos son por a&ntilde;o completo de 52 semanas.`
-                });
+                // Los meses se buscan por barrido con la MISMA cuenta de dias
+                // que usa el panel de resultados. Dividiendo entre 4.3452 se
+                // prometian 1,567 semanas con 13 meses y el escenario mostraba
+                // 1,566: la tarjeta recomendaba un mes menos del necesario.
+                const meses = mesesParaSemanas(base, umbral);
+                if (meses) {
+                    const semanasLogradas = semanasFinalesPorMeses(base, meses);
+                    hitos.push({
+                        tipo: 'anualidad', meses,
+                        titulo: `Pasar de ${formatoAnios(excedentesHoy)} a ${formatoAnios(excedentesHoy + 0.5)} a&ntilde;os excedentes`,
+                        texto: `Hoy tiene <strong>${excedentesHoy} a&ntilde;os excedentes</strong> y le sobran ${Math.round((base - 500) % 52)} semanas que no cuentan. `
+                             + `Con <strong>${meses} meses</strong> llega a <strong>${semanasLogradas} semanas</strong> (le faltan ${Math.ceil(faltanSemanas)} para las ${umbral} del corte) `
+                             + `y el IMSS le reconoce el a&ntilde;o n&uacute;mero ${excedentesHoy + 1}. Antes de esas ${umbral} semanas no sube nada: `
+                             + `los incrementos son por a&ntilde;o completo de 52 semanas.`
+                    });
+                }
                 // Escalones siguientes: uno por cada anualidad completa adicional
                 for (let k = 2; k <= 6; k++) {
-                    const faltanK = semanasParaAnios(excedentesHoy + k * 0.5) - base;
-                    const mesesK = Math.ceil(faltanK / SEMANAS_POR_MES_M40);
-                    if (mesesK > 72) break;
+                    const umbralK = semanasParaAnios(excedentesHoy + k * 0.5);
+                    const mesesK = mesesParaSemanas(base, umbralK, 73);
+                    if (!mesesK || mesesK > 72) break;
+                    const semanasK = semanasFinalesPorMeses(base, mesesK);
                     hitos.push({
                         tipo: 'anualidad', meses: mesesK,
                         titulo: `Pasar de ${formatoAnios(excedentesHoy)} a ${formatoAnios(excedentesHoy + k * 0.5)} a&ntilde;os excedentes`,
-                        texto: `Con <strong>${mesesK} meses</strong> alcanza <strong>${semanasParaAnios(excedentesHoy + k * 0.5)} semanas</strong>, `
+                        texto: `Con <strong>${mesesK} meses</strong> alcanza <strong>${semanasK} semanas</strong>, `
                              + `es decir <strong>${formatoAnios(excedentesHoy + k * 0.5)} a&ntilde;os excedentes</strong> contra los ${formatoAnios(excedentesHoy)} que tiene hoy.`
                     });
                 }
@@ -8168,7 +8789,88 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 });
             }
             // Ordenados por cercania; alternan solos entre semanas y edad.
-            return hitos.sort((x, y) => x.meses - y.meses).slice(0, 6);
+            const lista = hitos.sort((x, y) => x.meses - y.meses).slice(0, 6);
+
+            // (c) AUMENTO DE FEBRERO
+            // El primer deposito no llega el dia de la baja: tarda el retro que
+            // este configurado (6 a 12 meses). Si en esa ventana cae un 1 de
+            // febrero, la pension entra YA con el aumento anual. Depende solo
+            // del mes en que se da la baja, asi que a veces basta alargar la
+            // M40 uno o dos meses para cazarlo.
+            const hFeb = hitoFebrero(lista);
+            if (hFeb) lista.unshift(hFeb);
+
+            return lista;
+        }
+
+        // Ventana entre la baja de M40 y el primer deposito para N meses.
+        // Si la baja cae antes de los 60, el retro no arranca ahi: arranca el
+        // dia del cumpleanos 60, que es cuando se puede iniciar el tramite.
+        function ventanaDeposito(meses) {
+            const inicioStr = getM40StartDate();
+            const fin = calcularFechaFinDesdeMeses(inicioStr, meses);
+            if (!fin || isNaN(fin)) return null;
+            const retro = parseInt(document.getElementById('info_mesesPrimerDeposito').value) || 8;
+
+            const nac = AppState.datosClienteInfo.curp
+                ? extraerFechaNacimientoCURP(AppState.datosClienteInfo.curp) : null;
+            let cumple60 = null, esperaA60 = false;
+            if (nac) {
+                cumple60 = new Date(nac);
+                cumple60.setUTCFullYear(cumple60.getUTCFullYear() + 60);
+                esperaA60 = fin < cumple60;
+            }
+            const arranque = esperaA60 ? cumple60 : fin;
+            const dep = new Date(arranque);
+            dep.setUTCMonth(dep.getUTCMonth() + retro);
+            return { fin, dep, retro, cumple60, esperaA60, arranque, pasos: actualizacionesFebrero(arranque, dep) };
+        }
+
+        function hitoFebrero(lista) {
+            const mesesActuales = parseInt(document.getElementById('info_m40_p1_meses').value) || 0;
+            // Si aun no hay meses capturados, se evalua el escalon mas cercano.
+            const ref = mesesActuales > 0
+                ? mesesActuales
+                : (lista.find(h => h.meses > 0) || {}).meses || 0;
+            if (!ref) return null;
+
+            const v = ventanaDeposito(ref);
+            if (!v) return null;
+
+            const pintaPct = (p) => `+${formatNumber(p.pct, 2)}%${p.estimado ? ' (estimado)' : ''}`;
+
+            // Caso 1: la ventana YA cruza un 1 de febrero.
+            if (v.pasos.length > 0) {
+                const p = v.pasos[0];
+                return {
+                    tipo: 'febrero', meses: ref, febFactor: 1 + p.pct / 100,
+                    titulo: `Aproveche el aumento de febrero ${p.anio}`,
+                    texto: (v.esperaA60
+                            ? `La baja de M40 queda el <strong>${formatDateDDMMYYYY(v.fin)}</strong>, pero el tr&aacute;mite arranca al cumplir 60 el `
+                              + `<strong>${formatDateDDMMYYYY(v.cumple60)}</strong>. Desde ah&iacute; corren los <strong>${v.retro} meses</strong> de retroactivo `
+                            : `Con la baja de M40 el <strong>${formatDateDDMMYYYY(v.fin)}</strong> y <strong>${v.retro} meses</strong> de retroactivo `)
+                         + `el primer dep&oacute;sito cae el <strong>${formatDateDDMMYYYY(v.dep)}</strong> y en el camino pasa el 1 de febrero de ${p.anio}. `
+                         + `La pensi&oacute;n no llega en el monto de hoy: llega ya actualizada <strong>${pintaPct(p)}</strong>. `
+                         + `Se activa con el interruptor de febrero en la tarjeta del escenario.`
+                };
+            }
+
+            // Caso 2: no la cruza. Se busca cuantos meses mas de M40 hacen falta
+            // para que la baja caiga en un mes que si alcance el 1 de febrero.
+            for (let extra = 1; extra <= 12; extra++) {
+                const w = ventanaDeposito(ref + extra);
+                if (!w || w.pasos.length === 0) continue;
+                const p = w.pasos[0];
+                return {
+                    tipo: 'febrero', meses: ref + extra, febFactor: 1 + p.pct / 100,
+                    titulo: `${extra} mes${extra > 1 ? 'es' : ''} m&aacute;s y alcanza el aumento de febrero ${p.anio}`,
+                    texto: `Con ${ref} meses la baja queda el <strong>${formatDateDDMMYYYY(v.fin)}</strong> y el primer dep&oacute;sito el `
+                         + `<strong>${formatDateDDMMYYYY(v.dep)}</strong>: no pasa ning&uacute;n 1 de febrero, la pensi&oacute;n entra sin actualizar. `
+                         + `Con <strong>${ref + extra} meses</strong> la baja se recorre al <strong>${formatDateDDMMYYYY(w.fin)}</strong>, el dep&oacute;sito al `
+                         + `<strong>${formatDateDDMMYYYY(w.dep)}</strong> y s&iacute; cruza el 1 de febrero de ${p.anio}: <strong>${pintaPct(p)}</strong> de entrada, para siempre.`
+                };
+            }
+            return null;
         }
 
         // Corre el motor real de escenarios para un numero de meses dado,
@@ -8179,10 +8881,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     ? AppState.semanasNetasReales : AppState.datosClienteInfo.semanasCotizadasBase)
                     + (parseInt(ajusteSemanas) || 0);
                 const inputs = {
-                    customTitle: '', meses, semanas: Math.round(base + meses * (52.1429 / 12)),
+                    customTitle: '', meses, semanas: semanasFinalesPorMeses(base, meses),
                     curp: document.getElementById('info_curpCliente').value,
                     inicioM40Str: getM40StartDate(),
-                    sbcM40: getNumeroInfo('info_m40_p1_sbc'),
+                    // Las tarjetas de recomendacion proponen meses para el
+                    // escenario 1, asi que deben simular con SU SBC. Si se
+                    // usara el global, al pulsar "Usar" la pension mostrada en
+                    // la tarjeta no coincidiria con la del escenario.
+                    sbcM40: sbcM40DeEscenario(1),
                     aforeActual: getNumeroInfo('info_aforeActual'),
                     mesesPrimerDeposito: parseInt(document.getElementById('info_mesesPrimerDeposito').value) || 8,
                     comisionExcedente: getNumeroInfo('info_comisionExcedente'),
@@ -8230,17 +8936,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                         Al terminar tendr&iacute;a <strong>${sim.edadFin.anos} a&ntilde;os ${sim.edadFin.meses} meses</strong>:
                         todav&iacute;a no puede pensionarse. Tendr&iacute;a que esperar o alargar el periodo.</p>`
                     : '';
+                // En el hito de febrero interesa la pension YA actualizada:
+                // es la que el cliente va a cobrar el dia del primer deposito.
+                const filaFeb = (sim && h.febFactor)
+                    ? `<div class="hc-fila hc-fila--feb"><span>Con febrero</span><b>$${formatNumber(sim.pension * h.febFactor)}</b></div>`
+                    : '';
                 const cifras = sim ? `
                     <div class="hito__calculo">
                         <div class="hc-fila hc-fila--top"><span>Pensi&oacute;n</span><b>$${formatNumber(sim.pension)}</b></div>
+                        ${filaFeb}
                         <div class="hc-fila"><span>Costo</span><b>$${formatNumber(sim.costo)}</b></div>
                         <div class="hc-fila"><span>Financiamiento</span><b>$${formatNumber(sim.financiamiento)}</b></div>
                         <div class="hc-fila ${sim.deficit > 0 ? 'hc-fila--alerta' : ''}"><span>D&eacute;ficit</span><b>$${formatNumber(sim.deficit)}</b></div>
                         <div class="hc-fila hc-fila--neta"><span>Pensi&oacute;n neta</span><b>$${formatNumber(sim.neta)}</b></div>
                     </div>` : '';
+                const icono = h.tipo === 'edad' ? 'fa-cake-candles'
+                            : h.tipo === 'febrero' ? 'fa-calendar-plus'
+                            : 'fa-arrow-trend-up';
                 return `
-                <div class="hito ${edadOk ? '' : 'hito--alerta'}">
-                    <i class="fas ${h.tipo === 'edad' ? 'fa-cake-candles' : 'fa-arrow-trend-up'} hito__icono"></i>
+                <div class="hito ${edadOk ? '' : 'hito--alerta'} ${h.tipo === 'febrero' ? 'hito--febrero' : ''}">
+                    <i class="fas ${icono} hito__icono"></i>
                     <div class="hito__cuerpo">
                         <div class="hito__titulo">${h.titulo}</div>
                         <p class="hito__texto">${h.texto}</p>
@@ -8353,7 +9068,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             const cards = document.querySelectorAll('.employment-card');
 
             let allParsedPeriods = [];
-            let projectionWeeks = 0;
+            let projectionDays = 0;   // se acumulan dias, no semanas redondeadas
             let isValid = true;
 
             cards.forEach((card, index) => {
@@ -8380,9 +9095,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     }
                     
                     const days = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-                    const weeks = Math.floor(days / 7);
+                    // Se acumulan DIAS: redondear cada periodo por separado
                     
-                    projectionWeeks += weeks;
+                    projectionDays += days;
                     
                     allParsedPeriods.push({ fechaInicio: startDate, fechaFin: endDate, sbc: sbcVal, dias: days, nombrePatron: patron, regPatronal: "PROYECCION", isQP: false });
                 } else {
@@ -8435,7 +9150,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                             if (fechaFin > corteBase) {
                                 const diasExtra = Math.round((fechaFin - corteBase) / (1000 * 60 * 60 * 24));
                                 AppState.vigencia.diasExtra = diasExtra;
-                                projectionWeeks += Math.floor(diasExtra / 7);
+                                projectionDays += diasExtra;
                             } else {
                                 AppState.vigencia.diasExtra = 0;
                             }
@@ -8452,23 +9167,72 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             // Semanas que el asegurado cotizara DESPUES del corte de la constancia.
             // La tarjeta ya trae la BAJA extendida; aqui las sumamos al total.
             if (AppState.vigencia.opcion === 'seguir' && AppState.vigencia.semanasExtra > 0) {
-                projectionWeeks += AppState.vigencia.semanasExtra;
+                projectionDays += AppState.vigencia.semanasExtra * 7;
                 AppState.vigencia.diasExtra = AppState.vigencia.semanasExtra * 7;
             }
 
-            AppState.datosClienteInfo.semanasCotizadasBase += projectionWeeks;
-
+            // =============================================================
+            // SEMANAS: UNA SOLA CONVERSION DE DIAS A SEMANAS, AL FINAL
+            // Antes cada periodo capturado se redondeaba por separado
+            // (Math.round(dias/7)) y los traslapes se restaban aparte con un
+            // Math.floor. Tres redondeos encadenados podian mover el total
+            // hasta un par de semanas. Ahora se acumulan DIAS de todas las
+            // fuentes, se restan los dias traslapados una sola vez y hasta el
+            // final se pasa a semanas con el redondeo del IMSS.
+            //
+            // Se calculan los DOS metodos y se comparan:
+            //   a) DIAS: union de todos los periodos (los traslapes ocupan los
+            //      mismos dias, asi que no cuentan doble por construccion) mas
+            //      los dias de M40. Una sola division entre 7 al final.
+            //   b) SISEC: el total oficial impreso en la constancia, mas los
+            //      dias capturados a mano.
+            // El metodo (a) es el que manda; el (b) queda como contraste para
+            // detectar de donde nace cualquier diferencia.
+            // =============================================================
+            const semanasOficialesIMSS = AppState.datosClienteInfo.semanasCotizadasBase;
             const totalQpDays = allParsedPeriods.filter(p => p.isQP).reduce((sum, p) => sum + p.dias, 0);
-            const weeksToSubtract = totalQpDays / 7.0;
-            const adjustedWeeks = Math.floor(Math.max(0, AppState.datosClienteInfo.semanasCotizadasBase - weeksToSubtract));
-            
-            AppState.datosClienteInfo.semanasCotizadasBase = adjustedWeeks;
-            AppState.semanasNetasReales = adjustedWeeks; 
 
             AppState.allParsedPeriodsForDisplay = allParsedPeriods;
             AppState.fullHistoryPeriods = allParsedPeriods.filter(p => !p.isQP);
-
             AppState.timelinePeriods = processOverlappingPeriods(AppState.fullHistoryPeriods);
+
+            // (a) Dias reales de la union. Los periodos capturados a mano y la
+            // vigencia extendida YA viven dentro de timelinePeriods, por eso
+            // aqui no se vuelve a sumar projectionDays: seria doble conteo.
+            const diasUnion = AppState.timelinePeriods.reduce(
+                (acc, p) => acc + Math.round((p.fechaFin - p.fechaInicio) / 86400000) + 1, 0);
+            // Suma bruta: lo que darian los periodos si se contaran uno por uno.
+            // La diferencia contra la union son exactamente los dias traslapados.
+            const diasBruto = AppState.fullHistoryPeriods.reduce((acc, p) => acc + p.dias, 0);
+            AppState.diasBrutoHistorial = diasBruto;
+            AppState.diasQPExcluidos = totalQpDays;
+            AppState.tramosTraslapados = AppState.timelinePeriods
+                .filter(p => p.isOverlapped)
+                .map(p => {
+                    const d = Math.round((p.fechaFin - p.fechaInicio) / 86400000) + 1;
+                    const n = (p.originalPeriods || []).length;
+                    return { ini: p.fechaInicio, fin: p.fechaFin, dias: d, patrones: n,
+                             duplicados: d * (n - 1), nombres: p.nombrePatron };
+                });
+
+            // (b) Contraste contra la constancia.
+            const diasExtraNetos = projectionDays - totalQpDays;
+            const baseSisec = Math.max(0, semanasOficialesIMSS + diasExtraNetos / 7);
+
+            const usarSisec = AppState.metodoSemanas === 'sisec';
+            const baseExacta = usarSisec ? baseSisec : diasUnion / 7;
+            const adjustedWeeks = Math.round(baseExacta);
+
+            AppState.semanasOficialesIMSS = semanasOficialesIMSS;
+            AppState.diasExtraNetos = diasExtraNetos;
+            AppState.diasUnionHistorial = diasUnion;
+            AppState.semanasPorDias = diasUnion / 7;
+            AppState.semanasPorSisec = baseSisec;
+            AppState.baseExactaSemanas = baseExacta;   // sin redondear, para el motor
+            AppState.datosClienteInfo.semanasCotizadasBase = adjustedWeeks;
+            AppState.semanasNetasReales = adjustedWeeks;
+            renderCotejoSemanas();
+
             let periodosParaSBC = [...AppState.timelinePeriods].sort((a, b) => b.fechaFin - a.fechaFin);
             let diasAcumuladosSBC = 0;
             let sbcPonderadoTotal = 0;
@@ -8594,14 +9358,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             const alertContainer = document.getElementById('ley97AlertContainer');
 
             // Al terminar de leer un SISEC, la presentacion se abre sola.
+            // Al terminar de leer un SISEC ya NO se abre sola la presentacion:
+            // arrancaba en la lamina del correo, que es de convocatoria y no
+            // sirve cuando el cliente ya esta sentado enfrente. Se aterriza
+            // directo en la linea de tiempo del historial, fuera de la
+            // presentacion. El boton de Diagnostico sigue disponible.
             if (window._abrirDiagTrasAnalisis) {
                 window._abrirDiagTrasAnalisis = false;
-                setTimeout(async () => {
-                    // si la presentacion ya estaba abierta, solo se le agregan
-                    // las laminas nuevas; si no, se abre completa
-                    const completada = await completarPresentacion();
-                    if (!completada && typeof abrirDiagnostico === 'function') await abrirDiagnostico();
-                }, 400);
+                enfocarLineaDeTiempo(true);
             } else if (!alertContainer.innerHTML.includes('Ley 97')) {
                 showCustomAlert("Análisis completado. El SBC Promedio y la pensión base han sido calculados.", "Análisis Exitoso");
             }
@@ -8857,6 +9621,24 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                             <input type="number" id="scenario_${scenarioNum}_semanas_ajuste" value="${semanasAjuste}" oninput="recalculateScenario(${scenarioNum})" class="w-full" ${isFirstScenario ? 'readonly' : ''}>
                         </div>
                         <input type="hidden" id="scenario_${scenarioNum}_semanas" value="0">
+                        <div class="sbc-m40 col-span-2" id="scenario_${scenarioNum}_uma_box">
+                            <p class="sbc-m40__rotulo">SBC de inscripci&oacute;n en M40</p>
+                            <p class="sbc-m40__monto" id="scenario_${scenarioNum}_uma_monto">&mdash;</p>
+                            <p class="sbc-m40__nota" id="scenario_${scenarioNum}_uma_nota"></p>
+                            <div class="sbc-m40__seg">
+                                <button type="button" class="sbc-seg" data-uma="25" onclick="setSBCEscenarioUMA(${scenarioNum}, 25)"><b>25</b><small>UMA</small></button>
+                                <button type="button" class="sbc-seg" data-uma="20" onclick="setSBCEscenarioUMA(${scenarioNum}, 20)"><b>20</b><small>UMA</small></button>
+                                <button type="button" class="sbc-seg" data-uma="15" onclick="setSBCEscenarioUMA(${scenarioNum}, 15)"><b>15</b><small>UMA</small></button>
+                                <button type="button" class="sbc-seg sbc-seg--otro" onclick="editarSbcLibre(${scenarioNum})"><b>$</b><small>Otro</small></button>
+                            </div>
+                            <div class="sbc-m40__libre" id="scenario_${scenarioNum}_sbc_libre" style="display:none;">
+                                <span>$</span>
+                                <input type="number" step="0.01" id="scenario_${scenarioNum}_sbc_m40_input"
+                                       placeholder="0.00"
+                                       oninput="destellarTarjeta(${scenarioNum}); recalculateScenario(${scenarioNum}); pintarChipsUma(${scenarioNum});">
+                                <em>diarios</em>
+                            </div>
+                        </div>
                         <div id="scenario_${scenarioNum}_reintegro" class="reintegro-caja" style="display:none;"></div>
                     </div>
                     <div id="scenario_${scenarioNum}_results" class="mt-6 space-y-6">
@@ -8866,7 +9648,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                             <div class="space-y-3 text-base">
                                 <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-chart-bar fa-fw"></i>SBC Promedio:</span><span id="scenario_${scenarioNum}_sbc_final" class="font-semibold text-gray-800">--</span></div>
                                 <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-file-invoice-dollar fa-fw"></i>SBC Inscripción M40:</span><span id="scenario_${scenarioNum}_sbc_m40" class="font-semibold text-gray-800">--</span></div>
-                                <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-calendar-check fa-fw"></i>Semanas Finales:</span><span id="scenario_${scenarioNum}_semanas_finales" class="font-semibold text-gray-800">--</span></div>
+                                <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-calendar-check fa-fw"></i>Semanas Finales:</span><button type="button" class="sem-verificar" onclick="verDesgloseSemanas(${scenarioNum})" title="Ver de d&oacute;nde salen estas semanas"><span id="scenario_${scenarioNum}_semanas_finales">--</span><i class="fas fa-magnifying-glass-chart"></i></button></div>
                                 <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-user-clock fa-fw"></i>Edad al Finalizar:</span><span id="scenario_${scenarioNum}_edad_final" class="font-semibold text-gray-800">--</span></div>
                                 <hr class="my-3">
                                 
@@ -8891,6 +9673,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                             <div class="text-sm space-y-2">
                                  <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-calendar-times fa-fw"></i>Fin de M40:</span><span id="scenario_${scenarioNum}_fecha_fin_m40" class="font-semibold text-gray-800">--</span></div>
                                  <div class="flex justify-between items-center"><span class="text-gray-600 flex items-center gap-2"><i class="fas fa-hand-holding-usd fa-fw"></i>Primer Depósito:</span><span id="scenario_${scenarioNum}_fecha_primer_deposito" class="font-semibold text-gray-800">--</span></div>
+                                 <div id="scenario_${scenarioNum}_espera60" class="aviso-espera60" style="display:none;"></div>
                             </div>
                         </div>
                         <!-- FINANCIAL ANALYSIS -->
@@ -8927,6 +9710,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', cardHTML);
+            // La tarjeta nace con el SBC del Paso 2 para no cambiar el resultado
+            // de nadie; a partir de ahi cada escenario puede tomar su propio rumbo.
+            const sbcInicial = getNumeroInfo('info_m40_p1_sbc');
+            const inpSbc = document.getElementById(`scenario_${scenarioNum}_sbc_m40_input`);
+            if (inpSbc && sbcInicial > 0) inpSbc.value = sbcInicial.toFixed(2);
+            pintarChipsUma(scenarioNum);
             if (AppState.activeScenarios >= 4) document.getElementById('addScenarioBtn').disabled = true;
             else document.getElementById('addScenarioBtn').disabled = false;
         }
@@ -8973,6 +9762,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 const num = card.id.split('_')[2];
                 if (num) await recalculateScenario(Number(num));
             }
+            // La nota de cada tarjeta depende del anio de inicio de M40, que
+            // puede haber cambiado: se repinta al final de cada recalculo.
+            pintarChipsUmaTodos();
         }
 
         // Si el escenario forma parte del par de reintegro, el espejo copia los
@@ -9104,22 +9896,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             // Las semanas de Modalidad 40 salen de los DIAS reales del periodo,
             // no de multiplicar meses por 4.3452. Con 17 meses la formula daba 73
             // y los dias reales son 74: esa semana puede mover un anio excedente.
-            const inicioStr = getM40StartDate();
-            let diasM40 = 0;
-            if (meses > 0 && inicioStr) {
-                const [aI, mI, dI] = inicioStr.split('-').map(Number);
-                const iniM40 = new Date(Date.UTC(aI, mI - 1, dI));
-                const finM40 = calcularFechaFinDesdeMeses(inicioStr, meses);
-                if (finM40) diasM40 = Math.round((finM40 - iniM40) / 86400000) + 1;
-            }
-            const semanas = Math.floor(semanasBaseAjustadas + (diasM40 / 7));
+            // La cuenta vive en semanasFinalesPorMeses para que las tarjetas de
+            // recomendacion y el simulador usen exactamente la misma.
+            const semanas = semanasFinalesPorMeses(semanasBaseAjustadas, meses);
             
             const semanasHiddenInput = document.getElementById(`scenario_${scenarioNum}_semanas`);
             if (semanasHiddenInput) semanasHiddenInput.value = semanas;
             
             return {
                 customTitle, meses, semanas, curp: document.getElementById('info_curpCliente').value,
-                inicioM40Str: getM40StartDate(), sbcM40: getNumeroInfo('info_m40_p1_sbc'),
+                inicioM40Str: getM40StartDate(), sbcM40: sbcM40DeEscenario(scenarioNum),
                 aforeActual: getNumeroInfo('info_aforeActual'), mesesPrimerDeposito: parseInt(document.getElementById('info_mesesPrimerDeposito').value) || 8,
                 comisionExcedente: getNumeroInfo('info_comisionExcedente'), comisionExcedenteConcepto: document.getElementById('info_comisionExcedente_concepto').value.trim(),
                 pensionManualOverride: AppState.scenarioData[scenarioNum]?.pensionManualOverride,
@@ -9163,11 +9949,32 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 aguinaldo = pensionMensual / 1.15; // Aguinaldo estándar (Ley 73 no incluye el 15% fam. en aguinaldo)
             }
 
-            const fechaPrimerDeposito = new Date(fechaFinM40Obj);
+            // ---- ARRANQUE DEL TRAMITE ----
+            // El retroactivo no corre desde la baja de M40: corre desde que el
+            // asegurado PUEDE pedir la pension. Si termina la M40 con 59 anos y
+            // 8 meses, no hay tramite que iniciar; el reloj arranca el dia que
+            // cumple 60. Contarlo desde la baja adelantaba el primer deposito
+            // varios meses y prometia dinero que no iba a llegar en esa fecha.
+            const fechaCumple60 = fechaNacimiento ? new Date(fechaNacimiento) : null;
+            if (fechaCumple60) fechaCumple60.setUTCFullYear(fechaCumple60.getUTCFullYear() + 60);
+
+            const bajaAntesDe60 = !!(fechaCumple60 && fechaFinM40Obj && fechaFinM40Obj < fechaCumple60);
+            const arranqueTramite = bajaAntesDe60 ? fechaCumple60 : fechaFinM40Obj;
+
+            let mesesEspera = 0;
+            if (bajaAntesDe60) {
+                mesesEspera = (fechaCumple60.getUTCFullYear() - fechaFinM40Obj.getUTCFullYear()) * 12
+                            + (fechaCumple60.getUTCMonth() - fechaFinM40Obj.getUTCMonth());
+                if (fechaCumple60.getUTCDate() < fechaFinM40Obj.getUTCDate()) mesesEspera--;
+                mesesEspera = Math.max(0, mesesEspera);
+            }
+
+            const fechaPrimerDeposito = new Date(arranqueTramite);
             fechaPrimerDeposito.setUTCMonth(fechaPrimerDeposito.getUTCMonth() + inputs.mesesPrimerDeposito);
-            
+
             return {
                 pensionMensual, aguinaldo, sbcPromedio, edadFinM40, fechaFinM40Obj, fechaPrimerDeposito,
+                fechaCumple60, bajaAntesDe60, arranqueTramite, mesesEspera,
                 diasEnM40: inputs.meses * (365.25 / 12), finalTimelinePeriods, sbcBreakdownPeriods
             };
         }
@@ -9296,6 +10103,30 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             
             getEl('fecha_fin_m40').textContent = data.meses > 0 ? formatDateDDMMYYYY(data.fechaFinM40Obj) : 'N/A';
             getEl('fecha_primer_deposito').textContent = data.meses > 0 ? formatDateDDMMYYYY(data.fechaPrimerDeposito) : 'N/A';
+
+            // Aviso cuando la M40 termina antes de los 60: explica por que el
+            // primer deposito no se cuenta desde la baja.
+            const avisoEspera = document.getElementById(`scenario_${scenarioNum}_espera60`);
+            if (avisoEspera) {
+                if (data.meses > 0 && data.bajaAntesDe60 && data.fechaCumple60) {
+                    const e = data.edadFinM40;
+                    avisoEspera.style.display = 'block';
+                    avisoEspera.innerHTML = `
+                        <i class="fas fa-hourglass-half"></i>
+                        <div>
+                            <b>Al terminar tendr&iacute;a ${e.anos} a&ntilde;os y ${e.meses} meses: todav&iacute;a no puede pensionarse.</b>
+                            <span>La baja de M40 cae el ${formatDateDDMMYYYY(data.fechaFinM40Obj)}, pero el tr&aacute;mite no se puede iniciar
+                            hasta cumplir 60 el <strong>${formatDateDDMMYYYY(data.fechaCumple60)}</strong>
+                            ${data.mesesEspera > 0 ? `(${data.mesesEspera} ${data.mesesEspera === 1 ? 'mes' : 'meses'} de espera)` : ''}.
+                            Por eso los <strong>${data.mesesPrimerDeposito} meses</strong> del primer dep&oacute;sito se cuentan
+                            a partir de los 60 y no desde la baja: llega el <strong>${formatDateDDMMYYYY(data.fechaPrimerDeposito)}</strong>.</span>
+                            <span class="ae60__opciones">Opciones: esperar sin pagar M40, o alargar el periodo hasta los 60 y sumar m&aacute;s semanas.</span>
+                        </div>`;
+                } else {
+                    avisoEspera.style.display = 'none';
+                    avisoEspera.innerHTML = '';
+                }
+            }
 
             // AÑADIDO: Mostrar u ocultar la placa amarilla de "Manual" si existe un override de pensión
             const badgeEl = document.getElementById(`scenario_${scenarioNum}_pension_badge`);
@@ -9437,7 +10268,25 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             return `${anio}${iniciales}${dia}${hora}${mes}${minuto}${sufijo}`;
         }
 
+        // El reporte solo tiene sentido con los datos a la vista: un PDF con
+        // el nombre, el CURP y el NSS enmascarados no le sirve a nadie y ademas
+        // se filtraria en las grabaciones. Con "Datos ocultos" el boton
+        // desaparece y la funcion se niega, por si alguien la llama a mano.
+        function pdfPermitido() { return !AppState.modoPresentacion; }
+
+        function actualizarDisponibilidadPDF() {
+            const btn = document.getElementById('btnReportePDF');
+            if (btn) btn.style.display = pdfPermitido() ? '' : 'none';
+        }
+
         async function startComprehensiveReportProcess() {
+            if (!pdfPermitido()) {
+                showCustomAlert(
+                    'El reporte en PDF no se genera con los datos ocultos: saldr\u00eda con el nombre, el CURP y el NSS enmascarados. '
+                    + 'Vuelva a activar "Modo presentaci\u00f3n" en la barra superior para mostrar los datos y gen\u00e9relo de nuevo.',
+                    'Datos ocultos');
+                return;
+            }
              AppState.pdfGenerated = true;
             await recalculateAllScenarios(); 
 
@@ -9487,39 +10336,144 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             }
 
             const RGC_BLUE = '#003366'; const RGC_GOLD = '#D4AF37'; const TEXT_DARK = '#1A202C'; const TEXT_MEDIUM = '#4A5568'; const BORDER_COLOR = '#E2E8F0';
+            // Paleta ampliada: mismos azul y oro de la marca, mas los tonos de
+            // apoyo que hacen que el documento se lea como un estado de cuenta
+            // y no como una impresion de pantalla.
+            const RGC_NAVY   = '#00284F';  // fondo de portada y bandas
+            const RGC_STEEL  = '#33587F';  // azul intermedio para subtitulos
+            const RGC_MIST   = '#F4F7FB';  // gris azulado de tarjetas
+            const RGC_LINE   = '#DDE5EF';  // linea fina, mas suave que la anterior
+            const TEXT_SOFT  = '#6B7A90';  // etiquetas y texto secundario
+            const OK_GREEN   = '#15803D';
+            const ALERT_RED  = '#B91C1C';
             doc.setFont('helvetica');
 
+            // --- utilidades de composicion -----------------------------------
+            // Rotulo pequeno en versalitas: el recurso que mas ordena una
+            // pagina financiera sin agregar tinta.
+            const eyebrow = (txt, x, y, color, size) => {
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(size || 7.6);
+                doc.setTextColor(color || TEXT_SOFT);
+                doc.setCharSpace(0.9);
+                doc.text(String(txt).toUpperCase(), x, y);
+                doc.setCharSpace(0);
+            };
+
+            // Estilos de tabla unicos, para que las 6 tablas del reporte se
+            // vean como una sola familia.
+            const TBL_HEAD = { fillColor: RGC_BLUE, textColor: '#FFFFFF', fontSize: 9.5,
+                               cellPadding: { top: 6, bottom: 6, left: 7, right: 7 },
+                               halign: 'left', font: 'helvetica', fontStyle: 'bold', lineWidth: 0 };
+            const TBL_BODY = { fontSize: 9, cellPadding: { top: 5.4, bottom: 5.4, left: 7, right: 7 },
+                               font: 'helvetica', textColor: TEXT_DARK,
+                               lineColor: RGC_LINE, lineWidth: 0.4, valign: 'middle' };
+            const TBL_ALT  = { fillColor: RGC_MIST };
+
+            // Cabecera de banco: filete oro al canto, logotipo a la izquierda y
+            // el folio anclado a la derecha. Se respeta la altura para que el
+            // contenido siga arrancando donde arrancaba.
             const addPageHeader = (isCover = false) => {
-                if (isCover) return; 
-                doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(RGC_GOLD); doc.text("RGC", margin, 35);
-                doc.setTextColor(RGC_BLUE); doc.text("Pensiones y Seguros", margin + 30, 35);
-                doc.setFontSize(9); doc.setTextColor(TEXT_MEDIUM); doc.text("Reporte de Proyección de Pensión", pageWidth - margin, 35, { align: 'right' });
-                doc.setFontSize(7); doc.setTextColor(TEXT_MEDIUM); doc.text(`Folio: ${folio}`, pageWidth - margin, 45, { align: 'right' });
-                doc.setDrawColor(BORDER_COLOR); doc.setLineWidth(1); doc.line(margin, 50, pageWidth - margin, 50); finalY = 65;
+                if (isCover) return;
+                doc.setFillColor(RGC_GOLD); doc.rect(0, 0, pageWidth, 3, 'F');
+
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(RGC_GOLD);
+                doc.text("RGC", margin, 38);
+                doc.setTextColor(RGC_BLUE); doc.setFontSize(11);
+                doc.text("Pensiones y Seguros", margin + 42, 38);
+
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(RGC_STEEL);
+                doc.text("Reporte de Proyecci\u00f3n de Pensi\u00f3n", pageWidth - margin, 32, { align: 'right' });
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5); doc.setTextColor(TEXT_SOFT);
+                doc.setCharSpace(0.9);
+                doc.text(`FOLIO ${folio}`.toUpperCase(), pageWidth - margin, 43, { align: 'right' });
+                doc.setCharSpace(0);
+
+                doc.setDrawColor(RGC_LINE); doc.setLineWidth(0.8); doc.line(margin, 52, pageWidth - margin, 52);
+                doc.setDrawColor(RGC_GOLD); doc.setLineWidth(1.6); doc.line(margin, 52, margin + 46, 52);
+                finalY = 72;
             };
         
+            // Pie con aire: antes las tres lineas se apretaban contra el borde
+            // y el contenido las invadia. Ahora viven en su propia banda.
             const addPageFooter = () => {
                 const pageCount = doc.internal.getNumberOfPages();
                 for (let i = 1; i <= pageCount; i++) {
-                    if (i === 1) continue; 
-                    doc.setPage(i); doc.setFontSize(7); doc.setTextColor(TEXT_MEDIUM); const footerY = pageHeight - 30; 
-                    doc.setDrawColor(BORDER_COLOR); doc.setLineWidth(0.5); doc.line(margin, footerY - 10, pageWidth - margin, footerY - 10);
-                    doc.text(`Reporte para: ${cliente.nombre}`, margin, footerY);
-                    doc.text("Eje Central Lázaro Cárdenas 555, Narvarte Poniente, Benito Juárez, 03023 Ciudad de México, CDMX", margin, footerY + 10);
-                    doc.text(`Creado por: Ivan Roberto Ortiz Cano ${sufijoFooter}`, margin, footerY + 20);
-                    doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, footerY, { align: 'right' });
+                    if (i === 1) continue;
+                    doc.setPage(i);
+                    const footerTop = pageHeight - 52;
+                    doc.setDrawColor(RGC_LINE); doc.setLineWidth(0.6);
+                    doc.line(margin, footerTop, pageWidth - margin, footerTop);
+                    doc.setDrawColor(RGC_GOLD); doc.setLineWidth(1.4);
+                    doc.line(margin, footerTop, margin + 32, footerTop);
+
+                    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(RGC_BLUE);
+                    doc.text(`Reporte para: ${cliente.nombre}`, margin, footerTop + 13);
+                    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.4); doc.setTextColor(TEXT_SOFT);
+                    doc.text("Eje Central L\u00e1zaro C\u00e1rdenas 555, Narvarte Poniente, Benito Ju\u00e1rez, 03023 Ciudad de M\u00e9xico, CDMX", margin, footerTop + 23);
+                    doc.text(`Creado por: Ivan Roberto Ortiz Cano ${sufijoFooter}`, margin, footerTop + 32);
+
+                    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(RGC_STEEL);
+                    doc.text(`${i} / ${pageCount}`, pageWidth - margin, footerTop + 13, { align: 'right' });
+                    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.4); doc.setTextColor(TEXT_SOFT);
+                    doc.text("Documento confidencial", pageWidth - margin, footerTop + 23, { align: 'right' });
+                    doc.text(`Folio ${folio}`, pageWidth - margin, footerTop + 32, { align: 'right' });
                 }
             };
             
+            // El corte se adelanta hasta el borde de la banda del pie: antes se
+            // permitia escribir encima del pie de pagina.
+            const BOTTOM_LIMIT = pageHeight - 62;
             const checkPageBreak = (currentY, requiredSpace) => {
-                if (currentY + requiredSpace > pageHeight - 40) { doc.addPage(); addPageHeader(); return finalY; }
+                if (currentY + requiredSpace > BOTTOM_LIMIT) { doc.addPage(); addPageHeader(); return finalY; }
                 return currentY;
             };
-            
+
+            // Titulo de seccion sobre banda tenue con filete oro: separa los
+            // bloques sin necesidad de lineas gruesas ni mayusculas grandes.
             const addSectionTitle = (title, yPos) => {
-                finalY = checkPageBreak(yPos, 25); doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(RGC_BLUE);
-                doc.setFillColor(RGC_GOLD); doc.rect(margin, finalY, 4, 12, 'F'); doc.text(title, margin + 8, finalY + 10);
-                return finalY + 20;
+                finalY = checkPageBreak(yPos, 34);
+                const h = 20;
+                doc.setFillColor(RGC_MIST); doc.rect(margin, finalY, contentWidth, h, 'F');
+                doc.setFillColor(RGC_GOLD); doc.rect(margin, finalY, 3.2, h, 'F');
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(RGC_BLUE);
+                doc.text(title, margin + 10, finalY + 13.5);
+                return finalY + h + 10;
+            };
+
+            // Franja de indicadores: tres cifras grandes que resumen la pagina
+            // antes de que el cliente entre a las tablas.
+            const addKpiStrip = (items, yPos) => {
+                const h = 46;
+                const y = checkPageBreak(yPos, h + 12);
+                const gap = 9;
+                const w = (contentWidth - gap * (items.length - 1)) / items.length;
+                items.forEach((it, i) => {
+                    const x = margin + i * (w + gap);
+                    doc.setFillColor('#FFFFFF'); doc.setDrawColor(RGC_LINE); doc.setLineWidth(0.6);
+                    doc.roundedRect(x, y, w, h, 3, 3, 'FD');
+                    doc.setFillColor(it.accent || RGC_GOLD); doc.rect(x, y + 8, 2.4, h - 16, 'F');
+                    eyebrow(it.label, x + 10, y + 17);
+                    doc.setFont('helvetica', 'bold'); doc.setFontSize(it.size || 15);
+                    doc.setTextColor(it.color || RGC_BLUE);
+                    doc.text(String(it.value), x + 10, y + 35);
+                });
+                return y + h + 14;
+            };
+
+            // Nota al margen en caja clara: para los avisos que antes iban
+            // sueltos como texto corrido.
+            const addNoteBox = (titulo, cuerpo, yPos, acento) => {
+                const lines = doc.splitTextToSize(cuerpo, contentWidth - 24);
+                const h = 22 + lines.length * 9.5;
+                const y = checkPageBreak(yPos, h + 10);
+                doc.setFillColor(RGC_MIST); doc.setDrawColor(RGC_LINE); doc.setLineWidth(0.6);
+                doc.roundedRect(margin, y, contentWidth, h, 3, 3, 'FD');
+                doc.setFillColor(acento || RGC_STEEL); doc.rect(margin, y + 6, 2.4, h - 12, 'F');
+                eyebrow(titulo, margin + 12, y + 15, acento || RGC_STEEL);
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(8.6); doc.setTextColor(TEXT_MEDIUM);
+                doc.text(lines, margin + 12, y + 27);
+                return y + h + 12;
             };
         
             const captureElement = async (elementId) => {
@@ -9530,20 +10484,200 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 return await html2canvas(element, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' });
             };
         
+            // ---------------------------------------------------------------
+            // PORTADA
+            // Banda azul profunda arriba, filete oro de corte y el nombre del
+            // cliente en una ficha. La informacion de control (folio, asesor,
+            // fecha) baja al pie, como en una caratula de contrato.
+            // ---------------------------------------------------------------
             addPageHeader(true);
-            doc.setFontSize(28); doc.setFont('helvetica', 'bold'); doc.setTextColor(RGC_BLUE);
-            doc.text("Reporte de Proyección de Pensión", pageWidth / 2, pageHeight / 2 - 100, { align: 'center' });
-            doc.setFontSize(14); doc.setTextColor(TEXT_DARK); doc.text("Preparado para:", pageWidth / 2, pageHeight / 2 - 30, { align: 'center' });
-            doc.setFontSize(20); doc.setFont('helvetica', 'bold'); doc.setTextColor(RGC_GOLD); doc.text(cliente.nombre, pageWidth / 2, pageHeight / 2 + 10, { align: 'center' });
-            doc.setFontSize(11); doc.setTextColor(TEXT_MEDIUM); doc.text(`Preparado por: ${asesorNombre}`, pageWidth / 2, pageHeight / 2 + 70, { align: 'center' });
-            doc.text(`Generado el: ${generationDate}`, pageWidth / 2, pageHeight / 2 + 90, { align: 'center' });
+            const bandH = 232;
+            doc.setFillColor(RGC_NAVY); doc.rect(0, 0, pageWidth, bandH, 'F');
+            doc.setFillColor(RGC_GOLD); doc.rect(0, bandH, pageWidth, 4, 'F');
+
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(34); doc.setTextColor(RGC_GOLD);
+            doc.text("RGC", margin, 92);
+            doc.setTextColor('#FFFFFF'); doc.setFontSize(17);
+            doc.text("Pensiones y Seguros", margin + 90, 92);
+            doc.setDrawColor(RGC_GOLD); doc.setLineWidth(1.2);
+            doc.line(margin, 108, margin + 70, 108);
+
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(6.8); doc.setTextColor('#9FB6D0');
+            doc.setCharSpace(1.6);
+            doc.text("LEY 73  \u00b7  MODALIDAD 40  \u00b7  AN\u00c1LISIS PATRIMONIAL", margin, 128);
+            doc.setCharSpace(0);
+
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(27); doc.setTextColor('#FFFFFF');
+            doc.text("Reporte de Proyecci\u00f3n", margin, 172);
+            doc.text("de Pensi\u00f3n", margin, 202);
+
+            // Ficha del asegurado, montada a caballo sobre el filete
+            const fichaY = bandH + 46;
+            doc.setFillColor('#FFFFFF'); doc.setDrawColor(RGC_LINE); doc.setLineWidth(0.8);
+            doc.roundedRect(margin, fichaY, contentWidth, 92, 4, 4, 'FD');
+            doc.setFillColor(RGC_GOLD); doc.rect(margin, fichaY + 14, 3.2, 64, 'F');
+            eyebrow("Preparado para", margin + 16, fichaY + 26);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(19); doc.setTextColor(RGC_BLUE);
+            doc.text(doc.splitTextToSize(cliente.nombre || '', contentWidth - 34)[0] || '', margin + 16, fichaY + 50);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(TEXT_SOFT);
+            doc.text(`Edad ${cliente.edadBase} a\u00f1os  \u00b7  ${formatNumber(AppState.datosClienteInfo.semanasCotizadasBase, 0)} semanas cotizadas`,
+                     margin + 16, fichaY + 70);
+
+            // Indice: llena el centro de la portada con algo util y le da al
+            // documento el aire de expediente en vez de hoja suelta.
+            const _hayDerechos = (() => { const e = document.getElementById('derechosRecoveryModule'); return !!(e && e.style.display !== 'none'); })();
+            const _hayTraslapes = document.querySelectorAll('#overlapsTableBody tr').length > 0;
+            const _hayRoi = (() => { const e = document.getElementById('roiAnalysisContainer'); return !!(e && e.style.display !== 'none'); })();
+            const _nEsc = Object.values(AppState.scenarioData || {})
+                .filter(s => s && s.costoTotalContrato !== undefined && s.meses >= 0).length;
+
+            const indice = ['Resumen de an\u00e1lisis inicial'];
+            if (_hayDerechos) indice.push('Diagn\u00f3stico de consolidaci\u00f3n de derechos (Art. 151)');
+            if (_hayTraslapes) indice.push('Detalle de traslapes detectados');
+            indice.push('L\u00ednea de tiempo del historial laboral');
+            if (_nEsc > 0) indice.push(`Escenarios de Modalidad 40 (${_nEsc}) y proyecci\u00f3n a 10 a\u00f1os`);
+            if (_hayRoi) indice.push('An\u00e1lisis de evoluci\u00f3n del patrimonio (ROI)');
+            indice.push('Alcance de la proyecci\u00f3n y firmas');
+
+            let idxY = fichaY + 128;
+            eyebrow("Contenido del reporte", margin, idxY);
+            idxY += 8;
+            doc.setDrawColor(RGC_LINE); doc.setLineWidth(0.6);
+            doc.line(margin, idxY, margin + 150, idxY);
+            idxY += 18;
+            indice.forEach((txt, i) => {
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(RGC_GOLD);
+                doc.text(String(i + 1).padStart(2, '0'), margin, idxY);
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(RGC_BLUE);
+                doc.text(txt, margin + 22, idxY);
+                doc.setDrawColor('#EDF1F6'); doc.setLineWidth(0.5);
+                doc.line(margin, idxY + 7, pageWidth - margin, idxY + 7);
+                idxY += 20;
+            });
+
+            // Bloque de control al pie de la portada
+            const ctrlY = pageHeight - 168;
+            doc.setDrawColor(RGC_LINE); doc.setLineWidth(0.6);
+            doc.line(margin, ctrlY, pageWidth - margin, ctrlY);
+            const colW = contentWidth / 3;
+            const ctrl = [
+                ['Folio', folio],
+                ['Preparado por', asesorNombre],
+                ['Fecha de emisi\u00f3n', generationDate]
+            ];
+            ctrl.forEach(([lab, val], i) => {
+                const x = margin + i * colW;
+                eyebrow(lab, x, ctrlY + 18);
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(RGC_BLUE);
+                doc.text(doc.splitTextToSize(String(val), colW - 12), x, ctrlY + 33);
+            });
+
+            doc.setFillColor(RGC_MIST); doc.rect(0, pageHeight - 96, pageWidth, 96, 'F');
+            doc.setFillColor(RGC_GOLD); doc.rect(0, pageHeight - 96, pageWidth, 2.5, 'F');
+            eyebrow("Documento confidencial", margin, pageHeight - 70);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(8.4); doc.setTextColor(TEXT_MEDIUM);
+            doc.text(doc.splitTextToSize(
+                "Las cifras de este reporte son una proyecci\u00f3n elaborada con la informaci\u00f3n disponible a la fecha de emisi\u00f3n. "
+                + "Los montos definitivos los resuelve el IMSS al momento del tr\u00e1mite y pueden variar por cambios en la UMA, en el INPC o en el historial laboral.",
+                contentWidth), margin, pageHeight - 56);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(7.8); doc.setTextColor(RGC_BLUE);
+            doc.text("Eje Central L\u00e1zaro C\u00e1rdenas 555, Narvarte Poniente, Benito Ju\u00e1rez, 03023 Ciudad de M\u00e9xico",
+                     margin, pageHeight - 22);
+
+            // La lista de escenarios se arma antes de la portada interior: la
+            // hoja resumen la necesita y despues se reutiliza tal cual.
+            const activeScenarios = Object.values(AppState.scenarioData).filter(s => s && s.costoTotalContrato !== undefined && s.meses >= 0);
 
             doc.addPage(); addPageHeader();
 
+            // ---------------------------------------------------------------
+            // HOJA RESUMEN: barras dibujadas en el propio PDF (no capturas),
+            // numeros grandes y una sola idea por renglon. Es la pagina que un
+            // cliente mayor lee de un vistazo antes de entrar al detalle.
+            // ---------------------------------------------------------------
+            const pensionHoy = AppState.pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA || 0;
+            const conM40 = activeScenarios.filter(s => s.meses > 0);
+            if (pensionHoy > 0 && conM40.length > 0) {
+                finalY = addSectionTitle("En una hoja: qu\u00e9 cambia con la Modalidad 40", finalY);
+
+                const filas = [{ etq: 'Hoy, sin Modalidad 40', sub: `${formatNumber(AppState.datosClienteInfo.semanasCotizadasBase, 0)} semanas`,
+                                 val: pensionHoy, color: '#94A3B8' }];
+                conM40.forEach(s => filas.push({
+                    etq: s.customTitle || `${s.meses} meses de M40`,
+                    sub: `${s.meses} meses  \u00b7  ${formatNumber(s.semanas, 0)} semanas`,
+                    val: (s.pensionMensual || 0) * (s.factorFebrero || 1),
+                    color: RGC_BLUE
+                }));
+
+                const maxVal = Math.max(...filas.map(f => f.val)) || 1;
+                const barX = margin + 158;
+                const barMax = pageWidth - margin - 96 - barX;
+                const filaH = 40;
+
+                filas.forEach(f => {
+                    finalY = checkPageBreak(finalY, filaH + 6);
+                    const w = Math.max(3, barMax * (f.val / maxVal));
+                    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(RGC_BLUE);
+                    doc.text(doc.splitTextToSize(f.etq, 148)[0], margin, finalY + 13);
+                    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8); doc.setTextColor(TEXT_SOFT);
+                    doc.text(f.sub, margin, finalY + 24);
+
+                    doc.setFillColor('#EDF1F6'); doc.rect(barX, finalY + 6, barMax, 20, 'F');
+                    doc.setFillColor(f.color); doc.rect(barX, finalY + 6, w, 20, 'F');
+
+                    doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(f.color === '#94A3B8' ? TEXT_MEDIUM : RGC_BLUE);
+                    doc.text(`$${formatNumber(f.val)}`, pageWidth - margin, finalY + 21, { align: 'right' });
+                    finalY += filaH;
+                });
+
+                eyebrow("Pensi\u00f3n mensual estimada  \u00b7  a mayor barra, mayor pensi\u00f3n", margin, finalY + 4);
+                finalY += 22;
+
+                // El escenario que mas sube: la cifra que el cliente se lleva.
+                const mejor = conM40.reduce((a, b) =>
+                    ((b.pensionMensual || 0) * (b.factorFebrero || 1)) > ((a.pensionMensual || 0) * (a.factorFebrero || 1)) ? b : a);
+                const pensionMejor = (mejor.pensionMensual || 0) * (mejor.factorFebrero || 1);
+                const difMes = pensionMejor - pensionHoy;
+
+                if (difMes > 0) {
+                    const tarjetas = [
+                        { label: 'M\u00e1s al mes', value: `+$${formatNumber(difMes)}`, accent: RGC_GOLD, color: OK_GREEN },
+                        { label: 'M\u00e1s al a\u00f1o (con aguinaldo)', value: `+$${formatNumber(difMes * 13)}`, accent: RGC_GOLD, color: OK_GREEN, size: 13 }
+                    ];
+                    const mesesRecupero = mejor.costoTotalContrato > 0 ? Math.ceil(mejor.costoTotalContrato / difMes) : 0;
+                    if (mesesRecupero > 0) {
+                        const anios = Math.floor(mesesRecupero / 12), rest = mesesRecupero % 12;
+                        tarjetas.push({
+                            label: 'Recupera lo invertido en',
+                            value: anios > 0 ? `${anios} a\u00f1o${anios > 1 ? 's' : ''} ${rest} m` : `${mesesRecupero} meses`,
+                            accent: RGC_STEEL, color: RGC_BLUE, size: 13
+                        });
+                    }
+                    finalY = addKpiStrip(tarjetas, finalY);
+
+                    finalY = addNoteBox(
+                        "C\u00f3mo leer esta hoja",
+                        `Con ${mejor.meses} meses en Modalidad 40 la pensi\u00f3n pasa de $${formatNumber(pensionHoy)} a $${formatNumber(pensionMejor)} al mes. `
+                        + `La diferencia se cobra de por vida y se actualiza cada febrero con la inflaci\u00f3n. `
+                        + `El costo del proyecto es de $${formatNumber(mejor.costoTotalContrato)} y en las p\u00e1ginas siguientes se detalla c\u00f3mo se cubre.`,
+                        finalY, RGC_GOLD);
+                }
+
+                // No se fuerza salto: el resumen inicial cabe debajo y evita
+                // dejar media hoja en blanco. Si no cupiera, checkPageBreak
+                // del propio titulo abre la pagina.
+                finalY += 12;
+            }
+
             finalY = addSectionTitle("Resumen de Análisis Inicial", finalY);
+            finalY = addKpiStrip([
+                { label: 'Pensi\u00f3n base sin M40', value: `$${formatNumber(AppState.pensionBaseResultadosInfo.PENSION_MENSUAL_ESTIMADA)}` },
+                { label: 'Semanas cotizadas', value: formatNumber(AppState.datosClienteInfo.semanasCotizadasBase, 0), accent: RGC_STEEL },
+                { label: 'Edad actual', value: `${cliente.edadBase} a\u00f1os`, accent: RGC_STEEL }
+            ], finalY);
             doc.autoTable({
-                startY: finalY, theme: 'grid', alternateRowStyles: { fillColor: '#F8FAFC' }, styles: { fontSize: 8, cellPadding: 3, font: 'helvetica' }, headStyles: { fillColor: RGC_BLUE, fontSize: 9, cellPadding: 4, halign: 'left' },
-                columnStyles: { 0: { cellWidth: 110 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 130 }, 3: { cellWidth: 'auto', halign: 'right' } },
+                startY: finalY, theme: 'grid', alternateRowStyles: TBL_ALT, styles: TBL_BODY, headStyles: TBL_HEAD,
+                columnStyles: { 0: { cellWidth: 110, textColor: TEXT_SOFT }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 130, textColor: TEXT_SOFT }, 3: { cellWidth: 'auto', halign: 'right' } },
                 body: [
                     [{ content: 'Nombre Completo:', styles: { fontStyle: 'bold' }}, cliente.nombre, { content: 'SBC Promedio (Base):', styles: { fontStyle: 'bold' }}, `$${formatNumber(cliente.sbcPromedioBase)}`],
                     [{ content: 'CURP:', styles: { fontStyle: 'bold' }}, cliente.curp, { content: 'Semanas Netas a Considerar:', styles: { fontStyle: 'bold' }}, formatNumber(AppState.datosClienteInfo.semanasCotizadasBase, 0)],
@@ -9597,7 +10731,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     startY: finalY,
                     head: [['Periodo', 'Días', 'Patrones', 'Estado/Alerta']],
                     body: overlapsTableRows,
-                    theme: 'grid', alternateRowStyles: { fillColor: '#F8FAFC' }, styles: { fontSize: 7, cellPadding: 3 }, headStyles: { fillColor: '#7e22ce' }
+                    theme: 'grid', alternateRowStyles: TBL_ALT, styles: Object.assign({}, TBL_BODY, { fontSize: 8 }), headStyles: Object.assign({}, TBL_HEAD, { fillColor: '#5B21B6' })
                 });
                 finalY = doc.autoTable.previous.finalY + 15;
             }
@@ -9616,7 +10750,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                  doc.text("No se pudo generar la gráfica de la línea de tiempo.", margin, finalY); finalY += 15;
             }
         
-            const activeScenarios = Object.values(AppState.scenarioData).filter(s => s && s.costoTotalContrato !== undefined && s.meses >= 0);
             for (let i = 0; i < activeScenarios.length; i++) {
                 const sc = activeScenarios[i];
                 const scenarioId = Object.keys(AppState.scenarioData).find(key => AppState.scenarioData[key] === sc);
@@ -9628,10 +10761,41 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 if (sc.meses === 0) sectionTitle = `${scenarioTitleClean}: Sin Inversión M40`;
                 
                 finalY = addSectionTitle(sectionTitle, finalY);
-                doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(TEXT_MEDIUM);
-                let dateInfo = `Fecha Inicio M40: ${sc.meses > 0 ? formatDateDDMMYYYY(new Date(sc.inicioM40Str)) : 'N/A'}  |  Fecha Fin M40: ${sc.meses > 0 ? formatDateDDMMYYYY(sc.fechaFinM40Obj) : 'N/A'}`;
-                doc.text(dateInfo, margin, finalY - 5);
-        
+
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8); doc.setTextColor(TEXT_SOFT);
+                const dateInfo = sc.meses > 0
+                    ? `Inicio de M40: ${formatDateDDMMYYYY(new Date(sc.inicioM40Str))}   \u00b7   Baja de M40: ${formatDateDDMMYYYY(sc.fechaFinM40Obj)}`
+                    : 'Escenario sin inversi\u00f3n en Modalidad 40';
+                doc.text(dateInfo, margin, finalY);
+                finalY += 14;
+
+                // Las tres cifras que el cliente busca primero, antes de las tablas.
+                const pensionKpi = (sc.pensionMensual || 0) * (sc.factorFebrero || 1);
+                const kpis = [
+                    { label: 'Pensi\u00f3n mensual', value: `$${formatNumber(pensionKpi)}`, accent: RGC_GOLD, color: RGC_BLUE }
+                ];
+                if (sc.meses > 0) {
+                    kpis.push({ label: 'Costo del proyecto', value: `$${formatNumber(sc.costoTotalContrato)}`, accent: RGC_STEEL, color: RGC_BLUE, size: 13 });
+                    kpis.push({ label: 'Semanas finales', value: formatNumber(sc.semanas, 0), accent: RGC_STEEL, color: RGC_BLUE });
+                } else {
+                    kpis.push({ label: 'Semanas finales', value: formatNumber(sc.semanas, 0), accent: RGC_STEEL, color: RGC_BLUE });
+                    kpis.push({ label: 'Edad al finalizar', value: `${sc.edadFinM40.anos}a ${sc.edadFinM40.meses}m`, accent: RGC_STEEL, color: RGC_BLUE });
+                }
+                finalY = addKpiStrip(kpis, finalY);
+
+                // Si la M40 termina antes de los 60, el reporte tiene que
+                // decirlo: es la diferencia entre una fecha de cobro real y una
+                // que el cliente no va a ver cumplirse.
+                if (sc.meses > 0 && sc.bajaAntesDe60 && sc.fechaCumple60) {
+                    finalY = addNoteBox(
+                        "Este escenario termina antes de los 60 a\u00f1os",
+                        `Al concluir los ${sc.meses} meses de Modalidad 40 el asegurado tendr\u00eda ${sc.edadFinM40.anos} a\u00f1os y ${sc.edadFinM40.meses} meses, `
+                        + `por lo que a\u00fan no puede solicitar la pensi\u00f3n. El tr\u00e1mite se inicia al cumplir 60 a\u00f1os, el ${formatDateDDMMYYYY(sc.fechaCumple60)}, `
+                        + `y los ${sc.mesesPrimerDeposito} meses del primer dep\u00f3sito se cuentan a partir de esa fecha: el primer pago llegar\u00eda el ${formatDateDDMMYYYY(sc.fechaPrimerDeposito)}. `
+                        + `Las alternativas son esperar sin seguir pagando, o alargar la Modalidad 40 hasta los 60 a\u00f1os y sumar semanas.`,
+                        finalY, '#C2410C');
+                }
+
                 const halfContentWidth = contentWidth / 2 - 5; const tableStartY = finalY;
                 let table1FinalY = tableStartY; let table2FinalY = tableStartY;
 
@@ -9658,7 +10822,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 
                 doc.autoTable({
                     startY: tableStartY, head: [['Resultados de Pensión', '']], body: pensionBody,
-                    theme: 'grid', alternateRowStyles: { fillColor: '#F8FAFC' }, headStyles: { fillColor: RGC_BLUE, fontSize: 9, cellPadding: 4, halign: 'left' }, styles: { fontSize: 8, cellPadding: 3.4, lineColor: '#E2E8F0', lineWidth: 0.3 },
+                    theme: 'grid', alternateRowStyles: TBL_ALT, headStyles: TBL_HEAD, styles: TBL_BODY,
                     margin: { left: margin }, tableWidth: halfContentWidth,
                     columnStyles: { 0: { fontStyle: 'bold', cellWidth: 'auto' }, 1: { halign: 'right' } },
                 });
@@ -9702,7 +10866,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
                     doc.autoTable({
                         startY: tableStartY, head: [['Balance del Proyecto', '']], body: financialBody,
-                        theme: 'grid', alternateRowStyles: { fillColor: '#F8FAFC' }, headStyles: { fillColor: RGC_BLUE, fontSize: 9, cellPadding: 4, halign: 'left' }, styles: { fontSize: 8, cellPadding: 3.4, lineColor: '#E2E8F0', lineWidth: 0.3 }, // OPTIMIZADO
+                        theme: 'grid', alternateRowStyles: TBL_ALT, headStyles: TBL_HEAD, styles: TBL_BODY,
                         margin: { left: margin + halfContentWidth + 10 }, tableWidth: halfContentWidth,
                         columnStyles: { 1: { halign: 'right' }}
                     });
@@ -9738,8 +10902,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 doc.autoTable({
                     startY: finalY, head: [['Año', 'Pensión Bruta Anual', 'Descuento Anual', 'Pensión Neta Anual']],
                     body: sc.proyeccion.map(row => [ row[0], row[1], row[2], row[3] ]),
-                    theme: 'striped', headStyles: { fillColor: RGC_BLUE, fontSize: 9, cellPadding: 4, halign: 'left' }, styles: { fontSize: 7, cellPadding: 3, font: 'helvetica' },
-                    didParseCell: (data) => { if(data.section === 'body' && data.column.index > 0) data.cell.styles.halign = 'right'; }
+                    theme: 'striped', headStyles: TBL_HEAD, alternateRowStyles: TBL_ALT, styles: Object.assign({}, TBL_BODY, { fontSize: 8.4, cellPadding: { top: 4.4, bottom: 4.4, left: 6, right: 6 } }),
+                    didParseCell: (data) => { if (data.section === 'body' && data.column.index > 0) data.cell.styles.halign = 'right'; if (data.section === 'body' && data.column.index === 3) { data.cell.styles.fontStyle = 'bold'; data.cell.styles.textColor = OK_GREEN; } }
                 });
                 finalY = doc.autoTable.previous.finalY;
             }
@@ -9758,17 +10922,38 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 const roiTable = document.querySelector('#roiTableContainer table');
                 if (roiTable) {
                     finalY = checkPageBreak(finalY, 20); finalY = addSectionTitle("Tabla de Datos ROI", finalY);
-                    doc.autoTable({ startY: finalY, html: roiTable, theme: 'grid', alternateRowStyles: { fillColor: '#F8FAFC' }, headStyles: { fillColor: RGC_BLUE, fontSize: 9, cellPadding: 4, halign: 'left' }, styles: { fontSize: 7, cellPadding: 2, font: 'helvetica' } });
+                    doc.autoTable({ startY: finalY, html: roiTable, theme: 'grid', alternateRowStyles: TBL_ALT, headStyles: TBL_HEAD, styles: Object.assign({}, TBL_BODY, { fontSize: 8, cellPadding: { top: 4, bottom: 4, left: 6, right: 6 } }) });
                     finalY = doc.autoTable.previous.finalY;
                 }
             }
         
-            finalY = checkPageBreak(finalY, 80); finalY += 40; 
-            const signatureX = margin + (contentWidth / 2);
-            doc.setDrawColor(TEXT_DARK); doc.setLineWidth(0.5); doc.line(signatureX - 100, finalY, signatureX + 100, finalY); 
-            doc.setFontSize(9); doc.setTextColor(TEXT_DARK);
-            doc.text("Firma de Autorización", signatureX, finalY + 15, { align: 'center' });
-            doc.text("Dirección RGC Pensiones y Seguros", signatureX, finalY + 30, { align: 'center' });
+            // --- Cierre: nota de alcance y bloque de firmas ------------------
+            finalY = checkPageBreak(finalY, 190);
+            finalY += 18;
+            finalY = addNoteBox(
+                "Alcance de esta proyecci\u00f3n",
+                "Las cifras se calculan conforme a la Ley del Seguro Social de 1973 con la informaci\u00f3n proporcionada por el asegurado y la "
+                + "constancia de semanas cotizadas vigente. Los montos de UMA, INPC y salario m\u00ednimo posteriores al \u00faltimo dato publicado son "
+                + "estimaciones. La resoluci\u00f3n definitiva corresponde al Instituto Mexicano del Seguro Social.",
+                finalY, RGC_STEEL);
+
+            finalY = checkPageBreak(finalY, 110);
+            finalY += 26;
+            const firmaW = (contentWidth - 40) / 2;
+            const firmas = [
+                ['Firma de Autorizaci\u00f3n', 'Direcci\u00f3n RGC Pensiones y Seguros'],
+                ['Firma de Conformidad', cliente.nombre || 'Asegurado']
+            ];
+            firmas.forEach(([rot, pie], i) => {
+                const x = margin + i * (firmaW + 40);
+                doc.setDrawColor(RGC_BLUE); doc.setLineWidth(0.7);
+                doc.line(x, finalY, x + firmaW, finalY);
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(RGC_BLUE);
+                doc.text(rot, x + firmaW / 2, finalY + 14, { align: 'center' });
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(TEXT_SOFT);
+                doc.text(doc.splitTextToSize(pie, firmaW), x + firmaW / 2, finalY + 25, { align: 'center' });
+            });
+            finalY += 46;
 
             addPageFooter(); const fileName = `Reporte_Profesional_RGC_${cliente.nombre.replace(/\s/g, '_')}.pdf`;
             doc.save(fileName);
@@ -9905,7 +11090,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             actualizarTextoBotonTarjetas();
             renderPanelSemanas();
             const nTarjetas = document.querySelectorAll('.employment-card').length;
-            showCustomAlert(`Documento leído como ${AppState.tipoDocDetectado}. Se extrajeron ${nTarjetas} periodos laborales. Iniciando análisis...`, "Proceso Iniciado");
+            // Antes aqui salia un cuadro "Proceso Iniciado" que obligaba a dar
+            // ACEPTAR. Estorbaba: el asesor ya sabe que solto el PDF y lo que
+            // quiere ver es la linea de tiempo. El dato del tipo de documento y
+            // los periodos leidos ya se muestra en la ficha del archivo.
+            AppState.ultimaLecturaSisec = `${AppState.tipoDocDetectado} · ${nTarjetas} periodos`;
             setTimeout(analizarYCalcularSBC, 500);
         }
 
@@ -9978,7 +11167,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
         async function procesarPdfConstancia(archivo) {
             if (!archivo) return;
-            abrirPresentacionInmediata();   // pantalla azul de inmediato
+            // La presentacion YA NO se abre sola al soltar el PDF: se entra a
+            // ella con el boton de Diagnostico cuando el asesor lo decide.
+            // Al terminar el analisis se aterriza en la linea de tiempo.
 
             if (typeof pdfjsLib === 'undefined') {
                 setPdfStatus('No se pudo cargar el lector de PDF en este navegador.', 'error');
@@ -10019,7 +11210,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     prepararEscrituraDatos();
                 }, 1400);
 
-                window._abrirDiagTrasAnalisis = true;   // la presentacion arranca sola
+                window._abrirDiagTrasAnalisis = true;   // al terminar, ir a la linea de tiempo
                 setTimeout(analizarTextoCompleto, 300);
             } catch (e) {
                 console.error('Error leyendo PDF:', e);
@@ -10390,6 +11581,50 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             });
         }
 
+        // =====================================================================
+        // TOPE DEL SBC POR AÑO (Art. 28 LSS)
+        // Un asegurado puede tener dos o tres patrones al mismo tiempo, pero el
+        // IMSS NO acumula los salarios sin limite: la suma se topa. Desde 2016
+        // el tope son 25 UMA; antes eran 25 veces el salario minimo general del
+        // area A (Distrito Federal).
+        //
+        // PENDIENTE DE VALIDAR CONTIGO: el Art. 25 transitorio de la LSS 1997
+        // subio ese tope de forma escalonada (15 veces en 1997, +1 cada anio,
+        // hasta 25 en 2007) para los ramos de Invalidez y Vida y Cesantia y
+        // Vejez. Dejo la rampa cargada pero APAGADA, para no mover de golpe
+        // calculos que hoy ya usas. Enciende APLICAR_RAMPA_ART25 si confirmas
+        // que asi lo aplica el IMSS en las resoluciones que has visto.
+        // =====================================================================
+        const APLICAR_RAMPA_ART25 = false;
+        const RAMPA_ART25 = { 1997: 15, 1998: 16, 1999: 17, 2000: 18, 2001: 19,
+                              2002: 20, 2003: 21, 2004: 22, 2005: 23, 2006: 24 };
+
+        function vecesTopeSBC(anio) {
+            if (APLICAR_RAMPA_ART25 && RAMPA_ART25[anio]) return RAMPA_ART25[anio];
+            return 25;
+        }
+
+        // Unidad de medida vigente ese anio: UMA desde 2016, salario minimo antes.
+        function unidadTopeSBC(anio, mes) {
+            if (anio >= 2016) return getUMA(anio, mes) || 0;
+            const tabla = Constants.economicData.smgAreaA || {};
+            if (tabla[anio]) return tabla[anio];
+            const anios = Object.keys(tabla).map(Number).sort((a, b) => a - b);
+            if (!anios.length) return 0;
+            if (anio < anios[0]) return tabla[anios[0]];
+            return tabla[anios[anios.length - 1]];
+        }
+
+        // Tope diario del SBC para una fecha concreta. Devuelve 0 si no se puede
+        // determinar, y en ese caso el llamador NO debe topar nada.
+        function topeSBCDiario(fecha) {
+            if (!fecha) return 0;
+            const anio = fecha.getUTCFullYear();
+            const mes = fecha.getUTCMonth() + 1;
+            const unidad = unidadTopeSBC(anio, mes);
+            return unidad > 0 ? unidad * vecesTopeSBC(anio) : 0;
+        }
+
         function processOverlappingPeriods(periods) {
             if (!periods || periods.length === 0) return [];
             const datePoints = new Set();
@@ -10405,10 +11640,19 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 if (start > end) continue;
                 const activePeriods = periods.filter(p => start >= p.fechaInicio && end <= p.fechaFin);
                 if (activePeriods.length > 0) {
-                    const totalSBC = activePeriods.reduce((sum, p) => sum + p.sbc, 0);
+                    const sbcSumado = activePeriods.reduce((sum, p) => sum + p.sbc, 0);
+                    // Dos patrones que suman $4,000 no cotizan sobre $4,000: el
+                    // IMSS topa la suma al limite del Art. 28 vigente ese mes.
+                    // Lo que sobra no se pierde de vista, se guarda para
+                    // pintarlo en rojo en la linea de tiempo.
+                    const tope = topeSBCDiario(start);
+                    const topado = tope > 0 && sbcSumado > tope;
+                    const totalSBC = topado ? tope : sbcSumado;
                     const employers = activePeriods.map(p => p.nombrePatron).join(' + ');
                     const regPatronales = activePeriods.map(p => p.regPatronal).join(', ');
-                    microPeriods.push({ fechaInicio: start, fechaFin: end, sbc: totalSBC, nombrePatron: employers, regPatronal: regPatronales, isOverlapped: activePeriods.length > 1, originalPeriods: activePeriods });
+                    microPeriods.push({ fechaInicio: start, fechaFin: end, sbc: totalSBC,
+                        sbcSumado, topeSBC: tope, excedenteSBC: topado ? sbcSumado - tope : 0, topado,
+                        nombrePatron: employers, regPatronal: regPatronales, isOverlapped: activePeriods.length > 1, originalPeriods: activePeriods });
                 }
             }
             if (microPeriods.length === 0) return [];
@@ -10477,6 +11721,18 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             let calculatedWidth = yearsDifference * pxPorAnio;
             const width = Math.max(minWidth, calculatedWidth); 
             svg.attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom);
+            // La capa de M40 estira el eje 5 anios hacia adelante, asi que el
+            // dibujo casi siempre queda mas ancho que su caja. Si cabe, se
+            // centra; si no, se arranca mostrando los anios recientes, que es
+            // donde estan las 250 semanas y la ventana de M40.
+            const anchoTotal = width + margin.left + margin.right;
+            requestAnimationFrame(() => {
+                if (anchoTotal <= container.clientWidth) {
+                    container.scrollLeft = 0;
+                } else {
+                    container.scrollLeft = anchoTotal - container.clientWidth;
+                }
+            });
             const defs = svg.append("defs");
             const pat = defs.append("pattern").attr("id", "rayadoHueco")
                 .attr("width", 7).attr("height", 7).attr("patternUnits", "userSpaceOnUse")
@@ -10487,7 +11743,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
             const chart = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
             const x = d3.scaleTime().domain([minDate, maxDate]).range([0, width]);
-            const y = d3.scaleLinear().domain([0, d3.max(filteredData, d => d.sbc) * 1.1 || 4000]).range([height, 0]).nice();
+            // El eje llega hasta el SBC SUMADO, no solo hasta el topado: si no,
+            // el excedente en rojo quedaria fuera de la grafica.
+            const techoSbc = d3.max(filteredData, d => Math.max(d.sbc, d.sbcSumado || 0));
+            const y = d3.scaleLinear().domain([0, (techoSbc * 1.1) || 4000]).range([height, 0]).nice();
             chart.append("g")
                 .attr("transform", `translate(0,${height})`).call(d3.axisBottom(x).ticks(d3.timeYear.every(1)).tickFormat(d3.timeFormat("%Y")))
                 .selectAll("text").attr("class", "text-xs").style("text-anchor", "end").attr("dx", "-.8em").attr("dy", ".15em").attr("transform", "rotate(-65)");
@@ -10631,9 +11890,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
             }
 
-            chart.selectAll(".bar").data(filteredData).enter().append("rect").attr("class", "bar")
-                .attr("x", d => x(d.fechaInicio)).attr("y", d => y(d.sbc))
-                .attr("width", d => Math.max(1.2, x(d.fechaFin) - x(d.fechaInicio) + 0.6)).attr("height", d => height - y(d.sbc))
+            // La linea principal se dibuja con animacion: las barras crecen
+            // desde el eje en orden cronologico. No es adorno, es para que el
+            // cliente siga con la vista como se va armando su historia en vez
+            // de que le aparezca todo de golpe. Solo la principal: en las
+            // tarjetas y en las capturas para PDF la animacion estorba.
+            const animar = (svgId === 'timeline-svg');
+            const barras = chart.selectAll(".bar").data(filteredData).enter().append("rect").attr("class", "bar")
+                .attr("x", d => x(d.fechaInicio))
+                .attr("width", d => Math.max(1.2, x(d.fechaFin) - x(d.fechaInicio) + 0.6))
                 .attr("fill", d => {
                     if (d.nombrePatron === 'Modalidad 40') return '#f97316';
                     if (d.isOverlapped) return "#A855F7";
@@ -10642,10 +11907,49 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 .on("mouseover", (event, d) => { timelineTooltip.style("opacity", 1); d3.select(event.currentTarget).style('opacity', 1).style('stroke', 'black').style('stroke-width', '1.5px'); })
                 .on("mousemove", (event, d) => {
                     const employerList = (d.originalPeriods && d.originalPeriods.length > 0) ? d.originalPeriods.map(e => censurarNombre(e.nombrePatron)).join(' + ') : censurarNombre(d.nombrePatron);
-                    timelineTooltip.html(`<strong>${employerList}</strong><br/>Salario: ${d.sbc.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}<br/>Inicio: ${formatDateDDMMYYYY(d.fechaInicio)}<br/>Fin: ${formatDateDDMMYYYY(d.fechaFin)}`)
+                    timelineTooltip.html(`<strong>${employerList}</strong><br/>Salario: ${d.sbc.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}`
+                        + (d.excedenteSBC > 0 ? `<br/><span style="color:#FCA5A5">Topado: la suma era ${d.sbcSumado.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</span>` : '')
+                        + `<br/>Inicio: ${formatDateDDMMYYYY(d.fechaInicio)}<br/>Fin: ${formatDateDDMMYYYY(d.fechaFin)}`)
                         .style("left", (event.clientX + 15) + "px").style("top", (event.clientY - 28) + "px");
                 }).on("mouseout", (event, d) => { timelineTooltip.style("opacity", 0); d3.select(event.currentTarget).style('opacity', 0.8).style('stroke', 'none'); });
+
+            // Retardo escalonado, topado para que un historial de 40 patrones
+            // no tarde medio minuto en terminar de dibujarse.
+            const retardo = (i) => Math.min(i * 26, 1500);
+            if (animar) {
+                barras.attr("y", height).attr("height", 0)
+                    .transition().delay((d, i) => retardo(i)).duration(760).ease(d3.easeCubicOut)
+                    .attr("y", d => y(d.sbc)).attr("height", d => Math.max(0, height - y(d.sbc)));
+            } else {
+                barras.attr("y", d => y(d.sbc)).attr("height", d => Math.max(0, height - y(d.sbc)));
+            }
             
+            // ---- EXCEDENTE SOBRE EL TOPE ----
+            // La parte de la suma de salarios que el IMSS no reconoce. Se pinta
+            // en rojo rayado encima de la barra topada para que el cliente vea
+            // de un golpe que cotizar doble no siempre suma doble.
+            const conExcedente = filteredData.filter(d => d.excedenteSBC > 0);
+            chart.selectAll(".bar-exc").data(conExcedente).enter().append("rect").attr("class", "bar-exc")
+                .attr("x", d => x(d.fechaInicio)).attr("y", d => animar ? height : y(d.sbcSumado))
+                .attr("width", d => Math.max(1.2, x(d.fechaFin) - x(d.fechaInicio) + 0.6))
+                .attr("height", d => animar ? 0 : Math.max(1, y(d.sbc) - y(d.sbcSumado)))
+                .attr("fill", "#DC2626").style("opacity", 0.55)
+                .attr("stroke", "#B91C1C").attr("stroke-width", 0.7)
+                .on("mouseover", (event, d) => { timelineTooltip.style("opacity", 1); d3.select(event.currentTarget).style('opacity', 0.85); })
+                .on("mousemove", (event, d) => {
+                    timelineTooltip.html(`<strong>Excedente no reconocido</strong><br/>`
+                        + `Suma de patrones: ${d.sbcSumado.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}<br/>`
+                        + `Tope del a&ntilde;o ${d.fechaInicio.getUTCFullYear()}: ${d.topeSBC.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}<br/>`
+                        + `No cuenta: ${d.excedenteSBC.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })} diarios`)
+                        .style("left", (event.clientX + 15) + "px").style("top", (event.clientY - 28) + "px");
+                }).on("mouseout", (event, d) => { timelineTooltip.style("opacity", 0); d3.select(event.currentTarget).style('opacity', 0.55); });
+            if (animar) {
+                chart.selectAll(".bar-exc")
+                    .transition().delay((d, i) => 900 + retardo(i)).duration(620).ease(d3.easeCubicOut)
+                    .attr("y", d => y(d.sbcSumado))
+                    .attr("height", d => Math.max(1, y(d.sbc) - y(d.sbcSumado)));
+            }
+
             const legendContainer = d3.select(`#${legendId}`); legendContainer.html("");
             let legendSource = [...uniqueEmployers];
             if (filteredData.some(d => d.nombrePatron === 'Modalidad 40') && !legendSource.some(e => e.regPatronal === 'Modalidad 40')) {
@@ -10654,10 +11958,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             if (filteredData.some(d => d.isOverlapped) && !legendSource.some(e => e.regPatronal === 'Traslape')) {
                 legendSource.unshift({ nombrePatron: 'Traslape de Empleos', regPatronal: 'Traslape' });
             }
+            if (filteredData.some(d => d.excedenteSBC > 0) && !legendSource.some(e => e.regPatronal === 'Excedente')) {
+                legendSource.unshift({ nombrePatron: 'Excedente sobre el tope (no cuenta)', regPatronal: 'Excedente' });
+            }
             const legendData = [...new Map(legendSource.map(item => [item.regPatronal, item])).values()];
             const legend = legendContainer.selectAll(".legend-item").data(legendData).enter().append("div").attr("class", "legend-item flex items-center");
             legend.append("div").style("width", "12px").style("height", "12px").style("background-color", d => {
-                if (d.regPatronal === 'Modalidad 40') return '#f97316'; if (d.regPatronal === 'Traslape') return '#A855F7';
+                if (d.regPatronal === 'Modalidad 40') return '#f97316'; if (d.regPatronal === 'Traslape') return '#A855F7'; if (d.regPatronal === 'Excedente') return '#DC2626';
                 return color(d.regPatronal);
             }).attr("class", "mr-1 rounded-sm flex-shrink-0");
             legend.append("span").text(d => censurarNombre(d.nombrePatron)).attr("class", "text-xs text-gray-700");
