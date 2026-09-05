@@ -7500,13 +7500,23 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             enfocarLineaDeTiempo();
         }
 
-        // Deja la linea de tiempo del historial laboral centrada en pantalla.
-        // Se usa al terminar el analisis y al cerrar la presentacion.
+        // Deja la linea de tiempo del historial laboral bien colocada en
+        // pantalla. Con scrollIntoView({block:'start'}) quedaba pegada al borde
+        // superior y se veia "muy arriba"; ahora, si la seccion cabe completa,
+        // se centra, y si no cabe se le deja un respiro arriba.
         function enfocarLineaDeTiempo(destello) {
             const sec = document.getElementById('timelineSection');
             if (!sec || sec.style.display === 'none') return;
             requestAnimationFrame(() => {
-                sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const rect = sec.getBoundingClientRect();
+                const alto = sec.offsetHeight;
+                const vh = window.innerHeight;
+                const RESPIRO = 88;   // margen minimo arriba cuando no cabe
+                const destino = (alto + RESPIRO * 2 <= vh)
+                    ? window.scrollY + rect.top - (vh - alto) / 2   // cabe: centrada
+                    : window.scrollY + rect.top - RESPIRO;          // no cabe: con aire arriba
+                window.scrollTo({ top: Math.max(0, destino), behavior: 'smooth' });
+
                 if (destello !== false) {
                     sec.classList.remove('lt-destello');
                     void sec.offsetWidth;          // reinicia la animacion
