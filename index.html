@@ -1488,6 +1488,20 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
         /* Comprobacion del conteo por dias */
         .cotejo__desglose { margin-top: 1rem; padding-top: 1rem; border-top: 1.5px dashed #CBD5E1; }
+        /* Boton para inspeccionar los periodos del SBC de un escenario. */
+        .btn-verper {
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .3rem .8rem; font-size: .78rem; font-weight: 700;
+            color: var(--azul-700); background: #EEF3F9;
+            border: 1.5px solid #DDE5EF; border-radius: 999px;
+            cursor: pointer; transition: all .18s ease;
+        }
+        .btn-verper:hover { background: var(--azul-700); border-color: var(--azul-700); color: #fff; }
+        .btn-verper i { font-size: .72rem; }
+        .cotejo__sbc .ps-m40 td { background: #FFF7ED; }
+        .cotejo__sbc .ps-m40 .ce-patron { color: #C2410C; }
+
+        /* Cuenta simple (hoja de comprobacion de un escenario) */
         .cotejo__cuenta { width: 100%; border-collapse: collapse; background: #fff;
                           border-radius: .7rem; overflow: hidden; border: 1px solid #DDE5EF; }
         .cotejo__cuenta td { padding: .6rem .9rem; border-bottom: 1px solid #EDF1F6; font-size: .93rem; }
@@ -1499,7 +1513,29 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         .cotejo__cuenta .es-total td { background: #F4F7FB; font-weight: 700; }
         .cotejo__cuenta .es-final td { background: #FFFBEB; font-size: 1.02rem; }
         .cotejo__cuenta .es-final td:last-child { color: #B45309; font-size: 1.25rem; }
-        .cotejo__nota { margin-top: .7rem; font-size: .84rem; color: #64748B; }
+
+        /* Desglose por empleo: patron, dias, semanas. */
+        .cotejo__empleos { width: 100%; border-collapse: collapse; background: #fff;
+                           border: 1px solid #DDE5EF; border-radius: .7rem; overflow: hidden; }
+        .cotejo__empleos th { background: var(--azul-700); color: #fff; text-align: right;
+                              padding: .5rem .8rem; font-size: .74rem; letter-spacing: .04em;
+                              text-transform: uppercase; }
+        .cotejo__empleos th:first-child { text-align: left; }
+        .cotejo__empleos td { padding: .5rem .8rem; border-bottom: 1px solid #EDF1F6;
+                              font-size: .88rem; text-align: right;
+                              font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .cotejo__empleos td:first-child { text-align: left; white-space: normal; }
+        .cotejo__empleos .ce-patron { font-weight: 700; color: #334155; line-height: 1.25; }
+        .cotejo__empleos .ce-patron span { display: block; font-weight: 500; font-size: .74rem;
+                                           color: #94A3B8; font-variant-numeric: tabular-nums; }
+        .cotejo__empleos tfoot td { border-bottom: 0; font-weight: 800; }
+        .cotejo__empleos tfoot td span { display: block; font-weight: 500; font-size: .72rem; color: #94A3B8; }
+        .cotejo__empleos .ce-suma td { background: #F4F7FB; border-top: 2px solid #DDE5EF; color: #475569; }
+        .cotejo__empleos .ce-resta td { background: #FEF6F6; color: #B91C1C; }
+        .cotejo__empleos .ce-total td { background: #EEF3F9; color: var(--azul-700); }
+        .cotejo__empleos .ce-final td { background: #FFFBEB; color: #B45309; font-size: 1.05rem; }
+        .cotejo__empleos .ce-final td:last-child { font-size: 1.3rem; }
+.cotejo__nota { margin-top: .7rem; font-size: .84rem; color: #64748B; }
         .cotejo__nota i { margin-right: .3rem; color: #B91C1C; }
         .cotejo__sub { margin: 1.1rem 0 .5rem; font-size: .78rem; font-weight: 800;
                        letter-spacing: .05em; text-transform: uppercase; color: #64748B; }
@@ -4165,8 +4201,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             sbcCalculationPeriods: [], fullHistoryPeriods: [], allParsedPeriodsForDisplay: [], timelinePeriods: [], 
             pensionBaseResultadosInfo: { PENSION_MENSUAL_ESTIMADA: 0, AGUINALDO_ESTIMADO: 0 },
             pdfGenerated: false, semanasNetasReales: 0, lastPMGSelectValue: '8404',
-            // 'dias' = union de dias reales (predeterminado); 'sisec' = total de la constancia
-            metodoSemanas: 'dias', baseExactaSemanas: 0, diasUnionHistorial: 0,
+            // 'sisec' = total de la constancia (PREDETERMINADO, es la cifra oficial);
+            // 'dias' = union de dias reales, solo si el asesor lo elige a mano
+            metodoSemanas: 'sisec', baseExactaSemanas: 0, diasUnionHistorial: 0,
             mostrarDesgloseDias: false, diasBrutoHistorial: 0, diasQPExcluidos: 0, tramosTraslapados: []
         };
         
@@ -5104,7 +5141,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                         <em>Por d&iacute;as reales</em>
                         <b>${formatNumber(Math.round(porDias), 0)}</b>
                         <i>${(AppState.diasUnionHistorial || 0)} &divide; 7 = ${formatNumber(porDias, 2)}</i>
-                        <span class="cotejo__ver">${AppState.mostrarDesgloseDias ? 'Ocultar comprobaci&oacute;n' : 'Ver comprobaci&oacute;n'} <i class="fas fa-chevron-${AppState.mostrarDesgloseDias ? 'up' : 'down'}"></i></span>
+                        <span class="cotejo__ver">${usaDias && AppState.mostrarDesgloseDias ? 'Ocultar desglose' : 'Ver desglose por empleo'} <i class="fas fa-chevron-${usaDias && AppState.mostrarDesgloseDias ? 'up' : 'down'}"></i></span>
                     </button>
                     <button type="button" class="cotejo__op ${usaDias ? '' : 'is-on'}" onclick="setMetodoSemanas('sisec')">
                         <em>Total del SISEC</em>
@@ -5126,25 +5163,37 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 </div>`;
         }
 
-        // Comprobacion aritmetica del conteo por dias, renglon por renglon.
+        // Comprobacion del conteo por dias, empleo por empleo.
+        // Primero cada patron con sus dias y sus semanas, luego el descuento
+        // por traslapes y hasta el final el total. Asi el asesor puede ir
+        // renglon por renglon contra la constancia impresa.
         function _desgloseDiasHTML() {
-            const bruto = AppState.diasBrutoHistorial || 0;
             const union = AppState.diasUnionHistorial || 0;
+            const bruto = AppState.diasBrutoHistorial || 0;
             const traslapados = bruto - union;
             const qp = AppState.diasQPExcluidos || 0;
             const tramos = AppState.tramosTraslapados || [];
             const sem = union / 7;
 
-            const fila = (etq, val, nota, clase) => `
-                <tr class="${clase || ''}">
-                    <td>${etq}${nota ? `<span>${nota}</span>` : ''}</td>
-                    <td>${val}</td>
-                </tr>`;
+            // Un renglon por empleo, del mas antiguo al mas reciente.
+            const empleos = [...(AppState.fullHistoryPeriods || [])]
+                .sort((a, b) => a.fechaInicio - b.fechaInicio);
 
-            const detalle = tramos.length ? `
-                <p class="cotejo__sub">Tramos con m&aacute;s de un patr&oacute;n a la vez</p>
+            const filasEmpleos = empleos.map(p => {
+                const d = p.dias || (Math.round((p.fechaFin - p.fechaInicio) / 86400000) + 1);
+                return `
+                    <tr>
+                        <td class="ce-patron">${censurarNombre(p.nombrePatron || 'Sin nombre')}
+                            <span>${formatDateDDMMYYYY(p.fechaInicio)} &ndash; ${formatDateDDMMYYYY(p.fechaFin)}</span></td>
+                        <td>${formatNumber(d, 0)}</td>
+                        <td>${formatNumber(d / 7, 2)}</td>
+                    </tr>`;
+            }).join('');
+
+            const detalleTraslapes = tramos.length ? `
+                <p class="cotejo__sub">D&oacute;nde se traslapan</p>
                 <table class="cotejo__tramos">
-                    <thead><tr><th>Periodo</th><th>Patrones</th><th>D&iacute;as</th><th>No cuentan</th></tr></thead>
+                    <thead><tr><th>Periodo</th><th>Patrones a la vez</th><th>D&iacute;as</th><th>No cuentan</th></tr></thead>
                     <tbody>
                         ${tramos.map(t => `
                             <tr>
@@ -5154,22 +5203,40 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                                 <td class="cotejo__resta">&minus;${formatNumber(t.duplicados, 0)}</td>
                             </tr>`).join('')}
                     </tbody>
-                    <tfoot><tr><td colspan="3">Total de d&iacute;as que se contaban dos veces</td>
-                        <td class="cotejo__resta">&minus;${formatNumber(traslapados, 0)}</td></tr></tfoot>
-                </table>` : '<p class="cotejo__sub">No hay traslapes en este historial.</p>';
+                </table>` : '';
 
             return `
-                <table class="cotejo__cuenta">
+                <table class="cotejo__empleos">
+                    <thead>
+                        <tr><th>Empleo</th><th>D&iacute;as</th><th>Semanas</th></tr>
+                    </thead>
                     <tbody>
-                        ${fila('Suma de todos los periodos', `${formatNumber(bruto, 0)} d&iacute;as`, 'contando cada patr&oacute;n por separado')}
-                        ${fila('D&iacute;as traslapados', `&minus;${formatNumber(traslapados, 0)} d&iacute;as`, 'el mismo d&iacute;a no se cuenta dos veces', 'es-resta')}
-                        ${fila('D&iacute;as efectivos cotizados', `${formatNumber(union, 0)} d&iacute;as`, '', 'es-total')}
-                        ${fila('Entre 7', `${formatNumber(sem, 4)} semanas`, '')}
-                        ${fila('Semanas reconocidas', `${formatNumber(Math.round(sem), 0)}`, 'redondeo del IMSS', 'es-final')}
+                        ${filasEmpleos || '<tr><td colspan="3">Sin periodos capturados.</td></tr>'}
                     </tbody>
+                    <tfoot>
+                        <tr class="ce-suma">
+                            <td>Suma de los ${empleos.length} empleos</td>
+                            <td>${formatNumber(bruto, 0)}</td>
+                            <td>${formatNumber(bruto / 7, 2)}</td>
+                        </tr>
+                        <tr class="ce-resta">
+                            <td>D&iacute;as traslapados<span>el mismo d&iacute;a no se cuenta dos veces</span></td>
+                            <td>&minus;${formatNumber(traslapados, 0)}</td>
+                            <td>&minus;${formatNumber(traslapados / 7, 2)}</td>
+                        </tr>
+                        <tr class="ce-total">
+                            <td>D&iacute;as efectivos cotizados</td>
+                            <td>${formatNumber(union, 0)}</td>
+                            <td>${formatNumber(sem, 2)}</td>
+                        </tr>
+                        <tr class="ce-final">
+                            <td>Semanas reconocidas<span>redondeo del IMSS sobre el total, no por empleo</span></td>
+                            <td colspan="2">${formatNumber(Math.round(sem), 0)}</td>
+                        </tr>
+                    </tfoot>
                 </table>
-                ${qp > 0 ? `<p class="cotejo__nota"><i class="fas fa-ban"></i> Adem&aacute;s se excluyeron <b>${formatNumber(qp, 0)} d&iacute;as</b> de periodos marcados como QP, que no entran en ninguna de las dos cuentas.</p>` : ''}
-                ${detalle}`;
+                ${qp > 0 ? `<p class="cotejo__nota"><i class="fas fa-ban"></i> Aparte se excluyeron <b>${formatNumber(qp, 0)} d&iacute;as</b> de periodos marcados como QP: no aparecen en la tabla ni en ninguna de las dos cuentas.</p>` : ''}
+                ${detalleTraslapes}`;
         }
 
         function toggleDesgloseDias() {
@@ -5180,7 +5247,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         function setMetodoSemanas(metodo) {
             // Si ya estaba elegido "por dias", el mismo clic abre y cierra la
             // comprobacion: el asesor pide ver la cuenta sin cambiar de metodo.
-            const yaEstaba = (AppState.metodoSemanas || 'dias') === metodo;
+            const yaEstaba = (AppState.metodoSemanas || 'sisec') === metodo;
             if (metodo === 'dias' && yaEstaba) { toggleDesgloseDias(); return; }
             AppState.metodoSemanas = metodo;
             if (metodo === 'sisec') AppState.mostrarDesgloseDias = false;
@@ -5196,6 +5263,65 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             if (typeof recalculateAllScenarios === 'function') recalculateAllScenarios();
         }
 
+        // Empleos y dias que entraron al SBC promedio de un escenario.
+        // Es la cuenta ponderada real: cada periodo aporta su SBC por los dias
+        // que le tocaron dentro de las ultimas 250 semanas, no un promedio simple.
+        function verPeriodosSBC(scenarioNum) {
+            const sc = AppState.scenarioData[scenarioNum];
+            if (!sc) return;
+            // Con M40 el desglose viaja en finalTimelinePeriods; sin M40, en
+            // sbcBreakdownPeriods. Misma regla que usa la tarjeta.
+            const periodos = (sc.sbcBreakdownPeriods && sc.sbcBreakdownPeriods.length)
+                ? sc.sbcBreakdownPeriods
+                : (sc.finalTimelinePeriods || []);
+            if (!periodos.length) {
+                mostrarHojaSemanas(sc.customTitle || `Escenario ${scenarioNum}`,
+                    '<p class="cotejo__nota">Todav&iacute;a no hay periodos calculados para este escenario.</p>');
+                return;
+            }
+
+            const totalDias = periodos.reduce((a, p) => a + (p.dias || 0), 0);
+            const totalPond = periodos.reduce((a, p) => a + (p.sbc || 0) * (p.dias || 0), 0);
+            const promedio = totalDias > 0 ? totalPond / totalDias : 0;
+
+            const filas = periodos.map(p => {
+                const esM40 = p.nombrePatron === 'Modalidad 40';
+                const peso = totalDias > 0 ? (p.dias / totalDias) * 100 : 0;
+                return `
+                    <tr class="${esM40 ? 'ps-m40' : ''}">
+                        <td class="ce-patron">${esM40 ? 'Modalidad 40' : censurarNombre(p.nombrePatron || 'Sin nombre')}
+                            <span>${formatDateDDMMYYYY(p.fechaInicio)} &ndash; ${formatDateDDMMYYYY(p.fechaFin)}</span></td>
+                        <td>$${formatNumber(p.sbc)}</td>
+                        <td>${formatNumber(p.dias, 0)}</td>
+                        <td>${formatNumber(peso, 1)}%</td>
+                    </tr>`;
+            }).join('');
+
+            const cuerpo = `
+                <p class="cotejo__sub">Empleos dentro de las &uacute;ltimas ${Constants.DIAS_PROMEDIO_PENSION} d&iacute;as (250 semanas)</p>
+                <table class="cotejo__empleos cotejo__sbc">
+                    <thead><tr><th>Empleo</th><th>SBC diario</th><th>D&iacute;as</th><th>Peso</th></tr></thead>
+                    <tbody>${filas}</tbody>
+                    <tfoot>
+                        <tr class="ce-total">
+                            <td>Total considerado</td>
+                            <td>&mdash;</td>
+                            <td>${formatNumber(totalDias, 0)}</td>
+                            <td>100%</td>
+                        </tr>
+                        <tr class="ce-final">
+                            <td>SBC promedio ponderado<span>suma de (SBC &times; d&iacute;as) entre los d&iacute;as totales</span></td>
+                            <td colspan="3">$${formatNumber(promedio)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <p class="cotejo__nota"><i class="fas fa-circle-info"></i>
+                   Los periodos se toman del m&aacute;s reciente hacia atr&aacute;s hasta completar los d&iacute;as.
+                   El &uacute;ltimo de la lista suele aparecer recortado: solo entr&oacute; la parte que cab&iacute;a en la ventana.</p>`;
+
+            mostrarHojaSemanas(`SBC de ${sc.customTitle || 'Escenario ' + scenarioNum}`, cuerpo);
+        }
+
         // Desglose de las semanas de un escenario: historial + M40, en dias,
         // con la division entre 7 hasta el final. Es la misma cuenta del
         // cotejo del Paso 3 pero incluyendo ya los dias de Modalidad 40.
@@ -5208,7 +5334,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 const el = document.getElementById(`scenario_${scenarioNum}_semanas_ajuste`);
                 return el ? (parseInt(el.value) || 0) : 0;
             })();
-            const usaDias = (AppState.metodoSemanas || 'dias') !== 'sisec';
+            const usaDias = (AppState.metodoSemanas || 'sisec') === 'dias';
             const diasBase = usaDias ? diasUnion : Math.round((AppState.semanasPorSisec || 0) * 7);
             const totalDias = diasBase + diasM40 + ajuste * 7;
             const sem = totalDias / 7;
@@ -9229,7 +9355,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             const diasExtraNetos = projectionDays - totalQpDays;
             const baseSisec = Math.max(0, semanasOficialesIMSS + diasExtraNetos / 7);
 
-            const usarSisec = AppState.metodoSemanas === 'sisec';
+            // Manda el total del SISEC salvo que el asesor haya elegido dias a
+            // mano. Si la constancia no trajo total, se cae a los dias por
+            // necesidad, no por preferencia.
+            const usarSisec = (AppState.metodoSemanas !== 'dias') && baseSisec > 0;
             const baseExacta = usarSisec ? baseSisec : diasUnion / 7;
             const adjustedWeeks = Math.round(baseExacta);
 
@@ -9705,6 +9834,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                             <div id="timeline-section-${scenarioNum}" class="border rounded-xl p-5">
                                 <h4 class="font-bold text-center text-lg mb-2">Línea de Tiempo del Escenario</h4>
                                 <p class="text-xs text-center text-gray-500 mb-2">Periodos del nuevo SBC Promedio.</p>
+                                <div class="text-center mb-2">
+                                    <button type="button" class="btn-verper" onclick="verPeriodosSBC(${scenarioNum})">
+                                        <i class="fas fa-list-check"></i> Ver empleos y d&iacute;as que forman este SBC
+                                    </button>
+                                </div>
                                 <div id="timeline-scenario-${scenarioNum}-container" class="w-full mt-2 bg-gray-50 rounded-lg border" style="height:17rem; padding:.6rem; overflow-x:auto; overflow-y:hidden;"><svg id="timeline-scenario-${scenarioNum}-svg"></svg></div>
                                 <div id="timeline-scenario-${scenarioNum}-legend" class="flex flex-wrap gap-x-2 gap-y-1 mt-2 p-1 text-xs justify-center"></div>
                             </div>
