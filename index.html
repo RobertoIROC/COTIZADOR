@@ -1646,6 +1646,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         .hoja-sem__cabeza button:hover { color: #B91C1C; background: #FEF2F2; }
         .hoja-sem__cuerpo { padding: 1.3rem; overflow-y: auto; }
 
+        /* Selector de vista del costo: proyecto / cuota IMSS / act. y recargos.
+           Es un dato de direccion, por eso va discreto y con candado abierto
+           cuando se sale de la vista normal. */
+        .vc-selector {
+            display: flex; align-items: center; gap: 3px; padding: 3px;
+            margin: .4rem 0 .6rem; background: #E8EEF6; border-radius: .6rem;
+        }
+        .vc-op {
+            flex: 1 1 0; min-width: 0; padding: .3rem .25rem; border: 0;
+            background: transparent; border-radius: .45rem; cursor: pointer;
+            font-size: .72rem; font-weight: 800; color: #5A6B80;
+            transition: all .18s ease; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        .vc-op:hover { background: rgba(255,255,255,.7); color: var(--azul-700); }
+        .vc-op.is-on { background: var(--azul-700); color: #fff; box-shadow: 0 2px 7px -2px rgba(0,51,102,.55); }
+        .vc-abierto { color: #B45309; font-size: .72rem; padding: 0 .3rem; flex-shrink: 0; }
+        .bal-nota { display: block; font-style: normal; font-size: .68rem;
+                    font-weight: 600; color: #94A3B8; letter-spacing: 0; }
+
         /* ---- SBC de inscripcion en M40, por escenario ----
            Todo centrado en una sola columna: rotulo, cifra grande, explicacion
            y un control segmentado. La version anterior peleaba el ancho entre
@@ -4120,6 +4140,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             });
             // Nadie arranca con los datos ocultos: se enciende a proposito.
             AppState.modoPresentacion = false;
+            // Ni con la vista de costo destapada: cada sesion empieza en la
+            // vista normal aunque la anterior la hubiera desbloqueado.
+            AppState.vistaCosto = 'proyecto';
             if (typeof aplicarCensuraCampos === 'function') aplicarCensuraCampos();
             const b = document.getElementById('btnPresentacion');
             if (b) {
@@ -4290,6 +4313,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             // 'sisec' = total de la constancia (PREDETERMINADO, es la cifra oficial);
             // 'dias' = union de dias reales, solo si el asesor lo elige a mano
             metodoSemanas: 'sisec', baseExactaSemanas: 0, diasUnionHistorial: 0,
+            vistaCosto: 'proyecto',   // proyecto | imss | recargos
             mostrarDesgloseDias: false, diasBrutoHistorial: 0, diasQPExcluidos: 0, tramosTraslapados: []
         };
         
@@ -5563,6 +5587,65 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 cinta.style.display = 'none';
                 cinta.classList.remove('is-on');
             }
+        }
+
+        // =====================================================================
+        // VISTA DEL COSTO EN LA TARJETA DE BALANCE
+        // Tres formas de mostrar el mismo renglon:
+        //   'proyecto' — costo total del proyecto (el precio de venta)
+        //   'imss'     — solo la cuota base al IMSS, sin actualizacion ni recargos
+        //   'recargos' — lo que agregan la actualizacion y los recargos
+        // Cambiar de vista destapa margen, asi que se pide la clave de
+        // direccion. Roberto y Alma pasan sin contrasena: promptForPassword ya
+        // los reconoce, aqui no se duplica esa lista.
+        // =====================================================================
+        const VISTAS_COSTO = ['proyecto', 'imss', 'recargos'];
+
+        function _desgloseTotales(data) {
+            const d = data.desgloseM40 || [];
+            const base = d.reduce((t, f) => t + (f.costoBase || 0), 0);
+            const act = d.reduce((t, f) => t + (f.montoAct || 0), 0);
+            const rec = d.reduce((t, f) => t + (f.recargos || 0), 0);
+            return { base, act, rec, conTodo: base + act + rec };
+        }
+
+        // Etiqueta y monto del renglon de costo segun la vista activa.
+        function vistaCosto(data) {
+            const t = _desgloseTotales(data);
+            switch (AppState.vistaCosto) {
+                case 'imss':
+                    return { etq: 'Cuota base al IMSS', nota: 'sin actualizaci&oacute;n ni recargos', monto: t.base };
+                case 'recargos':
+                    return { etq: 'Actualizaci&oacute;n y recargos', nota: 'lo que agrega pagar al cierre', monto: t.act + t.rec };
+                default:
+                    return AppState.modoPresentacion
+                        ? { etq: 'Cuotas al IMSS + actualizaci&oacute;n y recargos', nota: '', monto: t.conTodo }
+                        : { etq: 'Costo total del proyecto', nota: '', monto: data.costoTotalContrato };
+            }
+        }
+
+        function ciclarVistaCosto(scenarioNum) {
+            const i = VISTAS_COSTO.indexOf(AppState.vistaCosto || 'proyecto');
+            const siguiente = VISTAS_COSTO[(i + 1) % VISTAS_COSTO.length];
+            _aplicarVistaCosto(siguiente);
+        }
+
+        function ponerVistaCosto(vista) {
+            if (vista === (AppState.vistaCosto || 'proyecto')) return;
+            _aplicarVistaCosto(vista);
+        }
+
+        function _aplicarVistaCosto(vista) {
+            // Volver al costo del proyecto no destapa nada: no pide clave.
+            if (vista === 'proyecto') {
+                AppState.vistaCosto = 'proyecto';
+                if (typeof recalculateAllScenarios === 'function') recalculateAllScenarios();
+                return;
+            }
+            promptForPassword(() => {
+                AppState.vistaCosto = vista;
+                if (typeof recalculateAllScenarios === 'function') recalculateAllScenarios();
+            });
         }
 
         function toggleProcesoAdicional(forzar) {
@@ -10468,19 +10551,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             if (summaryContainer) {
                 const saldoColorClasses = data.saldoFinal >= 0 ? 'bg-green-100 border-green-300 text-green-900' : 'bg-red-100 border-red-300 text-red-900';
                 const saldoLabel = data.saldoFinal >= 0 ? 'SALDO FINAL A FAVOR' : 'DÉFICIT FINAL';
+                const _vc = vistaCosto(data);
+                const _vcActiva = AppState.vistaCosto || 'proyecto';
                 summaryContainer.innerHTML = `
                     <div class="bal">
                         <div class="bal-fila bal-fila--costo">
                             <span class="bal-etq">
-                                ${AppState.modoPresentacion ? 'Cuotas al IMSS + actualizaci&oacute;n y recargos' : 'Costo total del proyecto'}
+                                ${_vc.etq}${_vc.nota ? `<em class="bal-nota">${_vc.nota}</em>` : ''}
                                 <button onclick="editTotalCost(${scenarioNum})" title="Editar costo total" class="bal-lapiz"><i class="fas fa-pencil"></i></button>
                                 ${data.isManualCost ? '<span class="bal-manual">Manual</span>' : ''}
                                 ${data.meses > 0 ? `<button onclick="showPaymentBreakdown(${scenarioNum})" class="bal-desglose">ver desglose</button>` : ''}
                             </span>
-                            <b>$${formatNumber(AppState.modoPresentacion
-                                ? (data.desgloseM40 || []).reduce((t, f) => t + (f.totalMes || 0), 0)
-                                : data.costoTotalContrato)}</b>
+                            <b>$${formatNumber(_vc.monto)}</b>
                         </div>
+                        ${data.meses > 0 ? `
+                        <div class="vc-selector">
+                            <button type="button" class="vc-op ${_vcActiva === 'proyecto' ? 'is-on' : ''}" onclick="ponerVistaCosto('proyecto')">Proyecto</button>
+                            <button type="button" class="vc-op ${_vcActiva === 'imss' ? 'is-on' : ''}" onclick="ponerVistaCosto('imss')">Cuota IMSS</button>
+                            <button type="button" class="vc-op ${_vcActiva === 'recargos' ? 'is-on' : ''}" onclick="ponerVistaCosto('recargos')">Act. y recargos</button>
+                            ${_vcActiva !== 'proyecto' ? '<i class="fas fa-lock-open vc-abierto" title="Vista de direcci&oacute;n"></i>' : ''}
+                        </div>` : ''}
 
                         <div class="bal-grupo">
                             <div class="bal-fila bal-fila--resta">
