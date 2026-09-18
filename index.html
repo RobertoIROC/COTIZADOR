@@ -2893,7 +2893,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
            claro, cifras arriba y leyenda contenida.
            =================================================================== */
         .hl-cifras { display: flex; align-items: center; justify-content: center;
-                     gap: 1.4rem; flex-wrap: wrap; margin: .2rem 0 1rem; }
+                     gap: 1.2rem; flex-wrap: wrap; margin: .1rem 0 .65rem; }
         .hl-cifra { text-align: center; }
         .hl-cifra b { display: block; font-size: clamp(1.6rem, 3.4vw, 2.6rem);
                       font-weight: 900; color: #fff; line-height: 1; letter-spacing: -.02em; }
@@ -2903,7 +2903,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         .hl-cifra--oro b { color: var(--oro-300); text-shadow: 0 6px 24px rgba(201,162,39,.45); }
         .hl-sep { width: 1px; height: 2.2rem; background: rgba(255,255,255,.18); }
 
-        .hl-botones { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; margin-bottom: .8rem; }
+        .hl-botones { display: flex; gap: .45rem; justify-content: center; flex-wrap: wrap; margin-bottom: .5rem; }
         .hl-chip { display: inline-flex; align-items: center; gap: .45rem; cursor: pointer;
                    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.2);
                    border-radius: 9999px; padding: .4rem .95rem;
@@ -2917,7 +2917,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
            los hijos y la grafica se recorria a la derecha */
         .hl-cifras, .hl-botones, .hl-leyenda, .hl-pie { width: 100%; }
         .hl-panel { width: min(94vw, 1120px); margin-left: auto; margin-right: auto;
-                    padding: .5rem; border-radius: 1.1rem;
+                    padding: .4rem; border-radius: 1.1rem;
                     background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
                     box-shadow: 0 30px 70px -32px rgba(0,0,0,.95); }
 
@@ -2945,12 +2945,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         .hl-lienzo #rayadoHueco rect { fill: rgba(255,255,255,.05) !important; }
         .hl-lienzo #rayadoHueco line { stroke: rgba(255,255,255,.30) !important; }
 
-        .hl-leyenda { display: flex; flex-wrap: wrap; gap: .3rem .9rem;
-                      justify-content: center; margin: .8rem auto 0;
-                      width: min(94vw, 1120px); max-height: 3.6rem; overflow-y: auto;
-                      font-size: .7rem; color: rgba(255,255,255,.72); }
+        /* La leyenda se recorta a dos renglones y se desvanece: antes crecia sin
+           limite y se metia debajo de las flechas y los puntos de navegacion. */
+        .hl-leyenda { display: flex; flex-wrap: wrap; gap: .25rem .8rem;
+                      justify-content: center; margin: .5rem auto 0;
+                      width: min(94vw, 1120px); max-height: 2.5rem; overflow: hidden;
+                      font-size: .66rem; line-height: 1.25; color: rgba(255,255,255,.8);
+                      -webkit-mask-image: linear-gradient(180deg, #000 62%, transparent);
+                              mask-image: linear-gradient(180deg, #000 62%, transparent); }
         .hl-leyenda .legend-item { display: flex; align-items: center; gap: .3rem; }
-        .hl-pie { text-align: center; font-size: .74rem; color: rgba(255,255,255,.45); margin-top: .6rem; }
+        .hl-pie { text-align: center; font-size: .7rem; color: rgba(255,255,255,.5); margin-top: .3rem; }
         .hl-pie i { margin-right: .3rem; }
 
         /* el boton necesita su estilo completo: la clase .diag-btn no existia
@@ -3012,10 +3016,6 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             100% { transform: translateY(-50%) scale(1); filter: brightness(1); }
         }
 
-        /* las etiquetas de anio del eje, legibles en la presentacion */
-        .hl-lienzo { height: 22rem; padding-bottom: .9rem; }
-        .hl-lienzo .tick text { font-size: 11px !important; font-weight: 700 !important;
-                                fill: #334155 !important; }
 
         /* ===== LAMINA DE IDENTIDAD ===== */
         .id-nombre { font-family: 'Playfair Display', serif; font-weight: 800;
@@ -3053,15 +3053,44 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         .hl-lienzo .capa-m40tramo rect { fill: rgba(249,115,22,.22) !important; stroke: #FB923C !important; }
         .hl-lienzo .capa-hoy line { stroke: #F87171 !important; }
         .hl-lienzo .capa-hoy circle { fill: #F87171 !important; }
-.hl-lienzo { height: 22rem; padding-bottom: .9rem;
-                              overflow-x: auto; overflow-y: hidden;
-                              scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.35) transparent; }
-                .hl-lienzo::-webkit-scrollbar { height: 9px; }
-                .hl-lienzo::-webkit-scrollbar-track { background: rgba(255,255,255,.06); border-radius: 9999px; }
-                .hl-lienzo::-webkit-scrollbar-thumb { background: rgba(255,255,255,.34); border-radius: 9999px; }
-                .hl-lienzo::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.55); }
-                /* Si la grafica cabe completa se centra; si no, se puede deslizar. */
-                .hl-lienzo > svg { display: block; margin: 0 auto; }
+        /* =================================================================
+           LAMINA DEL HISTORIAL EN LA PRESENTACION
+           Es el mismo componente que en la app clara, montado sobre azul
+           oscuro. Sin estas correcciones se veia asi: los anios del eje en
+           gris pizarra (invisibles), las etiquetas de huecos gris sobre gris,
+           las barras al 80% de opacidad (lodosas) y la leyenda desbordando
+           encima de las flechas de navegacion.
+           ================================================================= */
+        .hl-lienzo { height: clamp(13rem, 38vh, 19rem); padding-bottom: .35rem;
+                     overflow-x: auto; overflow-y: hidden;
+                     scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.4) transparent; }
+        .hl-lienzo::-webkit-scrollbar { height: 8px; }
+        .hl-lienzo::-webkit-scrollbar-track { background: rgba(255,255,255,.08); border-radius: 9999px; }
+        .hl-lienzo::-webkit-scrollbar-thumb { background: rgba(255,255,255,.4); border-radius: 9999px; }
+        .hl-lienzo::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.62); }
+        .hl-lienzo > svg { display: block; margin: 0 auto; }
+
+        /* Ejes en negativo. Antes: fill #334155, gris oscuro sobre azul oscuro. */
+        .hl-lienzo .tick text { font-size: 11px !important; font-weight: 700 !important;
+                                fill: rgba(255,255,255,.84) !important; }
+        .hl-lienzo .domain,
+        .hl-lienzo .tick line { stroke: rgba(255,255,255,.28) !important; }
+
+        /* Rotulos del dibujo: conservan su codigo de color pero subidos de tono
+           para que contrasten contra el fondo. */
+        .hl-lienzo .lt-hueco-txt   { fill: rgba(255,255,255,.92) !important; font-size: 10px !important; }
+        .hl-lienzo .lt-capa-txt--azul { fill: #93C5FD !important; }
+        .hl-lienzo .lt-capa-txt--oro  { fill: #FCD34D !important; }
+        .hl-lienzo .lt-capa-txt--rojo { fill: #FCA5A5 !important; }
+        .hl-lienzo .lt-capa-sub    { fill: rgba(255,255,255,.75) !important; }
+        .hl-lienzo .lt-hoy-txt     { fill: #FCA5A5 !important; }
+        .hl-lienzo .lt-m40-rotulo  { fill: #FDBA74 !important; }
+        .hl-lienzo .lt-limite      { fill: #FCD34D !important; }
+
+        /* Las barras a plena opacidad: al 80% sobre azul se veian apagadas. */
+        .hl-lienzo .bar     { opacity: .96 !important; }
+        .hl-lienzo .bar-exc { opacity: .8 !important; }
+
 
         .cc-mini { width: 100%; height: 74px; margin: .7rem 0 .1rem;
                    background: rgba(0,0,0,.18); border-radius: .5rem; overflow: hidden; }
@@ -5458,6 +5487,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         const CC_ESPERA_VISIBLE = 5000;   // los 5 segundos que pidio Roberto
         const CC_ESPERA_CICLO   = 9000;   // pausa en blanco antes de repetir
         let _ccToken = 0;                 // cancela el ciclo anterior al reiniciar
+        let _ccCorriendo = false;         // evita reiniciar la escritura a medias
 
         const _ccDormir = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -5488,39 +5518,46 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             while (token === _ccToken) {
                 if (cinta) cinta.classList.add('is-on');
                 await _ccEscribir('ccCorreo', CC_CORREO, token, 45);
-                if (token !== _ccToken) return;
+                if (token !== _ccToken) { _ccCorriendo = false; return; }
                 await _ccDormir(300);
                 await _ccEscribir('ccWhats', CC_WHATS, token, 70);
-                if (token !== _ccToken) return;
+                if (token !== _ccToken) { _ccCorriendo = false; return; }
 
                 await _ccDormir(CC_ESPERA_VISIBLE);
-                if (token !== _ccToken) return;
+                if (token !== _ccToken) { _ccCorriendo = false; return; }
 
                 await _ccBorrar('ccWhats', token, 22);
                 await _ccBorrar('ccCorreo', token, 16);
-                if (token !== _ccToken) return;
+                if (token !== _ccToken) { _ccCorriendo = false; return; }
                 if (cinta) cinta.classList.remove('is-on');
                 await _ccDormir(CC_ESPERA_CICLO);
             }
+            _ccCorriendo = false;
         }
 
-        function actualizarContactoCensura() {
+        function actualizarContactoCensura(forzarReinicio) {
             const cinta = document.getElementById('contactoCensura');
             if (!cinta) return;
-            const seccionVisible = (() => {
-                const s = document.getElementById('timelineSection');
-                return !!(s && s.style.display !== 'none');
-            })();
+            const s = document.getElementById('timelineSection');
+            const seccionVisible = !!(s && s.style.display !== 'none' && s.offsetParent !== null);
+            const debeCorrer = !!AppState.modoPresentacion && seccionVisible;
+
+            // La linea de tiempo se redibuja cada vez que se toca una capa o el
+            // interruptor de historial completo. Si cada redibujado reiniciara
+            // la escritura, el correo nunca terminaria de aparecer.
+            if (debeCorrer && _ccCorriendo && !forzarReinicio) return;
 
             _ccToken++;   // corta cualquier ciclo en vuelo
+            _ccCorriendo = false;
             const correo = document.getElementById('ccCorreo');
             const whats = document.getElementById('ccWhats');
             if (correo) correo.textContent = '';
             if (whats) whats.textContent = '';
 
-            if (AppState.modoPresentacion && seccionVisible) {
+            if (debeCorrer) {
                 cinta.style.display = 'flex';
                 cinta.classList.remove('is-on');
+                _ccCorriendo = true;
                 _ccCiclo(_ccToken);
             } else {
                 cinta.style.display = 'none';
@@ -5561,7 +5598,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             }
             aplicarCensuraCampos();
             actualizarDisponibilidadPDF();
-            actualizarContactoCensura();
+            actualizarContactoCensura(true);
             if (AppState.allParsedPeriodsForDisplay && AppState.allParsedPeriodsForDisplay.length > 0) {
                 renderSbcAnalysisTable();
                 renderModalitySummary();
@@ -9627,6 +9664,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
             actualizarSBCMaximoM40(); actualizarFechaFinM40Display(); renderHitosM40();
             showElement('sbcAnalysisResultsContainer'); showElement('timelineSection');
+            if (typeof actualizarContactoCensura === 'function') actualizarContactoCensura();
             
             const pensionData = _calcularPensionDetallado(sbcPromedioFinal, adjustedWeeks, edadParaCalculoBase);
             AppState.pensionBaseResultadosInfo = pensionData;
@@ -11931,19 +11969,33 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 if (start > end) continue;
                 const activePeriods = periods.filter(p => start >= p.fechaInicio && end <= p.fechaFin);
                 if (activePeriods.length > 0) {
+                    const hayTraslape = activePeriods.length > 1;
                     const sbcSumado = activePeriods.reduce((sum, p) => sum + p.sbc, 0);
-                    // Dos patrones que suman $4,000 no cotizan sobre $4,000: el
-                    // IMSS topa la suma al limite del Art. 28 vigente ese mes.
-                    // Lo que sobra no se pierde de vista, se guarda para
-                    // pintarlo en rojo en la linea de tiempo.
-                    const tope = topeSBCDiario(start);
-                    const topado = tope > 0 && sbcSumado > tope;
+
+                    // El tope SOLO se aplica cuando de verdad hay dos o mas
+                    // patrones a la vez. Con un solo patron no hay nada que
+                    // topar: el SBC que reporta la constancia ya viene topado
+                    // por el propio IMSS, y compararlo contra el limite de un
+                    // anio viejo marcaba excedentes que no existen.
+                    //
+                    // Y el anio de referencia es el de la BAJA, no el del alta:
+                    // la constancia aclara al pie que el salario mostrado es el
+                    // ULTIMO de cada patron. Un periodo 1994-2016 trae el SBC de
+                    // 2016, asi que medirlo contra el tope de 1994 no tiene
+                    // sentido.
+                    const fechaRef = new Date(Math.max(
+                        ...activePeriods.map(p => (p.fechaFin instanceof Date && !isNaN(p.fechaFin))
+                            ? p.fechaFin.getTime() : end.getTime())));
+                    const tope = hayTraslape ? topeSBCDiario(fechaRef) : 0;
+                    const topado = hayTraslape && tope > 0 && sbcSumado > tope;
                     const totalSBC = topado ? tope : sbcSumado;
+
                     const employers = activePeriods.map(p => p.nombrePatron).join(' + ');
                     const regPatronales = activePeriods.map(p => p.regPatronal).join(', ');
                     microPeriods.push({ fechaInicio: start, fechaFin: end, sbc: totalSBC,
-                        sbcSumado, topeSBC: tope, excedenteSBC: topado ? sbcSumado - tope : 0, topado,
-                        nombrePatron: employers, regPatronal: regPatronales, isOverlapped: activePeriods.length > 1, originalPeriods: activePeriods });
+                        sbcSumado, topeSBC: topado ? tope : 0, anioTope: topado ? fechaRef.getUTCFullYear() : null,
+                        excedenteSBC: topado ? sbcSumado - tope : 0, topado,
+                        nombrePatron: employers, regPatronal: regPatronales, isOverlapped: hayTraslape, originalPeriods: activePeriods });
                 }
             }
             if (microPeriods.length === 0) return [];
@@ -12187,6 +12239,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             // de que le aparezca todo de golpe. Solo la principal: en las
             // tarjetas y en las capturas para PDF la animacion estorba.
             const animar = (svgId === 'timeline-svg');
+            // La cinta de contacto se revisa en cada dibujado de la linea
+            // principal: es el unico punto por el que pasan todos los
+            // caminos (analisis, capas, historial completo, modo censura).
+            if (animar && typeof actualizarContactoCensura === 'function') {
+                setTimeout(() => actualizarContactoCensura(), 0);
+            }
             const barras = chart.selectAll(".bar").data(filteredData).enter().append("rect").attr("class", "bar")
                 .attr("x", d => x(d.fechaInicio))
                 .attr("width", d => Math.max(1.2, x(d.fechaFin) - x(d.fechaInicio) + 0.6))
@@ -12199,7 +12257,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 .on("mousemove", (event, d) => {
                     const employerList = (d.originalPeriods && d.originalPeriods.length > 0) ? d.originalPeriods.map(e => censurarNombre(e.nombrePatron)).join(' + ') : censurarNombre(d.nombrePatron);
                     timelineTooltip.html(`<strong>${employerList}</strong><br/>Salario: ${d.sbc.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}`
-                        + (d.excedenteSBC > 0 ? `<br/><span style="color:#FCA5A5">Topado: la suma era ${d.sbcSumado.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</span>` : '')
+                        + (d.excedenteSBC > 0 ? `<br/><span style="color:#FCA5A5">Topado por traslape: los patrones sumaban ${d.sbcSumado.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</span>` : '')
                         + `<br/>Inicio: ${formatDateDDMMYYYY(d.fechaInicio)}<br/>Fin: ${formatDateDDMMYYYY(d.fechaFin)}`)
                         .style("left", (event.clientX + 15) + "px").style("top", (event.clientY - 28) + "px");
                 }).on("mouseout", (event, d) => { timelineTooltip.style("opacity", 0); d3.select(event.currentTarget).style('opacity', 0.8).style('stroke', 'none'); });
@@ -12228,9 +12286,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 .attr("stroke", "#B91C1C").attr("stroke-width", 0.7)
                 .on("mouseover", (event, d) => { timelineTooltip.style("opacity", 1); d3.select(event.currentTarget).style('opacity', 0.85); })
                 .on("mousemove", (event, d) => {
+                    const _n = (d.originalPeriods || []).length;
                     timelineTooltip.html(`<strong>Excedente no reconocido</strong><br/>`
-                        + `Suma de patrones: ${d.sbcSumado.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}<br/>`
-                        + `Tope del a&ntilde;o ${d.fechaInicio.getUTCFullYear()}: ${d.topeSBC.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}<br/>`
+                        + `${_n} patrones a la vez suman: ${d.sbcSumado.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}<br/>`
+                        + `Tope de ${d.anioTope || d.fechaFin.getUTCFullYear()}: ${d.topeSBC.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}<br/>`
                         + `No cuenta: ${d.excedenteSBC.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })} diarios`)
                         .style("left", (event.clientX + 15) + "px").style("top", (event.clientY - 28) + "px");
                 }).on("mouseout", (event, d) => { timelineTooltip.style("opacity", 0); d3.select(event.currentTarget).style('opacity', 0.55); });
@@ -12670,6 +12729,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             if (remainingValue > 0.01) pieData.push({ id: 'restante', label: 'Costo por Cubrir', value: remainingValue, color: '#e5e7eb' }); 
             if (pieData.length === 0) pieData.push({ id: 'restante', label: 'Costo Total', value: costoTotalContrato || 1, color: '#e5e7eb' });
             
+            // Con los datos ocultos el centro NO puede decir el precio de venta:
+            // se muestra la misma cifra que la tarjeta de balance, las cuotas al
+            // IMSS ya con actualizacion y recargos. Misma regla, un solo criterio.
+            const _cuotasImss = (data.desgloseM40 || []).reduce((t, f) => t + (f.totalMes || 0), 0);
+            const _censura = !!AppState.modoPresentacion;
+            const _montoCentro = _censura ? _cuotasImss : costoTotalContrato;
             const containerNode = container.node(); const width = containerNode.getBoundingClientRect().width; const height = containerNode.getBoundingClientRect().height;
             const radius = Math.min(width, height) / 2 - 10;
             const svg = container.append("svg").attr("width", width).attr("height", height).append("g").attr("transform", `translate(${width / 2}, ${height / 2})`);
@@ -12679,12 +12744,23 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                 .attr("d", arc).attr("fill", d => d.data.color).attr("stroke", "white").style("stroke-width", "2px").style("cursor", "pointer")
                 .on("mouseover", (event, d) => { tooltip.style("opacity", 1); d3.select(event.currentTarget).style("filter", "brightness(1.1)"); })
                 .on("mousemove", (event, d) => {
-                    const percentage = (d.data.value / costoTotalContrato * 100).toFixed(1);
+                    const _base = _censura ? (_cuotasImss || costoTotalContrato) : costoTotalContrato;
+                    const percentage = (d.data.value / _base * 100).toFixed(1);
                     tooltip.html(`<strong>${d.data.label}</strong><br>$${formatNumber(d.data.value)}<br>(${percentage}%)`).style("left", (event.clientX + 15) + "px").style("top", (event.clientY - 28) + "px");
                 })
                 .on("mouseout", (event, d) => { tooltip.style("opacity", 0); d3.select(event.currentTarget).style("filter", "brightness(1)"); });
-            svg.append("text").attr("text-anchor", "middle").attr("dy", "-0.5em").style("font-size", "0.75rem").style("fill", "#6b7280").text("Costo Total");
-            svg.append("text").attr("text-anchor", "middle").attr("dy", "1.0em").style("font-size", "1rem").style("font-weight", "bold").style("fill", "#1f2937").text(`$${formatNumber(costoTotalContrato, 0)}`);
+            if (_censura) {
+                svg.append("text").attr("text-anchor", "middle").attr("dy", "-1.35em")
+                    .style("font-size", "0.62rem").style("fill", "#6b7280").text("Cuotas al IMSS");
+                svg.append("text").attr("text-anchor", "middle").attr("dy", "-0.25em")
+                    .style("font-size", "0.62rem").style("fill", "#6b7280").text("+ act. y recargos");
+            } else {
+                svg.append("text").attr("text-anchor", "middle").attr("dy", "-0.5em")
+                    .style("font-size", "0.75rem").style("fill", "#6b7280").text("Costo Total");
+            }
+            svg.append("text").attr("text-anchor", "middle").attr("dy", _censura ? "1.5em" : "1.0em")
+                .style("font-size", "1rem").style("font-weight", "bold").style("fill", "#1f2937")
+                .text(`$${formatNumber(_montoCentro, 0)}`);
 
             const legendContainer = document.getElementById(`pie-chart-legend-${scenarioNum}`);
             if(legendContainer) {
